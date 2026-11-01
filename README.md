@@ -9,19 +9,23 @@ ferrailleurs et main-d'œuvre — avec des montants en **FCFA**.
 
 ## Deux espaces
 
-### 1. Interface de base — le personnel (à l'ouverture)
+### 1. Interface de base — le personnel (à l'ouverture, sans code)
 
-Quand on ouvre l'application, on voit **les profils de toute l'équipe**. Chaque membre
-n'a que deux champs à remplir :
+À l'ouverture, l'application affiche un **tableau moderne du pointage du jour** avec
+**tous les profils** de l'équipe. Chaque membre retrouve sa ligne et n'a que deux champs :
 
-- **Arrivée** — heure de prise de service ;
-- **Départ** — heure de fin.
+- **Arrivée** — saisie libre à tout moment ;
+- **Départ** — la saisie **s'ouvre à 17h30** (fin de journée standard du profil) ;
+  avant, un message rappelle « Départ à partir de 17h30 ». Impossible de partir
+  sans avoir pointé son arrivée.
 
-Rien d'autre (pas de tarif, pas de mot de passe). Les pointages enregistrés partent
-automatiquement dans le tableau de bord administrateur.
+Les pointages enregistrés partent **automatiquement** dans le tableau de bord
+administrateur. Un bouton discret **« Administration »** (en bas à droite) fait
+apparaître la page de connexion.
 
-Un bouton discret **« Administration »** (en bas à droite) fait apparaître la page
-de connexion.
+Design moderne : typographie Space Grotesk / Manrope, palette indigo, cartes
+arrondies avec ombres douces, thème clair/sombre, responsive mobile (tableau
+empilé, navigation en barre basse).
 
 ### 2. Espace administrateur (protégé)
 
@@ -36,8 +40,8 @@ L'administrateur retrouve les modules complets :
 
 | Module | Ce qu'il permet |
 | --- | --- |
-| **Tableau de bord** | Effectif actif, présents du jour, heures sup., masse salariale, graphique de coût journalier, synthèse par poste, classement des heures sup., pointages du jour |
-| **États généraux** (bouton du tableau de bord) | Aperçu et **téléchargement CSV** par profil : jours, **heures totales**, **heures supplémentaires**, **salaire normal**, **salaire avec heures supplémentaires** |
+| **Tableau de bord** | Effectif actif, présents du jour, heures sup., masse salariale, graphique de coût journalier, synthèse par poste, classement des heures sup., pointages du jour — avec boutons **Imprimer** et **États généraux** |
+| **États généraux** (bouton du tableau de bord) | Aperçu, **impression** et **téléchargement CSV** par profil : jours, **heures totales**, **heures supplémentaires**, **salaire normal**, **salaire avec heures supplémentaires** |
 | **Personnel** | Fiches complètes (photo, horaires prévus, tarifs), création / modification / désactivation |
 | **Pointages** | Saisie et correction des pointages jour par jour |
 | **Paie** | Synthèse mensuelle par employé + détail |
