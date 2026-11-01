@@ -85,6 +85,36 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8;
 .av.lg{width:84px; height:84px; font-size:30px}
 .av.sm{width:34px; height:34px; font-size:14px}
 
+/* vue base : interface du personnel */
+.base{max-width:1100px; margin:0 auto; padding-block:18px 40px; display:flex; flex-direction:column; gap:16px; min-height:100vh}
+.base-head{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.base-head .logo{color:var(--ink)}
+.base-hint{margin:0; color:var(--muted)}
+.bfields{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.base-foot{margin-top:auto; display:flex; justify-content:flex-end}
+@media (max-width:560px){ .bfields{grid-template-columns:1fr} }
+
+/* connexion */
+.login{min-height:100vh; display:grid; grid-template-columns:1.1fr 1fr; gap:0; max-width:1100px; margin:0 auto; align-items:stretch; padding-block:24px}
+.login-brand{background:var(--hero-bg); color:var(--hero-ink); border-radius:10px 0 0 10px; padding:40px; display:flex; flex-direction:column; gap:28px; min-width:0}
+.login-brand h1{font-size:clamp(34px,5vw,52px); line-height:1.02; text-transform:uppercase}
+.login-brand p{margin:0; opacity:.82; max-width:36ch}
+.logo{display:flex; align-items:center; gap:12px}
+.logo svg{width:40px; height:40px; flex:none}
+.logo b{font:700 17px var(--f-display); letter-spacing:.12em; text-transform:uppercase}
+.bareme{border-top:1px solid rgba(255,255,255,.2); padding-top:18px}
+.bareme table{width:100%; border-collapse:collapse; font-size:14px}
+.bareme td,.bareme th{padding:7px 0; text-align:left; font-weight:500; border-bottom:1px solid rgba(255,255,255,.12)}
+.bareme th{font-size:11px; letter-spacing:.1em; text-transform:uppercase; opacity:.7}
+.bareme td:not(:first-child),.bareme th:not(:first-child){text-align:right; font-family:var(--f-mono); font-size:13px}
+.bareme .ot{color:#F5C451}
+.login-card{background:var(--surface); border:1px solid var(--line); border-left:0; border-radius:0 10px 10px 0; padding:40px; display:flex; flex-direction:column; gap:20px; justify-content:center; min-width:0}
+.login-card h2{font-size:30px}
+.seg{display:grid; grid-template-columns:1fr 1fr; background:var(--surface2); border-radius:8px; padding:4px; gap:4px}
+.seg button{border:0; background:transparent; padding:9px; border-radius:6px; font-weight:600; color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
+.hint{font-size:13px; color:var(--muted)}
+
 /* coque admin */
 .shell{display:grid; grid-template-columns:220px minmax(0,1fr); gap:20px; max-width:1360px; margin:0 auto; padding-block:16px}
 .side{position:sticky; top:16px; align-self:start; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 12px; display:flex; flex-direction:column; gap:18px; height:calc(100vh - 32px); max-height:640px}
@@ -157,9 +187,30 @@ svg.chart{width:100%; height:auto; display:block}
 .ax{fill:var(--muted); font:11px var(--f-mono)}
 .gl{stroke:var(--line); stroke-width:1}
 
+/* vue personnel */
+.me{max-width:880px; margin:0 auto; padding-block:16px 32px; display:flex; flex-direction:column; gap:16px}
+.me-head{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.me-head .logo{color:var(--ink)}
+.id-card{background:var(--hero-bg); color:var(--hero-ink); border-radius:12px; padding:22px; display:flex; gap:18px; align-items:center; flex-wrap:wrap}
+.id-card h1{font-size:34px; line-height:1}
+.id-card .mono{opacity:.8; font-size:13px}
+.id-card .pill{background:rgba(255,255,255,.14); color:var(--hero-ink)}
+.id-card .pill::before{background:#F5C451}
+.clock{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.bigtime{font:600 64px/1 var(--f-display); font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.gain{font:700 40px/1 var(--f-display); font-variant-numeric:tabular-nums}
 .stack{display:flex; flex-direction:column; gap:10px}
+.btn.xl{min-height:54px; font-size:17px; justify-content:center; width:100%}
+.sim-out{font:700 30px/1.1 var(--f-display); font-variant-numeric:tabular-nums}
+.rate-grid{display:grid; grid-template-columns:minmax(150px,1.3fr) 1fr 1fr; gap:10px 12px; align-items:center}
+.rate-grid .name{align-self:end; padding-bottom:10px; font-weight:600}
+
 /* nav mobile */
 @media (max-width:900px){
+  .login{grid-template-columns:1fr; padding-block:12px}
+  .login-brand{border-radius:10px 10px 0 0; padding:26px; gap:18px}
+  .crane-wrap,.bareme{display:none}
+  .login-card{border-left:1px solid var(--line); border-top:0; border-radius:0 0 10px 10px; padding:26px}
   .shell{grid-template-columns:minmax(0,1fr); gap:12px}
   .side{position:fixed; left:0; right:0; bottom:0; top:auto; height:auto; max-height:none; z-index:40; border-radius:12px 12px 0 0; border-width:1px 0 0; padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px)); flex-direction:row}
   .side .logo,.side-foot{display:none}
@@ -182,6 +233,12 @@ svg.chart{width:100%; height:auto; display:block}
 }
 
 /* ---- compléments ---- */
+.bp{background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px); background-size:32px 32px}
+.crane-wrap{flex:1; min-height:150px; display:flex; align-items:flex-end; justify-content:flex-end}
+.crane{width:min(300px,100%); height:auto; max-height:260px}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chipbtn{border:1px solid var(--line); background:var(--surface2); border-radius:6px; padding:5px 10px; font:500 13px var(--f-mono)}
+.chipbtn:hover{border-color:var(--brand); color:var(--brand)}
 .topbar .sub{margin:4px 0 0; color:var(--muted)}
 .topbar .sub::first-letter{text-transform:uppercase}
 .seg.sm{grid-template-columns:auto auto}
@@ -216,6 +273,8 @@ svg.chart{width:100%; height:auto; display:block}
 .work.ot{background:var(--amber)}
 .day-ticks{position:relative; height:18px; font:12px var(--f-mono); color:var(--muted)}
 .day-ticks span{position:absolute; transform:translateX(-50%); white-space:nowrap}
+.hide-s{display:inline}
+.id-card .kv dt{color:inherit; opacity:.7}
 .stack .chip{align-self:flex-start}
 table.rt td .who{text-align:left}
 @media (max-width:720px){
@@ -233,6 +292,7 @@ table.rt td .who{text-align:left}
   .rk{grid-template-columns:minmax(0,1fr) auto}
   .rk-bar{grid-column:1/-1; order:3}
 }
+@media (max-width:560px){ .hide-s{display:none} .crane-wrap{display:none} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -263,7 +323,7 @@ function defaultSettings(){
     stdStart:'07:30', stdEnd:'17:30',
     rates:{macon:6000,coffreur:6000,ferrailleur:6000,mo:3500},
     ot:{macon:500,coffreur:500,ferrailleur:500,mo:350},
-    otMode:'full', prorate:false
+    otMode:'full', prorate:false, adminCode:'admin'
   };
 }
 
@@ -287,9 +347,17 @@ function uid(){return 'x'+Date.now().toString(36)+Math.random().toString(36).sli
 var ICONS={
   grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
   users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.4c1.9.8 3 2.6 3 5.6"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  wallet:'<path d="M3 7h15a3 3 0 0 1 3 3v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7V6a2 2 0 0 1 2-2h11"/><circle cx="16.5" cy="14" r="1.2"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
+  dl:'<path d="M12 3v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4 20h16"/>',
+  out:'<path d="M9 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M16 8l4 4-4 4M20 12H9"/>',
   theme:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-  cam:'<path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>'
+  cam:'<path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+  play:'<path d="M7 4.5v15l12-7.5z"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="1.5"/>'
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var LOGO='<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="8" fill="#F5C451"/><path d="M9 9h22v5H9zM9 26h22v5H9zM17.5 14h5v12h-5z" fill="#143A5F"/></svg>';
@@ -367,7 +435,7 @@ function dayAgg(date){
 
 /* ---------- État de l'interface ---------- */
 var todayISO=iso(new Date());
-var ui={period:'30',tab:'dash',q:'',fposte:'',month:todayISO.slice(0,7),modal:null,confirmDel:null};
+var ui={view:'base',role:null,period:'30',empId:null,tab:'dash',loginTab:'admin',q:'',fposte:'',date:todayISO,month:todayISO.slice(0,7),modal:null,confirmDel:null,err:'',etatsMonth:todayISO.slice(0,7)};
 
 function toast(msg){
   var t=$('#toast'); t.textContent=msg; t.classList.add('on');
@@ -390,7 +458,55 @@ function pillS(p){return '<span class="pill '+esc(p)+'">'+esc(POSTES[p].short)+'
 function topbar(title,extra,sub){
   return '<header class="topbar"><div><h1>'+esc(title)+'</h1>'+(sub?'<p class="sub">'+esc(sub)+'</p>':'')+'</div><div class="acts">'+(extra||'')+
     '<button class="ibtn" data-act="theme" title="Changer de thème" aria-label="Changer de thème">'+ico('theme')+'</button>'+
-    '</div></header>';
+    '<button class="btn" data-act="logout" aria-label="Quitter">'+ico('out')+'<span class="hide-s">Quitter</span></button></div></header>';
+}
+
+/* ---------- Vue base : profils du personnel ---------- */
+function baseCard(e){
+  var r=getRec(e.id,todayISO);
+  return '<article class="card '+esc(e.poste)+'"><div class="card-top">'+avatar(e)+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+pill(e.poste)+statusChip(e)+'</div>'+
+    '<div class="bfields">'+
+    '<div class="field"><label for="b_s_'+e.id+'">Arrivée</label><input class="in time" id="b_s_'+e.id+'" type="time" data-time="start" data-base="1" data-emp="'+e.id+'" value="'+(r?esc(r.start):'')+'" aria-label="Heure d\u2019arrivée de '+esc(e.prenom)+'"></div>'+
+    '<div class="field"><label for="b_e_'+e.id+'">Départ</label><input class="in time" id="b_e_'+e.id+'" type="time" data-time="end" data-base="1" data-emp="'+e.id+'" value="'+(r&&r.end?esc(r.end):'')+'" aria-label="Heure de départ de '+esc(e.prenom)+'"></div>'+
+    '</div></article>';
+}
+function renderBase(){
+  var act=DB.emps.filter(function(e){return e.actif});
+  var grid=act.length?'<div class="cards">'+act.map(baseCard).join('')+'</div>':'<div class="panel empty">Aucun profil actif pour le moment.</div>';
+  return '<div class="base"><header class="base-head"><div class="logo">'+LOGO+'<b>Leader Engineering Services</b></div>'+
+    '<div class="acts" style="display:flex;gap:10px;align-items:center"><span class="muted">'+esc(longDate(todayISO))+'</span>'+
+    '<button class="ibtn" data-act="theme" title="Changer de thème" aria-label="Changer de thème">'+ico('theme')+'</button></div></header>'+
+    '<p class="base-hint">Entrez votre heure d\'arrivée et votre heure de départ.</p>'+grid+
+    '<footer class="base-foot"><button class="btn sm ghost" data-act="to-login">Administration</button></footer></div>';
+}
+
+/* ---------- Connexion ---------- */
+var CRANE='<svg class="crane" viewBox="0 0 320 300" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
+  '<g stroke="#FFFFFF" stroke-opacity=".32" stroke-width="2"><path d="M24 300V222M72 300V222M120 300V222M168 300V242"/><path d="M14 300h164M14 262h164M14 222h124"/><path d="M24 262l48-40M72 262l48-40"/></g>'+
+  '<g stroke="#F5C451" stroke-width="2.4"><path d="M204 60v240M220 60v240"/><path d="M204 300l16-30-16-30 16-30-16-30 16-30-16-30 16-30-16-30"/>'+
+  '<path d="M200 44h24v16h-24zM212 12v32"/><path d="M212 12L36 62M212 12l62 50"/><path d="M36 62h238"/><rect x="262" y="62" width="26" height="24"/>'+
+  '<rect x="82" y="62" width="14" height="9"/><path d="M89 71v104"/><path d="M62 175h54M62 185h54M89 175v10"/></g>'+
+  '<path d="M0 300h320" stroke="#FFFFFF" stroke-opacity=".4" stroke-width="2"/></svg>';
+function renderLogin(){
+  var S=DB.settings;
+  var rows=PK.map(function(k){
+    return '<tr><td>'+esc(POSTES[k].label)+'</td><td>'+numfr(S.rates[k])+'</td><td class="ot">+'+numfr(S.ot[k])+'</td></tr>';
+  }).join('');
+  var admin=ui.loginTab==='admin';
+  var ex=DB.emps.filter(function(e){return e.actif}).slice(0,3).map(function(e){return '<button type="button" class="chipbtn" data-act="fill-id" data-v="'+esc(e.ident)+'">'+esc(e.ident)+'</button>'}).join('');
+  return '<div class="login"><section class="login-brand bp"><div class="logo">'+LOGO+'<b>Gestion du personnel</b></div>'+
+    '<div><h1>Leader Engineering Services</h1><p style="margin-top:12px">Pointage, heures supplémentaires et paie journalière des équipes de chantier.</p></div>'+
+    '<div class="crane-wrap">'+CRANE+'</div>'+
+    '<div class="bareme"><div class="lbl" style="color:inherit;opacity:.75;margin-bottom:4px">Barème, journée de '+esc(S.stdStart.replace(':','h'))+' à '+esc(S.stdEnd.replace(':','h'))+'</div><table><thead><tr><th>Poste</th><th>Journée</th><th>Heure sup.</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>'+
+    '<section class="login-card"><button class="btn sm ghost" data-act="to-base" style="align-self:flex-start">&#8592; Retour</button><div><h2>Connexion</h2><p class="muted" style="margin:6px 0 0">Choisissez votre espace pour continuer.</p></div>'+
+    '<div class="seg" role="group" aria-label="Type d\'accès"><button type="button" data-act="login-tab" data-v="admin" aria-pressed="'+admin+'">Administrateur</button><button type="button" data-act="login-tab" data-v="staff" aria-pressed="'+!admin+'">Personnel</button></div>'+
+    '<form id="loginForm" class="stack" autocomplete="off">'+
+    (admin?
+      '<div class="field"><label for="lgCode">Code administrateur</label><input class="in" id="lgCode" type="password" autocomplete="off"><span class="hint">Code de démonstration : admin. Il se change dans les paramètres.</span></div>':
+      '<div class="field"><label for="lgId">Identifiant</label><input class="in mono" id="lgId" placeholder="LES-001" autocapitalize="characters"><span class="hint">'+(ex?'Identifiants d\'exemple :':'Aucun profil pour le moment. Connectez-vous en administrateur pour en créer.')+'</span>'+(ex?'<div class="chips">'+ex+'</div>':'')+'</div>')+
+    '<div class="err" id="lgErr" role="alert">'+esc(ui.err)+'</div>'+
+    '<button class="btn pri xl" type="submit">Se connecter</button></form></section></div>';
 }
 
 /* ---------- Tableau de bord admin ---------- */
@@ -452,14 +568,11 @@ function renderDash(){
   var todayRows=act.map(function(e){
     var r=getRec(e.id,todayISO);
     return '<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td>'+
-      '<td data-label="Poste">'+pillS(e.poste)+'</td>'+
-      '<td data-label="Prise de service"><input class="in time" type="time" data-time="start" data-emp="'+e.id+'" value="'+(r?esc(r.start):'')+'" aria-label="Prise de service de '+esc(e.prenom)+'"></td>'+
-      '<td data-label="Sortie"><input class="in time" type="time" data-time="end" data-emp="'+e.id+'" value="'+(r&&r.end?esc(r.end):'')+'" aria-label="Sortie de '+esc(e.prenom)+'"></td>'+
-      '<td data-label="Statut">'+statusChip(e)+'</td>'+
-      '<td class="r act" data-label=""><button class="btn sm" data-act="time-fill" data-id="'+e.id+'">Horaires prévus</button></td></tr>';
+      '<td data-label="Poste">'+pillS(e.poste)+'</td><td class="mono" data-label="Début">'+(r?esc(r.start):'—')+'</td><td class="mono" data-label="Sortie">'+(r&&r.end?esc(r.end):'—')+'</td><td data-label="Statut">'+statusChip(e)+'</td></tr>';
   }).join('');
   var seg='<div class="seg sm" role="group" aria-label="Période"><button type="button" data-act="period" data-v="30" aria-pressed="'+(ui.period!=='month')+'">30 jours</button><button type="button" data-act="period" data-v="month" aria-pressed="'+(ui.period==='month')+'">Mois en cours</button></div>';
-  return topbar('Tableau de bord',seg,longDate(todayISO))+
+  var etatsBtn='<button class="btn" data-act="etats-open">'+ico('dl')+'<span class="hide-s">États généraux</span></button>';
+  return topbar('Tableau de bord',etatsBtn+seg,longDate(todayISO))+
     (DB.demo?'<div class="banner"><span>Les profils et pointages affichés sont des exemples pour tester le logiciel.</span><button class="btn sm" data-act="demo-clear">Supprimer les exemples</button></div>':'')+
     '<section class="kpis" aria-label="Indicateurs">'+
       '<div class="kpi"><span class="lbl">Effectif actif</span><strong>'+act.length+'</strong><span>'+DB.emps.length+' profils enregistrés</span></div>'+
@@ -470,7 +583,7 @@ function renderDash(){
     '<div class="grid2"><section class="panel"><div class="panel-head"><h2>Coût journalier</h2><div class="legend"><span><i style="background:var(--brand)"></i>Base</span><span><i style="background:var(--amber)"></i>Heures sup.</span><span>en milliers de FCFA</span></div></div>'+chartSVG()+'</section>'+
     '<section class="panel"><h2>Par poste</h2><div class="tw"><table class="t"><thead><tr><th>Poste</th><th class="r">Effectif</th><th class="r">Jours</th><th class="r">FCFA</th></tr></thead><tbody>'+rows+'</tbody></table></div></section></div>'+
     '<div class="grid2 b"><section class="panel"><div class="panel-head"><h2>Heures sup. par employé</h2><span class="muted">'+esc(plabel)+'</span></div>'+rankHTML+'</section>'+
-    '<section class="panel"><div class="panel-head"><h2>Pointages du jour</h2>'+(act.length?'<button class="btn sm" data-act="time-fillall">Tous présents, horaires prévus</button>':'')+'</div>'+(act.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th>Prise de service</th><th>Sortie</th><th>Statut</th><th></th></tr></thead><tbody>'+todayRows+'</tbody></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+'</section></div>';
+    '<section class="panel"><h2>Pointages du jour</h2>'+(act.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th>Début</th><th>Sortie</th><th>Statut</th></tr></thead><tbody>'+todayRows+'</tbody></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+'</section></div>';
 }
 
 /* ---------- Personnel ---------- */
@@ -504,6 +617,76 @@ function renderStaff(){
     '<div id="staffGrid">'+staffGridHTML()+'</div>';
 }
 
+/* ---------- Pointages ---------- */
+function timeRows(){
+  var act=DB.emps.filter(function(e){return e.actif});
+  if(!act.length) return '<tr><td colspan="8" class="empty">Aucun profil actif.</td></tr>';
+  return act.map(function(e){
+    var r=getRec(e.id,ui.date), c=r?calc(r,e,ui.date===todayISO?nowHM():''):null;
+    var hs=c&&c.otH>0?'<span class="ot-txt">+'+hrs(c.otH)+'</span> <span class="muted num">('+numfr(c.otPay)+')</span>':'<span class="muted">—</span>';
+    return '<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td>'+
+      '<td data-label="Poste">'+pillS(e.poste)+'</td>'+
+      '<td data-label="Prise de service"><input class="in time" type="time" data-time="start" data-emp="'+e.id+'" value="'+(r?esc(r.start):'')+'" aria-label="Prise de service de '+esc(e.prenom)+'"></td>'+
+      '<td data-label="Sortie"><input class="in time" type="time" data-time="end" data-emp="'+e.id+'" value="'+(r&&r.end?esc(r.end):'')+'" aria-label="Sortie de '+esc(e.prenom)+'"></td>'+
+      '<td class="r num" data-label="Base">'+(c&&!c.open?numfr(c.base):'—')+'</td><td class="r" data-label="Heures sup.">'+hs+'</td>'+
+      '<td class="r num" data-label="Total FCFA"><b>'+(c?(c.open?'En cours':numfr(c.total)):'—')+'</b></td>'+
+      '<td class="r act" data-label=""><button class="btn sm" data-act="time-fill" data-id="'+e.id+'">Horaires prévus</button></td></tr>';
+  }).join('');
+}
+function renderTime(){
+  return topbar('Pointages')+
+    '<section class="panel"><div class="panel-head"><div class="tools"><button class="ibtn" data-act="time-prev" aria-label="Jour précédent">&#8249;</button><input class="in" id="timeDate" type="date" value="'+esc(ui.date)+'" style="max-width:170px" aria-label="Date"><button class="ibtn" data-act="time-next" aria-label="Jour suivant">&#8250;</button>'+(ui.date!==todayISO?'<button class="btn sm" data-act="time-today">Aujourd\'hui</button>':'')+'</div>'+
+    '<button class="btn" data-act="time-fillall">Tous présents, horaires prévus</button></div>'+
+    '<p class="muted" style="margin:0 0 8px">'+esc(longDate(ui.date))+'. Renseignez la prise de service et la sortie, les montants se calculent seuls. Effacez les deux heures pour retirer un pointage.</p>'+
+    '<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th>Prise de service</th><th>Sortie</th><th class="r">Base</th><th class="r">Heures sup.</th><th class="r">Total FCFA</th><th></th></tr></thead><tbody id="timeBody">'+timeRows()+'</tbody></table></div></section>';
+}
+
+/* ---------- Paie ---------- */
+function renderPay(){
+  var rows='',T={days:0,otH:0,base:0,ot:0,total:0};
+  DB.emps.forEach(function(e){
+    var a=monthAgg(e.id,ui.month); if(!a.days&&!e.actif) return;
+    T.days+=a.days;T.otH+=a.otH;T.base+=a.base;T.ot+=a.ot;T.total+=a.total;
+    rows+='<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td><td data-label="Poste">'+pillS(e.poste)+'</td>'+
+      '<td class="r num" data-label="Jours">'+a.days+'</td><td class="r num" data-label="Heures sup.">'+(a.otH?'<span class="ot-txt">'+hrs(a.otH)+'</span>':'—')+'</td><td class="r num" data-label="Base FCFA">'+numfr(a.base)+'</td><td class="r num" data-label="Suppl. FCFA">'+numfr(a.ot)+'</td><td class="r num" data-label="Total FCFA"><b>'+numfr(a.total)+'</b></td>'+
+      '<td class="r act" data-label=""><button class="btn sm" data-act="pay-detail" data-id="'+e.id+'">Détail</button></td></tr>';
+  });
+  return topbar('Paie',null,monthLabel(ui.month))+
+    '<section class="panel"><div class="panel-head"><div class="tools"><input class="in" id="payMonth" type="month" value="'+esc(ui.month)+'" style="max-width:190px" aria-label="Mois"></div><button class="btn" data-act="pay-copy">'+ico('copy')+'<span>Copier le récapitulatif</span></button></div>'+
+    '<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours</th><th class="r">Heures sup.</th><th class="r">Base FCFA</th><th class="r">Suppl. FCFA</th><th class="r">Total FCFA</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="8" class="empty">Aucun pointage pour ce mois.</td></tr>')+'</tbody>'+
+    '<tfoot><tr><td colspan="2" data-label="">Total</td><td class="r num" data-label="Jours">'+T.days+'</td><td class="r num" data-label="Heures sup.">'+hrs(T.otH)+'</td><td class="r num" data-label="Base FCFA">'+numfr(T.base)+'</td><td class="r num" data-label="Suppl. FCFA">'+numfr(T.ot)+'</td><td class="r num" data-label="Total FCFA">'+numfr(T.total)+'</td><td></td></tr></tfoot></table></div></section>';
+}
+
+/* ---------- Paramètres ---------- */
+function simHTML(){
+  var p=($('#simPoste')||{}).value||'macon', t=($('#simEnd')||{}).value||'19:30';
+  var c=calc({start:DB.settings.stdStart,end:t},{poste:p});
+  return c?'<div class="sim-out">'+money(c.total)+'</div><span class="muted">'+money(c.base)+' de base + '+hrs(c.otH)+' supplémentaires ('+money(c.otPay)+')</span>':'';
+}
+function renderSettings(){
+  var S=DB.settings;
+  var rates=PK.map(function(k){
+    return '<span class="name">'+esc(POSTES[k].label)+'</span>'+
+      '<div class="field"><label class="lbl" for="rate_'+k+'">Journée (FCFA)</label><input class="in num" id="rate_'+k+'" type="number" min="0" step="50" value="'+S.rates[k]+'"></div>'+
+      '<div class="field"><label class="lbl" for="ot_'+k+'">Supplément par heure (FCFA)</label><input class="in num" id="ot_'+k+'" type="number" min="0" step="10" value="'+S.ot[k]+'"></div>';
+  }).join('');
+  return topbar('Paramètres')+
+    '<section class="panel"><h2>Horaires et tarifs</h2>'+
+    '<div class="form2" style="max-width:520px;margin-bottom:18px"><div class="field"><label for="sStart">Début de la journée standard</label><input class="in time" id="sStart" type="time" value="'+esc(S.stdStart)+'"></div><div class="field"><label for="sEnd">Fin de la journée standard</label><input class="in time" id="sEnd" type="time" value="'+esc(S.stdEnd)+'"></div></div>'+
+    '<div class="rate-grid">'+rates+'</div></section>'+
+    '<section class="panel"><h2>Règles de calcul</h2><div class="stack" style="max-width:560px">'+
+    '<div class="field"><label for="sMode">Comptage des heures supplémentaires après la fin de journée</label><select class="in" id="sMode">'+
+      '<option value="full"'+(S.otMode==='full'?' selected':'')+'>Heures complètes uniquement (1 h 40 compte pour 1 h)</option>'+
+      '<option value="started"'+(S.otMode==='started'?' selected':'')+'>Chaque heure entamée (1 h 10 compte pour 2 h)</option>'+
+      '<option value="prorata"'+(S.otMode==='prorata'?' selected':'')+'>Au prorata des minutes</option></select></div>'+
+    '<label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" id="sProrate"'+(S.prorate?' checked':'')+' style="margin-top:4px"><span>Réduire le salaire de base si la journée standard n\'est pas complète (arrivée tardive ou départ anticipé)</span></label>'+
+    '<div class="field"><label for="sCode">Code administrateur</label><input class="in" id="sCode" type="text" value="'+esc(S.adminCode)+'" style="max-width:240px"></div>'+
+    '<div><button class="btn pri" data-act="set-save">Enregistrer les paramètres</button></div></div></section>'+
+    '<section class="panel"><h2>Simulateur</h2><p class="muted" style="margin-top:0">Calcul d\'une journée commençant à l\'heure de début standard, avec les tarifs enregistrés ci-dessus.</p>'+
+    '<div class="tools" style="margin-bottom:12px"><select class="in" id="simPoste" style="max-width:260px" aria-label="Poste">'+PK.map(function(k){return '<option value="'+k+'">'+esc(POSTES[k].label)+'</option>'}).join('')+'</select><input class="in time" id="simEnd" type="time" value="19:30" aria-label="Heure de sortie"></div><div id="simOut" class="stack" style="gap:4px">'+simHTML()+'</div></section>'+
+    (DB.demo?'<section class="panel"><h2>Données d\'exemple</h2><p class="muted" style="margin-top:0">Huit profils et trois semaines de pointages fictifs sont chargés pour tester.</p><button class="btn" data-act="demo-clear">Supprimer les exemples</button></section>':'');
+}
+
 /* ---------- Fenêtres modales ---------- */
 function nextIdent(){
   var n=0; DB.emps.forEach(function(e){var m=/(\d+)$/.exec(e.ident); if(m) n=Math.max(n,+m[1])});
@@ -535,20 +718,103 @@ function modalDetail(){
   return '<div class="scrim" data-act="scrim"><div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="card-top">'+avatar(e)+'<div><h2 id="mTitle">'+esc(e.prenom+' '+e.nom)+'</h2><span class="muted">'+esc(POSTES[e.poste].label)+' · '+esc(monthLabel(ui.month))+'</span></div></div>'+
     detailTable(e.id,ui.month)+'<div class="foot"><button class="btn pri" data-act="modal-close">Fermer</button></div></div></div>';
 }
+function etatsTable(month){
+  var rows='',T={days:0,h:0,otH:0,base:0,ot:0,total:0};
+  DB.emps.forEach(function(e){
+    var a=monthAgg(e.id,month); if(!a.days&&!e.actif) return;
+    var h=0; a.list.forEach(function(x){h+=x.c.worked});
+    T.days+=a.days;T.h+=h;T.otH+=a.otH;T.base+=a.base;T.ot+=a.ot;T.total+=a.total;
+    rows+='<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td><td data-label="Poste">'+pillS(e.poste)+'</td>'+
+      '<td class="r num" data-label="Jours">'+a.days+'</td><td class="r num" data-label="Heures">'+hrs(h)+'</td><td class="r num" data-label="Heures sup.">'+(a.otH?'<span class="ot-txt">'+hrs(a.otH)+'</span>':'—')+'</td>'+
+      '<td class="r num" data-label="Salaire normal">'+numfr(a.base)+'</td><td class="r num" data-label="Avec heures sup."><b>'+numfr(a.total)+'</b></td></tr>';
+  });
+  return '<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours</th><th class="r">Heures</th><th class="r">Heures sup.</th><th class="r">Salaire normal</th><th class="r">Avec heures sup.</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="7" class="empty">Aucune journée pointée pour ce mois.</td></tr>')+'</tbody>'+
+    (T.days||T.h?'<tfoot><tr><td colspan="2" data-label="">Total</td><td class="r num" data-label="Jours">'+T.days+'</td><td class="r num" data-label="Heures">'+hrs(T.h)+'</td><td class="r num" data-label="Heures sup.">'+hrs(T.otH)+'</td><td class="r num" data-label="Salaire normal">'+numfr(T.base)+'</td><td class="r num" data-label="Avec heures sup.">'+numfr(T.total)+'</td></tr></tfoot>':'')+'</table></div>';
+}
+function modalEtats(){
+  return '<div class="scrim" data-act="scrim"><div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="mTitle"><h2 id="mTitle">États généraux</h2>'+
+    '<div class="tools"><input class="in" id="etatsMonth" type="month" value="'+esc(ui.etatsMonth)+'" style="max-width:190px" aria-label="Mois"><span class="muted">'+esc(monthLabel(ui.etatsMonth))+'</span></div>'+
+    etatsTable(ui.etatsMonth)+
+    '<div class="foot"><button class="btn" data-act="modal-close">Fermer</button><button class="btn pri" data-act="etats-dl">'+ico('dl')+'<span>Télécharger (CSV)</span></button></div></div></div>';
+}
+function etatsCSV(month){
+  var lines=['Employé;Identifiant;Poste;Jours;Heures totales;Heures sup.;Salaire normal (FCFA);Salaire avec heures sup. (FCFA)'];
+  var T={days:0,h:0,otH:0,base:0,total:0};
+  DB.emps.forEach(function(e){
+    var a=monthAgg(e.id,month); if(!a.days) return;
+    var h=0; a.list.forEach(function(x){h+=x.c.worked});
+    T.days+=a.days;T.h+=h;T.otH+=a.otH;T.base+=a.base;T.total+=a.total;
+    lines.push([e.prenom+' '+e.nom,e.ident,POSTES[e.poste].label,a.days,(Math.round(h*100)/100),a.otH,a.base,a.total].join(';'));
+  });
+  lines.push(['Total','','',T.days,(Math.round(T.h*100)/100),T.otH,T.base,T.total].join(';'));
+  return '\uFEFF'+lines.join('\r\n');
+}
 function renderModal(){
   var root=$('#modalRoot');
   if(!ui.modal){root.innerHTML='';return}
-  root.innerHTML=ui.modal.type==='emp'?modalEmp():modalDetail();
+  root.innerHTML=ui.modal.type==='emp'?modalEmp():(ui.modal.type==='etats'?modalEtats():modalDetail());
   var f=$('#fPrenom'); if(f) f.focus();
+}
+
+function dayBar(startHM,endHM){
+  var S=DB.settings,a=toMin(S.stdStart),b=toMin(S.stdEnd);
+  var lo=Math.floor((a-60)/60)*60, hi=Math.ceil((b+240)/60)*60, span=hi-lo;
+  function p(m){return Math.max(0,Math.min(100,(m-lo)/span*100))}
+  var s=toMin(startHM), e=Math.max(s,toMin(endHM));
+  var w1=p(Math.min(e,b))-p(Math.min(s,b)), w2=e>b?p(e)-p(Math.max(s,b)):0;
+  return '<div class="day"><div class="day-track"><span class="band std" style="left:'+p(a)+'%;width:'+(p(b)-p(a))+'%"></span><span class="band ot" style="left:'+p(b)+'%;width:'+(100-p(b))+'%"></span>'+
+    (w1>0?'<span class="work" style="left:'+p(Math.min(s,b))+'%;width:'+w1+'%"></span>':'')+
+    (w2>0?'<span class="work ot" style="left:'+p(Math.max(s,b))+'%;width:'+w2+'%"></span>':'')+
+    '</div><div class="day-ticks"><span style="left:'+p(a)+'%">'+esc(S.stdStart)+'</span><span style="left:'+p(b)+'%">'+esc(S.stdEnd)+'</span></div>'+
+    '<div class="legend"><span><i style="background:var(--brand)"></i>Journée standard</span><span><i style="background:var(--amber)"></i>Heures supplémentaires</span></div></div>';
+}
+/* ---------- Vue personnel ---------- */
+function renderMe(){
+  var e=DB.emps.find(function(x){return x.id===ui.empId});
+  if(!e){ui.role=null;ui.view='login';return renderLogin()}
+  var r=getRec(e.id,todayISO), now=nowHM();
+  var c=r?calc(r,e,now):null;
+  var month=todayISO.slice(0,7), a=monthAgg(e.id,month);
+  var btn,state;
+  if(!r){state='<span class="chip">Pas encore pointé</span>';btn='<button class="btn pri xl" data-act="clock-in">'+ico('play')+'<span>Prendre mon service</span></button>'}
+  else if(!r.end){state='<span class="chip ok">En service depuis '+esc(r.start)+'</span>';btn='<button class="btn warn xl" data-act="clock-out">'+ico('stop')+'<span>Terminer mon service</span></button>'}
+  else{state='<span class="chip">Journée terminée</span>';btn='<p class="muted" style="margin:0">Service de '+esc(r.start)+' à '+esc(r.end)+'. À demain.</p>'}
+  var gainLbl=r&&!r.end?'Gain provisoire du jour':'Gain du jour';
+  return '<div class="me"><header class="me-head"><div class="logo">'+LOGO+'<b>Leader Engineering Services</b></div><div class="acts" style="display:flex;gap:8px"><button class="ibtn" data-act="theme" aria-label="Changer de thème">'+ico('theme')+'</button><button class="btn" data-act="logout">'+ico('out')+'<span>Quitter</span></button></div></header>'+
+    '<section class="id-card bp">'+avatar(e,'lg')+'<div class="stack" style="gap:6px"><h1>'+esc(e.prenom+' '+e.nom)+'</h1><span class="mono">'+esc(e.ident)+'</span><span><span class="pill '+esc(e.poste)+'">'+esc(POSTES[e.poste].label)+'</span></span></div>'+
+    '<dl class="kv" style="margin-left:auto;min-width:200px"><dt>Prise de service</dt><dd class="mono">'+esc(e.debut)+'</dd><dt>Sortie</dt><dd class="mono">'+esc(e.fin)+'</dd></dl></section>'+
+    '<section class="panel clock"><div class="stack"><span class="lbl">'+esc(longDate(todayISO))+'</span><div class="bigtime" id="liveClock">'+now+'</div>'+state+'</div>'+
+    '<div class="stack">'+btn+'<div><span class="lbl">'+gainLbl+'</span><div class="gain" id="liveGain">'+(c?(c.open?'—':money(c.total)):'—')+'</div><span class="muted" id="liveSub">'+(c&&!c.open?(c.otH?'dont '+money(c.otPay)+' pour '+hrs(c.otH)+' supplémentaires':'Aucune heure supplémentaire'):'')+'</span></div></div>'+(r?'<div id="dayBox" style="grid-column:1/-1">'+dayBar(r.start,r.end||now)+'</div>':'')+'</section>'+
+    '<section class="panel"><div class="panel-head"><h2>Mon mois, '+esc(monthLabel(month))+'</h2><span class="muted">'+a.days+(a.days>1?' jours':' jour')+' · '+hrs(a.otH)+' sup.</span></div>'+
+    '<div class="kpis" style="margin-bottom:14px"><div class="kpi"><span class="lbl">Base</span><strong>'+numfr(a.base)+'</strong></div><div class="kpi"><span class="lbl">Suppléments</span><strong>'+numfr(a.ot)+'</strong></div><div class="kpi"><span class="lbl">Total</span><strong>'+numfr(a.total)+'<small>FCFA</small></strong></div><div class="kpi"><span class="lbl">Tarif heure sup.</span><strong>'+numfr(DB.settings.ot[e.poste])+'</strong></div></div>'+
+    detailTable(e.id,month)+'</section></div>';
+}
+function liveTick(){
+  var el=$('#liveClock'); if(!el||ui.role!=='staff') return;
+  el.textContent=nowHM();
+  var e=DB.emps.find(function(x){return x.id===ui.empId}), r=e&&getRec(e.id,todayISO);
+  if(r&&!r.end){
+    var c=calc(r,e,nowHM());
+    var bx=$('#dayBox'); if(bx) bx.innerHTML=dayBar(r.start,nowHM());
+    $('#liveGain').textContent=money(c.total);
+    $('#liveSub').textContent=c.otH?'dont '+money(c.otPay)+' pour '+hrs(c.otH)+' supplémentaires':'Les heures supplémentaires commencent après '+DB.settings.stdEnd;
+  }
 }
 
 /* ---------- Rendu principal ---------- */
 function render(){
-  var app=$('#app');
-  var nav=[['dash','Tableau de bord','grid'],['staff','Personnel','users']];
-  var view={dash:renderDash,staff:renderStaff}[ui.tab]();
-  app.innerHTML='<div class="shell"><aside class="side"><div class="logo">'+LOGO+'<b>Leader Engineering Services</b></div><nav class="nav" aria-label="Navigation principale">'+
-    nav.map(function(n){return '<button data-act="nav" data-v="'+n[0]+'"'+(ui.tab===n[0]?' aria-current="page"':'')+'>'+ico(n[2])+'<span>'+n[1]+'</span></button>'}).join('')+'</nav><div class="side-foot">Accès libre, sans mot de passe</div></aside><main class="main" id="main">'+view+'</main></div>';
+  var app=$('#app'), html;
+  if(ui.view==='base') html=renderBase();
+  else if(ui.view==='login') html=renderLogin();
+  else if(ui.role==='staff') html=renderMe();
+  else{
+    var nav=[['dash','Tableau de bord','grid'],['staff','Personnel','users'],['time','Pointages','clock'],['pay','Paie','wallet'],['set','Paramètres','gear']];
+    var view={dash:renderDash,staff:renderStaff,time:renderTime,pay:renderPay,set:renderSettings}[ui.tab]();
+    html='<div class="shell"><aside class="side"><div class="logo">'+LOGO+'<b>Leader Engineering Services</b></div><nav class="nav" aria-label="Navigation principale">'+
+      nav.map(function(n){return '<button data-act="nav" data-v="'+n[0]+'"'+(ui.tab===n[0]?' aria-current="page"':'')+'>'+ico(n[2])+'<span>'+n[1]+'</span></button>'}).join('')+'</nav><div class="side-foot">Espace administrateur</div></aside><main class="main" id="main">'+view+'</main></div>';
+  }
+  app.innerHTML=html;
   renderModal();
 }
 
@@ -565,9 +831,10 @@ function toggleTheme(){
 }
 try{var th=localStorage.getItem(THEME_KEY); if(th) applyTheme(th)}catch(e){}
 
-function upsertTime(empId,field,val){
-  var r=getRec(empId,todayISO);
-  if(!r){ if(!val) return; r={id:uid(),emp:empId,date:todayISO,start:'',end:''}; DB.att.push(r) }
+function upsertTime(empId,field,val,date){
+  var d=date||ui.date;
+  var r=getRec(empId,d);
+  if(!r){ if(!val) return; r={id:uid(),emp:empId,date:d,start:'',end:''}; DB.att.push(r) }
   r[field]=val;
   if(!r.start&&!r.end) DB.att=DB.att.filter(function(x){return x!==r});
   else if(!r.start&&r.end){r.start=DB.settings.stdStart}
@@ -595,13 +862,30 @@ function readDraft(){
   d.ident=$('#fIdent').value.trim().toUpperCase().replace(/\s+/g,'-');
   d.poste=$('#fPoste').value; d.debut=$('#fDebut').value; d.fin=$('#fFin').value; d.actif=$('#fActif').checked;
 }
+function recapText(){
+  var lines=['Employé\tIdentifiant\tPoste\tJours\tHeures sup.\tBase\tSuppléments\tTotal'];
+  DB.emps.forEach(function(e){var a=monthAgg(e.id,ui.month); if(!a.days) return;
+    lines.push([e.prenom+' '+e.nom,e.ident,POSTES[e.poste].label,a.days,a.otH,a.base,a.ot,a.total].join('\t'))});
+  return 'Paie '+monthLabel(ui.month)+'\n'+lines.join('\n');
+}
+
 document.addEventListener('click',function(ev){
   var t=ev.target.closest('[data-act]'); if(!t) return;
   var act=t.getAttribute('data-act'), id=t.getAttribute('data-id'), v=t.getAttribute('data-v');
   if(act==='scrim'){ if(ev.target!==t) return; act='modal-close' }
   switch(act){
+    case 'login-tab': ui.loginTab=v; ui.err=''; render(); break;
+    case 'logout': ui.role=null; ui.empId=null; ui.err=''; ui.modal=null; ui.view='base'; render(); window.scrollTo(0,0); break;
+    case 'to-base': ui.view='base'; ui.role=null; ui.err=''; ui.modal=null; render(); window.scrollTo(0,0); break;
+    case 'to-login': ui.view='login'; ui.err=''; ui.modal=null; render(); window.scrollTo(0,0); break;
+    case 'etats-open': ui.modal={type:'etats'}; renderModal(); break;
+    case 'etats-dl':
+      var csv=etatsCSV(ui.etatsMonth), blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), dlUrl=URL.createObjectURL(blob), link=document.createElement('a');
+      link.href=dlUrl; link.download='etats-generaux-'+ui.etatsMonth+'.csv'; document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(function(){URL.revokeObjectURL(dlUrl)},1000); toast('Téléchargement lancé'); break;
     case 'theme': toggleTheme(); break;
     case 'period': ui.period=v; render(); break;
+    case 'fill-id': var li=$('#lgId'); if(li){li.value=v; li.focus()} break;
     case 'nav': ui.tab=v; ui.confirmDel=null; render(); window.scrollTo(0,0); break;
     case 'emp-new': ui.modal={type:'emp',draft:{id:'',prenom:'',nom:'',ident:nextIdent(),poste:'macon',debut:DB.settings.stdStart,fin:DB.settings.stdEnd,photo:'',actif:true}}; renderModal(); break;
     case 'emp-edit': var e=DB.emps.find(function(x){return x.id===id}); if(e){ui.modal={type:'emp',draft:Object.assign({},e)};renderModal()} break;
@@ -619,30 +903,72 @@ document.addEventListener('click',function(ev){
       if(d.id){var i=DB.emps.findIndex(function(x){return x.id===d.id}); DB.emps[i]=d}
       else{d.id=uid(); DB.emps.push(d)}
       save(); ui.modal=null; render(); toast('Profil enregistré'); break;
+    case 'time-prev': case 'time-next':
+      var dt=parseISO(ui.date); dt.setDate(dt.getDate()+(act==='time-next'?1:-1)); ui.date=iso(dt); render(); break;
+    case 'time-today': ui.date=todayISO; render(); break;
     case 'time-fill': var em=DB.emps.find(function(x){return x.id===id}); upsertTime(id,'start',em.debut); upsertTime(id,'end',em.fin); render(); break;
     case 'time-fillall':
-      DB.emps.filter(function(x){return x.actif}).forEach(function(x){ if(!getRec(x.id,todayISO)){upsertTime(x.id,'start',x.debut);upsertTime(x.id,'end',x.fin)} });
+      DB.emps.filter(function(x){return x.actif}).forEach(function(x){ if(!getRec(x.id,ui.date)){upsertTime(x.id,'start',x.debut);upsertTime(x.id,'end',x.fin)} });
       render(); toast('Pointages ajoutés'); break;
     case 'pay-detail': ui.modal={type:'detail',id:id}; renderModal(); break;
+    case 'pay-copy':
+      var txt=recapText();
+      (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){toast('Récapitulatif copié')},function(){toast('Copie impossible dans ce navigateur')});
+      break;
+    case 'set-save':
+      var S=DB.settings;
+      if(!$('#sStart').value||!$('#sEnd').value||toMin($('#sEnd').value)<=toMin($('#sStart').value)){toast('La fin de journée doit être après le début');break}
+      S.stdStart=$('#sStart').value; S.stdEnd=$('#sEnd').value;
+      PK.forEach(function(k){S.rates[k]=Math.max(0,+$('#rate_'+k).value||0); S.ot[k]=Math.max(0,+$('#ot_'+k).value||0)});
+      S.otMode=$('#sMode').value; S.prorate=$('#sProrate').checked;
+      S.adminCode=$('#sCode').value.trim()||'admin';
+      save(); toast('Paramètres enregistrés'); $('#simOut').innerHTML=simHTML(); break;
     case 'demo-clear':
       DB.emps=[];DB.att=[];DB.demo=false;save();render();toast('Exemples supprimés');break;
+    case 'clock-in':
+      if(!getRec(ui.empId,todayISO)){DB.att.push({id:uid(),emp:ui.empId,date:todayISO,start:nowHM(),end:''});save()}
+      render(); toast('Service pris à '+nowHM()); break;
+    case 'clock-out':
+      var rr=getRec(ui.empId,todayISO);
+      if(rr&&!rr.end){rr.end=nowHM(); if(toMin(rr.end)<toMin(rr.start)) rr.end=rr.start; save()}
+      render(); toast('Fin de service enregistrée'); break;
+  }
+});
+
+document.addEventListener('submit',function(ev){
+  if(ev.target.id!=='loginForm') return;
+  ev.preventDefault();
+  if(ui.loginTab==='admin'){
+    if($('#lgCode').value===DB.settings.adminCode){ui.role='admin';ui.view='app';ui.tab='dash';ui.err='';render()}
+    else{ui.err='Code incorrect.';$('#lgErr').textContent=ui.err}
+  }else{
+    var id=$('#lgId').value.trim().toUpperCase();
+    var e=DB.emps.find(function(x){return x.ident.toUpperCase()===id&&x.actif});
+    if(e){ui.role='staff';ui.view='app';ui.empId=e.id;ui.err='';render()}
+    else{ui.err='Identifiant inconnu ou profil désactivé.';$('#lgErr').textContent=ui.err}
   }
 });
 
 document.addEventListener('input',function(ev){
   var t=ev.target;
   if(t.id==='q'){ui.q=t.value;$('#staffGrid').innerHTML=staffGridHTML()}
+  else if(t.id==='simPoste'||t.id==='simEnd'){$('#simOut').innerHTML=simHTML()}
 });
 document.addEventListener('change',function(ev){
   var t=ev.target;
   if(t.id==='fposte'){ui.fposte=t.value;$('#staffGrid').innerHTML=staffGridHTML()}
+  else if(t.id==='timeDate'){if(t.value){ui.date=t.value;render()}}
+  else if(t.id==='payMonth'){if(t.value){ui.month=t.value;render()}}
   else if(t.getAttribute&&t.getAttribute('data-time')){
     var emp=DB.emps.find(function(x){return x.id===t.getAttribute('data-emp')});
-    var f=t.getAttribute('data-time'), r0=getRec(emp.id,todayISO);
+    var f=t.getAttribute('data-time'), d0=t.getAttribute('data-base')?todayISO:ui.date, r0=getRec(emp.id,d0);
     var other=r0?(f==='start'?r0.end:r0.start):'';
     if(t.value&&other&&f==='end'&&toMin(t.value)<toMin(other)){toast('La sortie doit être après la prise de service');render();return}
-    upsertTime(emp.id,f,t.value); render();
+    upsertTime(emp.id,f,t.value,d0);
+    if(t.getAttribute('data-base')) toast(f==='start'?'Arrivée enregistrée':'Départ enregistré');
+    render();
   }
+  else if(t.id==='etatsMonth'){if(t.value){ui.etatsMonth=t.value;renderModal()}}
   else if(t.id==='photoFile'&&t.files&&t.files[0]){
     readDraft();
     readPhoto(t.files[0]).then(function(url){ui.modal.draft.photo=url;$('#photoPrev').innerHTML=avatar(ui.modal.draft,'lg')},function(){$('#formErr').textContent='Cette image ne peut pas être lue.'});
@@ -651,8 +977,9 @@ document.addEventListener('change',function(ev){
 document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&ui.modal){ui.modal=null;renderModal()}});
 
 var wasNarrow=window.innerWidth<600;
-window.addEventListener('resize',function(){var n=window.innerWidth<600; if(n!==wasNarrow){wasNarrow=n; if(ui.tab==='dash') render()}});
+window.addEventListener('resize',function(){var n=window.innerWidth<600; if(n!==wasNarrow){wasNarrow=n; if(ui.role==='admin'&&ui.tab==='dash') render()}});
 render();
+setInterval(liveTick,1000);
 })();
 </script>
 
