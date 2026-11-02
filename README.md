@@ -89,9 +89,9 @@ python3 -m http.server 8000
 ├── Logo d’ingénierie et construction en bleu et jaune.png   # LOGO officiel du dépôt (utilisé partout + favicon)
 ├── index.html                        # application complète (HTML/CSS/JS unique)
 ├── assets/
-│   ├── chantier-btp.jpg              # photos du slider (uniquement bâtiments en construction) :
-│   ├── chantier-2.jpg                #   - immeuble de grande hauteur + grue à tour, ciel bleu
-│   ├── chantier-3.jpg                #   - 2 grues sur bâtiment béton inachevé / façade béton + grue
+│   ├── chantier-btp.jpg              # photos PRO du slider (uniquement bâtiments en construction) :
+│   ├── chantier-2.jpg                #   - grue jaune/rouge sur bloc béton, ciel bleu vif (Pexels)
+│   ├── chantier-3.jpg                #   - immeuble courbé en construction + grue / 3 grues, contre-jour
 │   │                                 # slider « Pointage du jour » : 250 px de haut (190 px mobile)
 │   ├── icon.png / icon-256.png       # icônes .exe / web (depuis le logo)
 └── README.md
