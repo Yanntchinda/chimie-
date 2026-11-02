@@ -25,7 +25,7 @@ Les pointages enregistrés partent **automatiquement** dans le tableau de bord
 administrateur. Un bouton discret **« Administration »** (en bas à droite) fait
 apparaître la page de connexion.
 
-Design moderne : typographie Space Grotesk / Manrope, palette indigo, **logo de
+Design moderne et soigné : typographie Space Grotesk / Manrope, palette indigo, fond subtil en dégradé radial, tableaux zébrés avec survol, cartes et boutons animés, focus/ombres renforcés, **logo de
 l'entreprise** (`assets/logo-leader-engineering.png`, fond transparent) affiché en grand (72 px, 60 px dans la barre latérale) dans tous les écrans, éclairci pour rester lisible sur fond sombre
 (base, connexion, espace admin), cartes arrondies avec ombres douces, thème
 clair/sombre, responsive mobile (tableau empilé, navigation en barre basse). La page

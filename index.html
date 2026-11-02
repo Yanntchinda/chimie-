@@ -328,6 +328,29 @@ svg.chart{width:100%; height:auto; display:block}
   body.printing-modal .modal{width:100%; max-height:none; box-shadow:none; border:0; padding:0; overflow:visible; border-radius:0}
   body.printing-modal .modal .foot,body.printing-modal .modal .tools .in{display:none!important}
 }
+/* ===== Polish pro ===== */
+body{background:radial-gradient(1100px 520px at 85% -10%,rgba(79,70,229,.07),transparent 60%),radial-gradient(900px 520px at -10% 110%,rgba(124,58,237,.06),transparent 60%),var(--bg)}
+.panel{transition:box-shadow .25s ease,border-color .25s ease}
+.panel:hover{box-shadow:0 2px 4px rgba(11,18,32,.04),0 18px 44px -20px rgba(11,18,32,.28)}
+.kpi{transition:background .2s ease}
+.kpi:hover{background:var(--surface2)}
+table.t tbody tr{transition:background .15s ease}
+table.t tbody tr:nth-child(even){background:rgba(100,116,139,.05)}
+table.t tbody tr:hover{background:var(--brand-soft)}
+table.t tfoot td{border-top:2px solid var(--line);font-weight:800}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.nav button:hover{background:var(--brand-soft);color:var(--brand)}
+.seg button{transition:background .15s ease,color .15s ease,box-shadow .15s ease}
+.seg button:hover:not([aria-pressed="true"]){color:var(--ink);background:rgba(100,116,139,.12)}
+.in:focus{box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 18%,transparent)}
+.logo img{box-shadow:0 2px 8px rgba(11,18,32,.14)}
+.login-card{box-shadow:var(--shadow-lg)}
+.topbar h1{letter-spacing:-.02em}
+.banner{border:1px solid color-mix(in srgb,var(--amber) 40%,transparent)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(100,116,139,.35);border-radius:99px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.55);background-clip:content-box}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -401,19 +424,21 @@ var LOGO='<img class="logo-img" src="Logo%20d%E2%80%99ing%C3%A9nierie%20et%20con
 /* ---------- Données ---------- */
 function seed(){
   var base=[['Jean-Paul','Mbarga','macon'],['Patrick','Nkeng','coffreur'],['Armand','Tchoua','ferrailleur'],['Serge','Ndongo','mo'],
-            ['Landry','Fotso','macon'],['Claude','Biyong','ferrailleur'],['Rodrigue','Essomba','coffreur'],['Thierry','Abena','mo']];
+            ['Landry','Fotso','macon'],['Claude','Biyong','ferrailleur'],['Rodrigue','Essomba','coffreur'],['Thierry','Abena','mo'],
+            ['Alain','Kamga','macon'],['Nadège','Mvogo','mo']];
   var emps=base.map(function(e,i){return {id:'e'+(i+1),prenom:e[0],nom:e[1],ident:'LES-'+pad3(i+1),poste:e[2],debut:'07:30',fin:'17:30',photo:'',actif:true}});
   var att=[], s=7;
   function rnd(){s=(s*9301+49297)%233280;return s/233280}
-  var extras=[0,0,0,45,60,90,120,150,180];
+  var extras=[0,0,0,30,45,60,90,120,150,180,210,240];
   var today=new Date();
-  for(var k=1;k<=24;k++){
+  for(var k=1;k<=45;k++){
     var day=new Date(today.getFullYear(),today.getMonth(),today.getDate()-k);
-    if(day.getDay()===0) continue;
+    if(day.getDay()===0) continue;                                  // pas le dimanche
     emps.forEach(function(e){
-      if(rnd()<0.1) return;
-      var st=450+Math.floor(rnd()*20);
-      var en=1050+extras[Math.floor(rnd()*extras.length)];
+      if(rnd()<0.08) return;                                        // ~8 % d'absences
+      var st=450+Math.floor(rnd()*20);                             // arrivée ~07:30-07:50
+      var en=1050+extras[Math.floor(rnd()*extras.length)];         // sortie 17:30 -> 21:30
+      if(rnd()<0.06) en=720+Math.floor(rnd()*170);                  // ~6 % de journées courtes (12h-14h50)
       att.push({id:uid()+att.length,emp:e.id,date:iso(day),start:hm(st),end:hm(en)});
     });
   }
@@ -629,7 +654,7 @@ function renderDash(){
   var etatsBtn='<button class="btn" data-act="etats-open">'+ico('dl')+'<span class="hide-s">États généraux</span></button>';
   var printBtn='<button class="btn" data-act="print-dash">'+ico('print')+'<span class="hide-s">Imprimer</span></button>';
   return topbar('Tableau de bord',etatsBtn+printBtn+seg,longDate(todayISO))+
-    (DB.demo?'<div class="banner screen-only"><span>Les profils et pointages affichés sont des exemples pour tester le logiciel.</span><button class="btn sm" data-act="demo-clear">Supprimer les exemples</button></div>':'')+
+    (DB.demo?'<div class="banner screen-only"><span>Les profils et pointages affichés sont des exemples pour tester le logiciel.</span><button class="btn sm" data-act="demo-reseed">Régénérer les exemples</button><button class="btn sm" data-act="demo-clear">Supprimer les exemples</button></div>':'')+
     '<div class="screen-only"><section class="kpis" aria-label="Indicateurs">'+
       '<div class="kpi"><span class="lbl">Effectif actif</span><strong>'+act.length+'</strong><span>'+DB.emps.length+' profils enregistrés</span></div>'+
       '<div class="kpi"><span class="lbl">Présents aujourd\'hui</span><strong>'+present+'<small>/ '+act.length+'</small></strong><div class="bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div><span>'+pct+' % de l\'effectif</span></div>'+
@@ -740,7 +765,7 @@ function renderSettings(){
     '<div><button class="btn pri" data-act="set-save">Enregistrer les paramètres</button></div></div></section>'+
     '<section class="panel"><h2>Simulateur</h2><p class="muted" style="margin-top:0">Calcul d\'une journée commençant à l\'heure de début standard, avec les tarifs enregistrés ci-dessus.</p>'+
     '<div class="tools" style="margin-bottom:12px"><select class="in" id="simPoste" style="max-width:260px" aria-label="Poste">'+PK.map(function(k){return '<option value="'+k+'">'+esc(POSTES[k].label)+'</option>'}).join('')+'</select><input class="in time" id="simEnd" type="time" value="19:30" aria-label="Heure de sortie"></div><div id="simOut" class="stack" style="gap:4px">'+simHTML()+'</div></section>'+
-    (DB.demo?'<section class="panel"><h2>Données d\'exemple</h2><p class="muted" style="margin-top:0">Huit profils et trois semaines de pointages fictifs sont chargés pour tester.</p><button class="btn" data-act="demo-clear">Supprimer les exemples</button></section>':'');
+    '<section class="panel"><h2>Données d\'exemple</h2><p class="muted" style="margin-top:0">'+(DB.demo?'Dix profils et six semaines de pointages fictifs sont chargés pour tester.':'Aucun exemple chargé pour le moment.')+'</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="demo-reseed">'+(DB.demo?'Régénérer les exemples':'Générer des exemples')+'</button>'+(DB.demo?'<button class="btn" data-act="demo-clear">Supprimer les exemples</button>':'')+'</div></section>';
 }
 
 /* ---------- Fenêtres modales ---------- */
@@ -990,6 +1015,8 @@ document.addEventListener('click',function(ev){
       save(); toast('Paramètres enregistrés'); $('#simOut').innerHTML=simHTML(); break;
     case 'demo-clear':
       DB.emps=[];DB.att=[];DB.demo=false;save();render();toast('Exemples supprimés');break;
+    case 'demo-reseed':
+      DB=seed();save();render();toast('Données d\'exemple régénérées');break;
     case 'clock-in':
       if(!getRec(ui.empId,todayISO)){DB.att.push({id:uid(),emp:ui.empId,date:todayISO,start:nowHM(),end:''});save()}
       render(); toast('Service pris à '+nowHM()); break;
