@@ -58,6 +58,13 @@ Toute l'application tient dans **un seul fichier** (`index.html`) : HTML + CSS +
 vanilla, sans build ni dépendance à installer. Les données sont conservées dans le
 **navigateur** (`localStorage`), ce qui suffit pour un usage sur site ou en petite équipe.
 
+## 🎲 Données de démonstration
+
+Au premier chargement (navigateur neuf), l'application est pré-remplie avec des **données de démo** : 10 profils (LES-001…LES-010) et 45 jours de pointages fictifs (absences, journées courtes, heures sup.).
+
+- **Remettre les exemples après les avoir supprimés** : bouton « **Générer des données d'exemple** » en bas de la page d'accueil (quand aucun profil n'existe), ou **Paramètres → Données d'exemple → Générer/Régénérer les exemples** côté admin.
+- **Supprimer les exemples** : « Supprimer les exemples » (bannière du tableau de bord ou Paramètres).
+
 ## Démarrage
 
 Aucune installation requise :

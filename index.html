@@ -548,13 +548,13 @@ function renderBase(){
   var fin=esc(DB.settings.stdEnd.replace(':','h'));
   var table=act.length?
     '<div class="tw"><table class="t rt base-table"><thead><tr><th>Profil</th><th>Poste</th><th>Arrivée</th><th>Départ</th><th>Statut</th></tr></thead><tbody>'+act.map(baseRow).join('')+'</tbody></table></div>':
-    '<div class="empty">Aucun profil actif pour le moment.</div>';
+    '<div class="empty">Aucun profil actif pour le moment.'+(DB.emps.length?'':' Générez des données d\'exemple ci-dessous, ou créez un profil depuis l\'administration.')+'</div>';
   return '<div class="base"><header class="base-head"><div class="logo">'+LOGO+'<b>Leader Engineering Services</b></div>'+
     '<div class="acts" style="display:flex;gap:10px;align-items:center"><span class="muted">'+esc(longDate(todayISO))+'</span>'+
     '<button class="ibtn" data-act="theme" title="Changer de thème" aria-label="Changer de thème">'+ico('theme')+'</button></div></header>'+
     '<section class="panel bp-lite"><div class="panel-head"><h2>Pointage du jour</h2>'+
     '<span class="muted base-hint">Entrez votre heure d\'arrivée ; la saisie du départ s\'ouvre à '+fin+'.</span></div>'+table+'</section>'+
-    '<footer class="base-foot"><button class="btn sm ghost" data-act="to-login">Administration</button></footer></div>';
+    '<footer class="base-foot">'+(act.length?'':'<button class="btn sm" data-act="demo-reseed">Générer des données d\'exemple</button>')+'<button class="btn sm ghost" data-act="to-login">Administration</button></footer></div>';
 }
 
 /* ---------- Connexion ---------- */
