@@ -431,7 +431,7 @@ var ICONS={
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var LOGO='<img class="logo-img" src="Logo%20d%E2%80%99ing%C3%A9nierie%20et%20construction%20en%20bleu%20et%20jaune.png" alt="Leader Engineering Services — Construction Générale">';
-var CHANTIER=['assets/chantier-btp.jpg','assets/chantier-2.jpg','assets/chantier-3.jpg','assets/chantier-4.jpg'];
+var CHANTIER=['assets/chantier-btp.jpg','assets/chantier-2.jpg','assets/chantier-3.jpg']; /* uniquement des bâtiments en construction */
 function sliderHTML(cls){return '<div class="slider '+(cls||'')+'" aria-hidden="true">'+CHANTIER.map(function(src,i){return '<img class="slide'+(i===0?' on':'')+'" src="'+src+'" alt="" loading="lazy">'}).join('')+'</div>'}
 
 /* ---------- Données ---------- */
