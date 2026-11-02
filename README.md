@@ -44,7 +44,7 @@ L'administrateur retrouve les modules complets :
 
 | Module | Ce qu'il permet |
 | --- | --- |
-| **Tableau de bord** | Effectif actif, présents du jour, heures sup., masse salariale, graphique de coût journalier, synthèse par poste, classement des heures sup., pointages du jour, et **statistiques par employé : nombre total de jours travaillés et montant à verser (salaire de base uniquement, hors coût des heures supplémentaires)** — avec bouton **Imprimer** (le PDF ne contient que l'état récapitulatif : Nom, Poste, Jours, Heures sup., Base FCFA, Suppl. FCFA, Total FCFA + totaux) et **États généraux** |
+| **Tableau de bord** | Effectif actif, présents du jour, heures sup., masse salariale, graphique de coût journalier, synthèse par poste, classement des heures sup., pointages du jour, et **statistiques par employé : nombre total de jours travaillés et montant à verser (salaire de base uniquement, hors coût des heures supplémentaires)** — avec bouton **Imprimer** (le PDF ne contient que le panneau « Jours travaillés & montant à verser par employé » : Employé, Poste, Jours travaillés, **Montant à verser (FCFA)** = heures normales hors sup., **Avec heures sup. (FCFA)** = base + suppléments, + totaux) et **États généraux** |
 | **États généraux** (bouton du tableau de bord) | Aperçu, **impression (PDF)** et **téléchargement CSV** par profil : **Nom, Poste, Jours, Heures sup., Base FCFA, Suppl. FCFA, Total FCFA** + ligne de **totaux** |
 | **Personnel** | Fiches complètes (photo, horaires prévus, tarifs), création / modification / désactivation |
 | **Pointages** | Saisie et correction des pointages jour par jour |

@@ -609,19 +609,21 @@ function renderDash(){
     return '<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td>'+
       '<td data-label="Poste">'+pillS(e.poste)+'</td><td class="mono" data-label="Début">'+(r?esc(r.start):'—')+'</td><td class="mono" data-label="Sortie">'+(r&&r.end?esc(r.end):'—')+'</td><td data-label="Statut">'+statusChip(e)+'</td></tr>';
   }).join('');
-  var stats=act.map(function(e){return {e:e,a:aggBy(e.id,pred)}}).sort(function(x,y){return y.a.days-x.a.days||y.a.base-x.a.base});
-  var totDays=0,totBase=0;
+  var stats=act.map(function(e){return {e:e,a:aggBy(e.id,pred)}}).sort(function(x,y){return y.a.days-x.a.days||y.a.total-x.a.total});
+  var totDays=0,totBase=0,totAll=0;
   var statsRows=stats.map(function(x){
-    totDays+=x.a.days; totBase+=x.a.base;
+    totDays+=x.a.days; totBase+=x.a.base; totAll+=x.a.total;
     return '<tr><td data-label=""><div class="who">'+avatar(x.e,'sm')+'<div><b>'+esc(x.e.prenom+' '+x.e.nom)+'</b><span class="mono muted">'+esc(x.e.ident)+'</span></div></div></td>'+
       '<td data-label="Poste">'+pillS(x.e.poste)+'</td>'+
       '<td data-label="Jours travaillés" class="r num"><b>'+x.a.days+'</b></td>'+
-      '<td data-label="Montant à verser" class="r num"><b>'+numfr(x.a.base)+' FCFA</b></td></tr>';
+      '<td data-label="Montant à verser" class="r num"><b>'+numfr(x.a.base)+' FCFA</b></td>'+
+      '<td data-label="Avec heures sup." class="r num">'+numfr(x.a.total)+' FCFA</td></tr>';
   }).join('');
-  var statsPanel='<section class="panel"><div class="panel-head"><h2>Jours travaillés &amp; montant à verser par employé</h2><span class="muted">hors heures sup. · '+esc(plabel)+'</span></div>'+
-    (stats.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours travaillés</th><th class="r">Montant à verser (FCFA)</th></tr></thead><tbody>'+statsRows+'</tbody><tfoot><tr><td data-label="">Total — '+esc(plabel)+'</td><td data-label=""></td><td data-label="Jours" class="r num">'+totDays+'</td><td data-label="FCFA" class="r num">'+numfr(totBase)+' FCFA</td></tr></tfoot></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+
-    '<p class="muted" style="margin:10px 0 0;font-size:12.5px">Montant à verser = salaire de base uniquement — le coût des heures supplémentaires n\'est pas inclus.</p></section>';
-  var printSection='<section class="panel" id="printOnly"><div class="panel-head"><h2>État récapitulatif par employé</h2><span class="muted">'+esc(plabel)+' · Leader Engineering Services</span></div>'+recapTable(pred,plabel,false)+'</section>';
+  var statsInner='<div class="panel-head"><h2>Jours travaillés &amp; montant à verser par employé</h2><span class="muted">hors heures sup. · '+esc(plabel)+'</span></div>'+
+    (stats.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours travaillés</th><th class="r">Montant à verser (FCFA)</th><th class="r">Avec heures sup. (FCFA)</th></tr></thead><tbody>'+statsRows+'</tbody><tfoot><tr><td data-label="">Total — '+esc(plabel)+'</td><td data-label=""></td><td data-label="Jours" class="r num">'+totDays+'</td><td data-label="Base FCFA" class="r num">'+numfr(totBase)+' FCFA</td><td data-label="Total FCFA" class="r num"><b>'+numfr(totAll)+' FCFA</b></td></tr></tfoot></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+
+    '<p class="muted" style="margin:10px 0 0;font-size:12.5px">« Montant à verser » = heures normales (salaire de base, hors heures sup.) ; « Avec heures sup. » = base + suppléments d\'heures supplémentaires.</p>';
+  var statsPanel='<section class="panel">'+statsInner+'</section>';
+  var printSection='<section class="panel" id="printOnly">'+statsInner+'</section>';
   var seg='<div class="seg sm" role="group" aria-label="Période"><button type="button" data-act="period" data-v="30" aria-pressed="'+(ui.period!=='month')+'">30 jours</button><button type="button" data-act="period" data-v="month" aria-pressed="'+(ui.period==='month')+'">Mois en cours</button></div>';
   var etatsBtn='<button class="btn" data-act="etats-open">'+ico('dl')+'<span class="hide-s">États généraux</span></button>';
   var printBtn='<button class="btn" data-act="print-dash">'+ico('print')+'<span class="hide-s">Imprimer</span></button>';
