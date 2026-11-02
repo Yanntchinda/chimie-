@@ -28,8 +28,11 @@ apparaître la page de connexion.
 Design moderne et soigné : typographie Space Grotesk / Manrope, palette indigo, fond subtil en dégradé radial, tableaux zébrés avec survol, cartes et boutons animés, focus/ombres renforcés, **logo de
 l'entreprise** (`assets/logo-leader-engineering.png`, fond transparent) affiché en grand (72 px, 60 px dans la barre latérale) dans tous les écrans, éclairci pour rester lisible sur fond sombre
 (base, connexion, espace admin), cartes arrondies avec ombres douces, thème
-clair/sombre, responsive mobile (tableau empilé, navigation en barre basse). La page
-de connexion a pour fond une **photo de chantier BTP** (`assets/chantier-btp.jpg`).
+clair/sombre, responsive mobile (tableau empilé, navigation en barre basse).
+
+**Slider d'images de chantier** (défilement auto toutes les 4 s) : en fond de la page de
+connexion (`assets/chantier-btp.jpg` + 3 autres photos) et dans le panneau **« Pointage du jour »**
+de la page d'accueil.
 
 ### 2. Espace administrateur (protégé)
 
@@ -86,7 +89,11 @@ python3 -m http.server 8000
 ├── Logo d’ingénierie et construction en bleu et jaune.png   # LOGO officiel du dépôt (utilisé partout + favicon)
 ├── index.html                        # application complète (HTML/CSS/JS unique)
 ├── assets/
-│   └── chantier-btp.jpg              # photo de chantier (fond de la page de connexion)
+│   ├── chantier-btp.jpg              # photos de chantier du slider (connexion + pointage du jour)
+│   ├── chantier-2.jpg                #   - immeubles + grue, ciel bleu
+│   ├── chantier-3.jpg                #   - grue sur béton/brique
+│   ├── chantier-4.jpg                #   - équipe d'ouvriers
+│   ├── icon.png / icon-256.png       # icônes .exe / web (depuis le logo)
 └── README.md
 ```
 

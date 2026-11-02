@@ -99,7 +99,7 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9;
 
 /* connexion */
 .login{min-height:100vh; display:grid; grid-template-columns:1.1fr 1fr; gap:0; max-width:1100px; margin:0 auto; align-items:center; padding-block:24px}
-.login-brand{background:linear-gradient(165deg,rgba(9,13,26,.82) 0%,rgba(9,13,26,.45) 48%,rgba(9,13,26,.78) 100%),url('assets/chantier-btp.jpg') center/cover no-repeat #1E1B4B; color:var(--hero-ink); border-radius:18px 0 0 18px; padding:26px; display:flex; flex-direction:column; gap:16px; min-width:0; box-shadow:var(--shadow-lg)}
+.login-brand{background:#1E1B4B; color:var(--hero-ink); border-radius:18px 0 0 18px; padding:26px; display:flex; flex-direction:column; gap:16px; min-width:0; box-shadow:var(--shadow-lg)}
 .login-brand h1{font-size:clamp(24px,3.6vw,36px); line-height:1.05; text-transform:uppercase}
 .login-brand p{margin:0; opacity:.85; max-width:36ch}
 .logo{display:flex; align-items:center; gap:12px}
@@ -351,6 +351,17 @@ table.t tfoot td{border-top:2px solid var(--line);font-weight:800}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.35);border-radius:99px;border:2px solid transparent;background-clip:content-box}
 ::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.55);background-clip:content-box}
+/* ===== slider d'images chantier (auto-défilement) ===== */
+.slider{position:relative;overflow:hidden;border-radius:var(--r);background:var(--surface2)}
+.slider .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.1s ease}
+.slider .slide.on{opacity:1}
+.slider.banner{height:200px;margin:0 0 14px}
+.slider.bg{position:absolute;inset:0;border-radius:0;z-index:0}
+.login-brand{position:relative;overflow:hidden}
+.login-brand::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(165deg,rgba(9,13,26,.82) 0%,rgba(9,13,26,.45) 48%,rgba(9,13,26,.78) 100%)}
+.login-brand>*:not(.slider){position:relative;z-index:2}
+@media (max-width:900px){.slider.banner{height:150px}}
+@media print{.slider{display:none!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -420,6 +431,8 @@ var ICONS={
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var LOGO='<img class="logo-img" src="Logo%20d%E2%80%99ing%C3%A9nierie%20et%20construction%20en%20bleu%20et%20jaune.png" alt="Leader Engineering Services — Construction Générale">';
+var CHANTIER=['assets/chantier-btp.jpg','assets/chantier-2.jpg','assets/chantier-3.jpg','assets/chantier-4.jpg'];
+function sliderHTML(cls){return '<div class="slider '+(cls||'')+'" aria-hidden="true">'+CHANTIER.map(function(src,i){return '<img class="slide'+(i===0?' on':'')+'" src="'+src+'" alt="" loading="lazy">'}).join('')+'</div>'}
 
 /* ---------- Données ---------- */
 function seed(){
@@ -553,7 +566,7 @@ function renderBase(){
     '<div class="acts" style="display:flex;gap:10px;align-items:center"><span class="muted">'+esc(longDate(todayISO))+'</span>'+
     '<button class="ibtn" data-act="theme" title="Changer de thème" aria-label="Changer de thème">'+ico('theme')+'</button></div></header>'+
     '<section class="panel bp-lite"><div class="panel-head"><h2>Pointage du jour</h2>'+
-    '<span class="muted base-hint">Entrez votre heure d\'arrivée ; la saisie du départ s\'ouvre à '+fin+'.</span></div>'+table+'</section>'+
+    '<span class="muted base-hint">Entrez votre heure d\'arrivée ; la saisie du départ s\'ouvre à '+fin+'.</span></div>'+sliderHTML('banner')+table+'</section>'+
     '<footer class="base-foot">'+(act.length?'':'<button class="btn sm" data-act="demo-reseed">Générer des données d\'exemple</button>')+'<button class="btn sm ghost" data-act="to-login">Administration</button></footer></div>';
 }
 
@@ -563,7 +576,7 @@ function renderLogin(){
   var rows=PK.map(function(k){
     return '<tr><td>'+esc(POSTES[k].label)+'</td><td>'+numfr(S.rates[k])+'</td><td class="ot">+'+numfr(S.ot[k])+'</td></tr>';
   }).join('');
-  return '<div class="login"><section class="login-brand"><div class="logo">'+LOGO+'<b>Gestion du personnel</b></div>'+
+  return '<div class="login"><section class="login-brand">'+sliderHTML('bg')+'<div class="logo">'+LOGO+'<b>Gestion du personnel</b></div>'+
     '<div><h1>Leader Engineering Services</h1><p style="margin-top:10px">Pointage, heures supplémentaires et paie journalière des équipes de chantier.</p></div>'+
     '<div class="bareme"><div class="lbl" style="color:inherit;opacity:.75;margin-bottom:4px">Barème, journée de '+esc(S.stdStart.replace(':','h'))+' à '+esc(S.stdEnd.replace(':','h'))+'</div><table><thead><tr><th>Poste</th><th>Journée</th><th>Heure sup.</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>'+
     '<section class="login-card"><button class="btn sm ghost" data-act="to-base" style="align-self:flex-start">&#8592; Retour</button><div><h2>Connexion</h2><p class="muted" style="margin:6px 0 0">Choisissez votre espace pour continuer.</p></div>'+
@@ -1063,6 +1076,18 @@ document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&ui.modal)
 
 var wasNarrow=window.innerWidth<600;
 window.addEventListener('resize',function(){var n=window.innerWidth<600; if(n!==wasNarrow){wasNarrow=n; if(ui.role==='admin'&&ui.tab==='dash') render()}});
+
+/* défilement auto des sliders d'images (toutes les 4 s) */
+setInterval(function(){
+  var sliders=document.querySelectorAll('.slider');
+  for(var k=0;k<sliders.length;k++){
+    var s=sliders[k].querySelectorAll('.slide'), cur=sliders[k].querySelector('.slide.on');
+    if(s.length<2) continue;
+    var i=cur?Array.prototype.indexOf.call(s,cur):-1;
+    if(cur) cur.classList.remove('on');
+    s[(i+1)%s.length].classList.add('on');
+  }
+},4000);
 render();
 setInterval(liveTick,1000);
 })();
