@@ -8,3 +8,8 @@ Thumbs.db
 
 # Serveur local
 *.log
+
+# Node / build EXE
+node_modules/
+dist/
+release/

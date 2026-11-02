@@ -1,0 +1,39 @@
+name: Build EXE (Windows)
+
+on:
+  push:
+    branches: [arena/957e1624-chimie, main]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installation des dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Compilation du .exe (NSIS, x64)
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: Upload de l'installeur .exe (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Leader-Engineering-Services-Setup-x64.exe
+          path: dist/*.exe
+          retention-days: 90
+
+      - name: Publication dans la Release GitHub (sur tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.exe

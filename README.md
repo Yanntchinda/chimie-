@@ -91,6 +91,17 @@ python3 -m http.server 8000
 - **Export États généraux** : fichier CSV (séparateur `;`, compatible Excel FR) nommé `etats-generaux-AAAA-MM.csv`.
 - **Sans backend** : pour plusieurs appareils ou sauvegarde collective, il faudrait ajouter un serveur ; l'application est conçue pour rester déployable statiquement (GitHub Pages, nginx, clé USB…).
 
+## 💻 Version bureau — .exe Windows compilé via GitHub
+
+L'application (100 % statique) est enpaquetée en **.exe Windows** automatiquement **par GitHub Actions** :
+
+- à chaque **push** sur la branche, le workflow `.github/workflows/build-exe.yml` compile l'installeur NSIS x64 et le publie en **artifact téléchargeable** (onglet **Actions** du dépôt → run → *Leader-Engineering-Services-Setup-x64.exe*) ;
+- sur un **tag** (`git tag v1.0.0 && git push origin v1.0.0`), le `.exe` est aussi joint à la **Release GitHub** automatiquement.
+
+En local : `npm ci` puis `npm run build:exe` (nécessite le téléchargement des binaires Electron).
+
+Technique : **Electron** (`main.js`) ouvre `index.html` dans une fenêtre 1280×860 avec l'icône du logo — `localStorage`, l'impression PDF (Ctrl+P → Enregistrer en PDF) et toutes les données restent **en local sur le poste**.
+
 ## Déploiement
 
 Le dépôt est prêt pour **GitHub Pages** : après activation (Settings → Pages → Deploy from branch),

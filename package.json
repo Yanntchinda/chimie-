@@ -1,0 +1,35 @@
+{
+  "name": "leader-engineering-services",
+  "version": "1.0.0",
+  "description": "Gestion du personnel et du pointage — Leader Engineering Services (Construction Générale)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:exe": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.leaderengineering.services",
+    "productName": "Leader Engineering Services",
+    "files": [
+      "index.html",
+      "main.js",
+      "assets/**",
+      "*.png"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Leader Engineering Services",
+      "installerSidebar": "assets/icon.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
