@@ -1,8 +1,8 @@
 # Leader Engineering Services — Gestion de chantier
 
-![Leader Engineering Services](assets/logo-leader-engineering.png)
+![Leader Engineering Services](Logo%20d%E2%80%99ing%C3%A9nierie%20et%20construction%20en%20bleu%20et%20jaune.png)
 
-> Logo bleu et jaune « Logo d’ingénierie et construction en bleu et jaune.png » déposé sur GitHub, détouré (fond transparent) et optimisé pour le web.
+> Logo officiel déposé sur le dépôt GitHub : `Logo d’ingénierie et construction en bleu et jaune.png` (fichier utilisé tel quel par l'application et comme favicon).
 
 Application web de **gestion du personnel et du pointage** pour une entreprise du BTP
 (Construction Générale). Elle couvre le pointage quotidien, les heures supplémentaires
@@ -76,9 +76,9 @@ python3 -m http.server 8000
 
 ```
 .
+├── Logo d’ingénierie et construction en bleu et jaune.png   # LOGO officiel du dépôt (utilisé partout + favicon)
 ├── index.html                        # application complète (HTML/CSS/JS unique)
 ├── assets/
-│   ├── logo-leader-engineering.png   # logo bleu/jaune de l'entreprise (dépôt GitHub, fond transparent) — aussi favicon
 │   └── chantier-btp.jpg              # photo de chantier (fond de la page de connexion)
 └── README.md
 ```
