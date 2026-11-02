@@ -41,6 +41,7 @@ jobs:
 
       - name: Publication du .exe dans la Release GitHub (fichier direct, pas de zip)
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
