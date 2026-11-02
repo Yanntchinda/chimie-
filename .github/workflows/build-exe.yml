@@ -4,12 +4,19 @@ on:
   push:
     branches: [arena/957e1624-chimie, main]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag de release où publier le .exe (laisser vide = artifact seul)'
+        required: false
+        default: ''
   release:
     types: [published]
 
 jobs:
   build-exe:
     runs-on: windows-latest
+    permissions:
+      contents: write   # nécessaire pour publier le .exe dans une Release
     steps:
       - name: Checkout du dépôt
         uses: actions/checkout@v4
@@ -32,8 +39,11 @@ jobs:
           path: dist/*.exe
           retention-days: 90
 
-      - name: Publication dans la Release GitHub (sur tag)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.exe
+      - name: Publication du .exe dans la Release GitHub (fichier direct, pas de zip)
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then TAG="${{ inputs.release_tag }}"; else TAG="${{ github.ref_name }}"; fi
+          echo "Publication dans la release $TAG"
+          gh release upload "$TAG" dist/*.exe --clobber --repo "$GITHUB_REPOSITORY"
