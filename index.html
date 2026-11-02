@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Leader Engineering Services</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/png" href="assets/logo-leader-engineering.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* ===== Leader Engineering Services — design moderne ===== */
@@ -97,22 +98,29 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9;
 .av.sm{width:36px; height:36px; font-size:13px; border-radius:11px}
 
 /* connexion */
-.login{min-height:100vh; display:grid; grid-template-columns:1.1fr 1fr; gap:0; max-width:1100px; margin:0 auto; align-items:stretch; padding-block:24px}
-.login-brand{background:var(--hero-bg); color:var(--hero-ink); border-radius:18px 0 0 18px; padding:40px; display:flex; flex-direction:column; gap:28px; min-width:0}
-.login-brand h1{font-size:clamp(32px,5vw,50px); line-height:1.03; text-transform:uppercase}
+.login{min-height:100vh; display:grid; grid-template-columns:1.1fr 1fr; gap:0; max-width:1100px; margin:0 auto; align-items:center; padding-block:24px}
+.login-brand{background:linear-gradient(165deg,rgba(9,13,26,.82) 0%,rgba(9,13,26,.45) 48%,rgba(9,13,26,.78) 100%),url('assets/chantier-btp.jpg') center/cover no-repeat #1E1B4B; color:var(--hero-ink); border-radius:18px 0 0 18px; padding:26px; display:flex; flex-direction:column; gap:16px; min-width:0; box-shadow:var(--shadow-lg)}
+.login-brand h1{font-size:clamp(24px,3.6vw,36px); line-height:1.05; text-transform:uppercase}
 .login-brand p{margin:0; opacity:.85; max-width:36ch}
 .logo{display:flex; align-items:center; gap:12px}
 .logo svg{width:40px; height:40px; flex:none}
+.logo img{height:72px; width:auto; max-width:340px; object-fit:contain; flex:none}
+/* logo lisible sur fonds sombres (bannière photo + thème sombre) */
+.login-brand .logo img{filter:brightness(1.3) saturate(1.05)}
+:root[data-theme="dark"] .logo img{filter:brightness(1.25) saturate(1.05)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo img{filter:brightness(1.25) saturate(1.05)}}
 .logo b{font:700 15px var(--f-display); letter-spacing:.1em; text-transform:uppercase}
-.bareme{border-top:1px solid rgba(255,255,255,.2); padding-top:18px}
-.bareme table{width:100%; border-collapse:collapse; font-size:14px}
-.bareme td,.bareme th{padding:7px 0; text-align:left; font-weight:600; border-bottom:1px solid rgba(255,255,255,.12)}
+.bareme{border-top:1px solid rgba(255,255,255,.2); padding-top:12px}
+.bareme table{width:100%; border-collapse:collapse; font-size:13.5px}
+.bareme td,.bareme th{padding:5px 0; text-align:left; font-weight:600; border-bottom:1px solid rgba(255,255,255,.12)}
 .bareme th{font-size:11px; letter-spacing:.1em; text-transform:uppercase; opacity:.7}
 .bareme td:not(:first-child),.bareme th:not(:first-child){text-align:right; font-family:var(--f-mono); font-size:13px}
 .bareme .ot{color:#FDE68A}
-.login-card{background:var(--surface); border:1px solid var(--line); border-left:0; border-radius:0 18px 18px 0; padding:40px; display:flex; flex-direction:column; gap:20px; justify-content:center; min-width:0; box-shadow:var(--shadow)}
-.login-card h2{font-size:30px}
+.login-card{background:var(--surface); border:1px solid var(--line); border-left:0; border-radius:0 18px 18px 0; padding:32px; display:flex; flex-direction:column; gap:18px; justify-content:center; min-width:0; box-shadow:var(--shadow)}
+.login-card h2{font-size:28px}
 .seg{display:grid; grid-template-columns:1fr 1fr; background:var(--surface2); border-radius:12px; padding:4px; gap:4px}
+.seg.one{grid-template-columns:1fr}
+.seg.one button{cursor:default}
 .seg button{border:0; background:transparent; padding:9px; border-radius:9px; font-weight:700; color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow)}
 .hint{font-size:13px; color:var(--muted); font-weight:500}
@@ -120,7 +128,8 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9;
 /* coque admin */
 .shell{display:grid; grid-template-columns:236px minmax(0,1fr); gap:22px; max-width:1380px; margin:0 auto; padding-block:16px}
 .side{position:sticky; top:16px; align-self:start; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px 12px; display:flex; flex-direction:column; gap:18px; height:calc(100vh - 32px); max-height:660px; box-shadow:var(--shadow)}
-.side .logo{padding:0 6px; color:var(--ink)}
+.side .logo{padding:0 6px; color:var(--ink); flex-direction:column; align-items:flex-start; gap:10px}
+.side .logo img{height:60px; max-width:100%}
 .side .logo b{font-size:13px; line-height:1.15; letter-spacing:.06em}
 .nav{display:flex; flex-direction:column; gap:3px}
 .nav button{display:flex; align-items:center; gap:10px; border:0; background:transparent; padding:10px 12px; border-radius:11px; font-weight:700; font-size:14px; color:var(--muted); text-align:left; transition:background .15s,color .15s}
@@ -133,7 +142,8 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9;
 .topbar .acts{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 .topbar .sub{margin:4px 0 0; color:var(--muted); font-weight:600}
 .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; min-width:0; box-shadow:var(--shadow)}
-.panel h2{font-size:20px; margin-bottom:12px}
+#printOnly{display:none}
+.panel h2{font-size:24px; margin-bottom:12px; color:var(--ink)}
 .panel-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:10px}
 .panel-head h2{margin:0}
 .grid2{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:18px}
@@ -150,8 +160,8 @@ svg.i{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9;
 
 /* tableaux */
 .tw{overflow-x:auto}
-table.t{width:100%; border-collapse:collapse; font-size:14px}
-table.t th{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:700}
+table.t{width:100%; border-collapse:collapse; font-size:15px}
+table.t th{font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-align:left; padding:10px; border-bottom:2px solid var(--line); white-space:nowrap; font-weight:800}
 table.t td{padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle}
 table.t tr:last-child td{border-bottom:0}
 table.t .r{text-align:right}
@@ -220,9 +230,9 @@ svg.chart{width:100%; height:auto; display:block}
 
 /* nav mobile */
 @media (max-width:900px){
-  .login{grid-template-columns:1fr; padding-block:12px}
-  .login-brand{border-radius:18px 18px 0 0; padding:26px; gap:18px}
-  .crane-wrap,.bareme{display:none}
+  .login{grid-template-columns:1fr; padding-block:12px; align-items:start}
+  .login-brand{border-radius:18px 18px 0 0; padding:20px; gap:12px; min-height:190px}
+  .bareme{display:none}
   .login-card{border-left:1px solid var(--line); border-top:0; border-radius:0 0 18px 18px; padding:26px}
   .shell{grid-template-columns:minmax(0,1fr); gap:12px}
   .side{position:fixed; left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom,0px)); top:auto; height:auto; max-height:none; z-index:40; border-radius:18px; border-width:1px; padding:6px; flex-direction:row; box-shadow:var(--shadow-lg)}
@@ -253,7 +263,6 @@ svg.chart{width:100%; height:auto; display:block}
 }
 @media (max-width:560px){
   .hide-s{display:none}
-  .crane-wrap{display:none}
   .form2{grid-template-columns:1fr}
   .clock{grid-template-columns:1fr}
   .bigtime{font-size:48px}
@@ -265,8 +274,6 @@ svg.chart{width:100%; height:auto; display:block}
 
 /* barème, grilles et compléments */
 .bp{background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px); background-size:32px 32px}
-.crane-wrap{flex:1; min-height:150px; display:flex; align-items:flex-end; justify-content:flex-end}
-.crane{width:min(300px,100%); height:auto; max-height:260px}
 .chips{display:flex; gap:8px; flex-wrap:wrap}
 .chipbtn{border:1px solid var(--line); background:var(--surface2); border-radius:99px; padding:5px 12px; font:600 13px var(--f-mono)}
 .chipbtn:hover{border-color:var(--brand); color:var(--brand)}
@@ -310,6 +317,8 @@ svg.chart{width:100%; height:auto; display:block}
   .side,.topbar .acts,.base-foot,.toast,.scrim,.banner .btn{display:none!important}
   .shell{display:block; max-width:none; padding:0}
   .main{gap:12px}
+  .screen-only{display:none!important}
+  #printOnly{display:block!important}
   .panel,.kpis{border:1px solid #ccc; box-shadow:none; break-inside:avoid}
   h1,h2{break-after:avoid}
   tr{break-inside:avoid}
@@ -386,7 +395,7 @@ var ICONS={
   stop:'<rect x="6" y="6" width="12" height="12" rx="1.5"/>'
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
-var LOGO='<svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="8" fill="#F5C451"/><path d="M9 9h22v5H9zM9 26h22v5H9zM17.5 14h5v12h-5z" fill="#143A5F"/></svg>';
+var LOGO='<img class="logo-img" src="assets/logo-leader-engineering.png" alt="Leader Engineering Services — Construction Générale">';
 
 /* ---------- Données ---------- */
 function seed(){
@@ -461,7 +470,7 @@ function dayAgg(date){
 
 /* ---------- État de l'interface ---------- */
 var todayISO=iso(new Date());
-var ui={view:'base',role:null,period:'30',empId:null,tab:'dash',loginTab:'admin',q:'',fposte:'',date:todayISO,month:todayISO.slice(0,7),modal:null,confirmDel:null,err:'',etatsMonth:todayISO.slice(0,7)};
+var ui={view:'base',role:null,period:'30',empId:null,tab:'dash',q:'',fposte:'',date:todayISO,month:todayISO.slice(0,7),modal:null,confirmDel:null,err:'',etatsMonth:todayISO.slice(0,7)};
 
 function toast(msg){
   var t=$('#toast'); t.textContent=msg; t.classList.add('on');
@@ -523,29 +532,18 @@ function renderBase(){
 }
 
 /* ---------- Connexion ---------- */
-var CRANE='<svg class="crane" viewBox="0 0 320 300" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
-  '<g stroke="#FFFFFF" stroke-opacity=".32" stroke-width="2"><path d="M24 300V222M72 300V222M120 300V222M168 300V242"/><path d="M14 300h164M14 262h164M14 222h124"/><path d="M24 262l48-40M72 262l48-40"/></g>'+
-  '<g stroke="#F5C451" stroke-width="2.4"><path d="M204 60v240M220 60v240"/><path d="M204 300l16-30-16-30 16-30-16-30 16-30-16-30 16-30-16-30"/>'+
-  '<path d="M200 44h24v16h-24zM212 12v32"/><path d="M212 12L36 62M212 12l62 50"/><path d="M36 62h238"/><rect x="262" y="62" width="26" height="24"/>'+
-  '<rect x="82" y="62" width="14" height="9"/><path d="M89 71v104"/><path d="M62 175h54M62 185h54M89 175v10"/></g>'+
-  '<path d="M0 300h320" stroke="#FFFFFF" stroke-opacity=".4" stroke-width="2"/></svg>';
 function renderLogin(){
   var S=DB.settings;
   var rows=PK.map(function(k){
     return '<tr><td>'+esc(POSTES[k].label)+'</td><td>'+numfr(S.rates[k])+'</td><td class="ot">+'+numfr(S.ot[k])+'</td></tr>';
   }).join('');
-  var admin=ui.loginTab==='admin';
-  var ex=DB.emps.filter(function(e){return e.actif}).slice(0,3).map(function(e){return '<button type="button" class="chipbtn" data-act="fill-id" data-v="'+esc(e.ident)+'">'+esc(e.ident)+'</button>'}).join('');
-  return '<div class="login"><section class="login-brand bp"><div class="logo">'+LOGO+'<b>Gestion du personnel</b></div>'+
-    '<div><h1>Leader Engineering Services</h1><p style="margin-top:12px">Pointage, heures supplémentaires et paie journalière des équipes de chantier.</p></div>'+
-    '<div class="crane-wrap">'+CRANE+'</div>'+
+  return '<div class="login"><section class="login-brand"><div class="logo">'+LOGO+'<b>Gestion du personnel</b></div>'+
+    '<div><h1>Leader Engineering Services</h1><p style="margin-top:10px">Pointage, heures supplémentaires et paie journalière des équipes de chantier.</p></div>'+
     '<div class="bareme"><div class="lbl" style="color:inherit;opacity:.75;margin-bottom:4px">Barème, journée de '+esc(S.stdStart.replace(':','h'))+' à '+esc(S.stdEnd.replace(':','h'))+'</div><table><thead><tr><th>Poste</th><th>Journée</th><th>Heure sup.</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>'+
     '<section class="login-card"><button class="btn sm ghost" data-act="to-base" style="align-self:flex-start">&#8592; Retour</button><div><h2>Connexion</h2><p class="muted" style="margin:6px 0 0">Choisissez votre espace pour continuer.</p></div>'+
-    '<div class="seg" role="group" aria-label="Type d\'accès"><button type="button" data-act="login-tab" data-v="admin" aria-pressed="'+admin+'">Administrateur</button><button type="button" data-act="login-tab" data-v="staff" aria-pressed="'+!admin+'">Personnel</button></div>'+
+    '<div class="seg one" role="group" aria-label="Type d\'accès"><button type="button" aria-pressed="true">Administrateur</button></div>'+
     '<form id="loginForm" class="stack" autocomplete="off">'+
-    (admin?
-      '<div class="field"><label for="lgCode">Code administrateur</label><input class="in" id="lgCode" type="password" autocomplete="off"><span class="hint">Code de démonstration : admin. Il se change dans les paramètres.</span></div>':
-      '<div class="field"><label for="lgId">Identifiant</label><input class="in mono" id="lgId" placeholder="LES-001" autocapitalize="characters"><span class="hint">'+(ex?'Identifiants d\'exemple :':'Aucun profil pour le moment. Connectez-vous en administrateur pour en créer.')+'</span>'+(ex?'<div class="chips">'+ex+'</div>':'')+'</div>')+
+    '<div class="field"><label for="lgCode">Code administrateur</label><input class="in" id="lgCode" type="password" autocomplete="off"><span class="hint">Code de démonstration : admin. Il se change dans les paramètres.</span></div>'+
     '<div class="err" id="lgErr" role="alert">'+esc(ui.err)+'</div>'+
     '<button class="btn pri xl" type="submit">Se connecter</button></form></section></div>';
 }
@@ -611,12 +609,25 @@ function renderDash(){
     return '<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td>'+
       '<td data-label="Poste">'+pillS(e.poste)+'</td><td class="mono" data-label="Début">'+(r?esc(r.start):'—')+'</td><td class="mono" data-label="Sortie">'+(r&&r.end?esc(r.end):'—')+'</td><td data-label="Statut">'+statusChip(e)+'</td></tr>';
   }).join('');
+  var stats=act.map(function(e){return {e:e,a:aggBy(e.id,pred)}}).sort(function(x,y){return y.a.days-x.a.days||y.a.base-x.a.base});
+  var totDays=0,totBase=0;
+  var statsRows=stats.map(function(x){
+    totDays+=x.a.days; totBase+=x.a.base;
+    return '<tr><td data-label=""><div class="who">'+avatar(x.e,'sm')+'<div><b>'+esc(x.e.prenom+' '+x.e.nom)+'</b><span class="mono muted">'+esc(x.e.ident)+'</span></div></div></td>'+
+      '<td data-label="Poste">'+pillS(x.e.poste)+'</td>'+
+      '<td data-label="Jours travaillés" class="r num"><b>'+x.a.days+'</b></td>'+
+      '<td data-label="Montant à verser" class="r num"><b>'+numfr(x.a.base)+' FCFA</b></td></tr>';
+  }).join('');
+  var statsPanel='<section class="panel"><div class="panel-head"><h2>Jours travaillés &amp; montant à verser par employé</h2><span class="muted">hors heures sup. · '+esc(plabel)+'</span></div>'+
+    (stats.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours travaillés</th><th class="r">Montant à verser (FCFA)</th></tr></thead><tbody>'+statsRows+'</tbody><tfoot><tr><td data-label="">Total — '+esc(plabel)+'</td><td data-label=""></td><td data-label="Jours" class="r num">'+totDays+'</td><td data-label="FCFA" class="r num">'+numfr(totBase)+' FCFA</td></tr></tfoot></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+
+    '<p class="muted" style="margin:10px 0 0;font-size:12.5px">Montant à verser = salaire de base uniquement — le coût des heures supplémentaires n\'est pas inclus.</p></section>';
+  var printSection='<section class="panel" id="printOnly"><div class="panel-head"><h2>État récapitulatif par employé</h2><span class="muted">'+esc(plabel)+' · Leader Engineering Services</span></div>'+recapTable(pred,plabel,false)+'</section>';
   var seg='<div class="seg sm" role="group" aria-label="Période"><button type="button" data-act="period" data-v="30" aria-pressed="'+(ui.period!=='month')+'">30 jours</button><button type="button" data-act="period" data-v="month" aria-pressed="'+(ui.period==='month')+'">Mois en cours</button></div>';
   var etatsBtn='<button class="btn" data-act="etats-open">'+ico('dl')+'<span class="hide-s">États généraux</span></button>';
   var printBtn='<button class="btn" data-act="print-dash">'+ico('print')+'<span class="hide-s">Imprimer</span></button>';
   return topbar('Tableau de bord',etatsBtn+printBtn+seg,longDate(todayISO))+
-    (DB.demo?'<div class="banner"><span>Les profils et pointages affichés sont des exemples pour tester le logiciel.</span><button class="btn sm" data-act="demo-clear">Supprimer les exemples</button></div>':'')+
-    '<section class="kpis" aria-label="Indicateurs">'+
+    (DB.demo?'<div class="banner screen-only"><span>Les profils et pointages affichés sont des exemples pour tester le logiciel.</span><button class="btn sm" data-act="demo-clear">Supprimer les exemples</button></div>':'')+
+    '<div class="screen-only"><section class="kpis" aria-label="Indicateurs">'+
       '<div class="kpi"><span class="lbl">Effectif actif</span><strong>'+act.length+'</strong><span>'+DB.emps.length+' profils enregistrés</span></div>'+
       '<div class="kpi"><span class="lbl">Présents aujourd\'hui</span><strong>'+present+'<small>/ '+act.length+'</small></strong><div class="bar" aria-hidden="true"><i style="width:'+pct+'%"></i></div><span>'+pct+' % de l\'effectif</span></div>'+
       '<div class="kpi hot"><span class="lbl">Heures sup.</span><strong>'+hrs(otH).replace(' h','')+'<small>h</small></strong><span>'+money(otP)+' de suppléments</span></div>'+
@@ -625,7 +636,7 @@ function renderDash(){
     '<div class="grid2"><section class="panel"><div class="panel-head"><h2>Coût journalier</h2><div class="legend"><span><i style="background:var(--brand)"></i>Base</span><span><i style="background:var(--amber)"></i>Heures sup.</span><span>en milliers de FCFA</span></div></div>'+chartSVG()+'</section>'+
     '<section class="panel"><h2>Par poste</h2><div class="tw"><table class="t"><thead><tr><th>Poste</th><th class="r">Effectif</th><th class="r">Jours</th><th class="r">FCFA</th></tr></thead><tbody>'+rows+'</tbody></table></div></section></div>'+
     '<div class="grid2 b"><section class="panel"><div class="panel-head"><h2>Heures sup. par employé</h2><span class="muted">'+esc(plabel)+'</span></div>'+rankHTML+'</section>'+
-    '<section class="panel"><h2>Pointages du jour</h2>'+(act.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th>Début</th><th>Sortie</th><th>Statut</th></tr></thead><tbody>'+todayRows+'</tbody></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+'</section></div>';
+    '<section class="panel"><h2>Pointages du jour</h2>'+(act.length?'<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th>Début</th><th>Sortie</th><th>Statut</th></tr></thead><tbody>'+todayRows+'</tbody></table></div>':'<div class="empty">Aucun profil actif. Créez le premier profil dans l\'onglet Personnel.</div>')+'</section></div>'+statsPanel+'</div>'+printSection;
 }
 
 /* ---------- Personnel ---------- */
@@ -760,20 +771,26 @@ function modalDetail(){
   return '<div class="scrim" data-act="scrim"><div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="card-top">'+avatar(e)+'<div><h2 id="mTitle">'+esc(e.prenom+' '+e.nom)+'</h2><span class="muted">'+esc(POSTES[e.poste].label)+' · '+esc(monthLabel(ui.month))+'</span></div></div>'+
     detailTable(e.id,ui.month)+'<div class="foot"><button class="btn pri" data-act="modal-close">Fermer</button></div></div></div>';
 }
-function etatsTable(month){
-  var rows='',T={days:0,h:0,otH:0,base:0,ot:0,total:0};
-  DB.emps.forEach(function(e){
-    var a=monthAgg(e.id,month); if(!a.days&&!e.actif) return;
-    var h=0; a.list.forEach(function(x){h+=x.c.worked});
-    T.days+=a.days;T.h+=h;T.otH+=a.otH;T.base+=a.base;T.ot+=a.ot;T.total+=a.total;
-    rows+='<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td><td data-label="Poste">'+pillS(e.poste)+'</td>'+
-      '<td class="r num" data-label="Jours">'+a.days+'</td><td class="r num" data-label="Heures">'+hrs(h)+'</td><td class="r num" data-label="Heures sup.">'+(a.otH?'<span class="ot-txt">'+hrs(a.otH)+'</span>':'—')+'</td>'+
-      '<td class="r num" data-label="Salaire normal">'+numfr(a.base)+'</td><td class="r num" data-label="Avec heures sup."><b>'+numfr(a.total)+'</b></td></tr>';
+function recapTable(pred,plabel,all){
+  var T={days:0,otH:0,base:0,ot:0,total:0},rows='';
+  var list=DB.emps.map(function(e){return {e:e,a:aggBy(e.id,pred)}})
+    .filter(function(x){return all?(x.a.days||x.e.actif):x.e.actif})
+    .sort(function(x,y){return y.a.days-x.a.days||y.a.total-x.a.total});
+  list.forEach(function(x){
+    var e=x.e,a=x.a; T.days+=a.days; T.otH+=a.otH; T.base+=a.base; T.ot+=a.ot; T.total+=a.total;
+    rows+='<tr><td data-label=""><div class="who">'+avatar(e,'sm')+'<div><b>'+esc(e.prenom+' '+e.nom)+'</b><span class="mono muted">'+esc(e.ident)+'</span></div></div></td>'+
+      '<td data-label="Poste">'+pillS(e.poste)+'</td>'+
+      '<td class="r num" data-label="Jours">'+a.days+'</td>'+
+      '<td class="r num" data-label="Heures sup.">'+(a.otH?'<span class="ot-txt">'+hrs(a.otH)+'</span>':'—')+'</td>'+
+      '<td class="r num" data-label="Base FCFA">'+numfr(a.base)+'</td>'+
+      '<td class="r num" data-label="Suppl. FCFA">'+numfr(a.ot)+'</td>'+
+      '<td class="r num" data-label="Total FCFA"><b>'+numfr(a.total)+'</b></td></tr>';
   });
-  return '<div class="tw"><table class="t rt"><thead><tr><th>Employé</th><th>Poste</th><th class="r">Jours</th><th class="r">Heures</th><th class="r">Heures sup.</th><th class="r">Salaire normal</th><th class="r">Avec heures sup.</th></tr></thead><tbody>'+
-    (rows||'<tr><td colspan="7" class="empty">Aucune journée pointée pour ce mois.</td></tr>')+'</tbody>'+
-    (T.days||T.h?'<tfoot><tr><td colspan="2" data-label="">Total</td><td class="r num" data-label="Jours">'+T.days+'</td><td class="r num" data-label="Heures">'+hrs(T.h)+'</td><td class="r num" data-label="Heures sup.">'+hrs(T.otH)+'</td><td class="r num" data-label="Salaire normal">'+numfr(T.base)+'</td><td class="r num" data-label="Avec heures sup.">'+numfr(T.total)+'</td></tr></tfoot>':'')+'</table></div>';
+  return '<div class="tw"><table class="t rt"><thead><tr><th>Nom</th><th>Poste</th><th class="r">Jours</th><th class="r">Heures sup.</th><th class="r">Base FCFA</th><th class="r">Suppl. FCFA</th><th class="r">Total FCFA</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="7" class="empty">Aucune journée pointée sur cette période.</td></tr>')+'</tbody>'+
+    '<tfoot><tr><td colspan="2" data-label="">Total — '+esc(plabel)+'</td><td class="r num" data-label="Jours">'+T.days+'</td><td class="r num" data-label="Heures sup.">'+hrs(T.otH)+'</td><td class="r num" data-label="Base FCFA">'+numfr(T.base)+'</td><td class="r num" data-label="Suppl. FCFA">'+numfr(T.ot)+'</td><td class="r num" data-label="Total FCFA"><b>'+numfr(T.total)+'</b></td></tr></tfoot></table></div>';
 }
+function etatsTable(month){return recapTable(function(d){return d.indexOf(month)===0},monthLabel(month),true)}
 function modalEtats(){
   return '<div class="scrim" data-act="scrim"><div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="mTitle"><h2 id="mTitle">États généraux</h2>'+
     '<div class="tools"><input class="in" id="etatsMonth" type="month" value="'+esc(ui.etatsMonth)+'" style="max-width:190px" aria-label="Mois"><span class="muted">'+esc(monthLabel(ui.etatsMonth))+'</span></div>'+
@@ -916,7 +933,6 @@ document.addEventListener('click',function(ev){
   var act=t.getAttribute('data-act'), id=t.getAttribute('data-id'), v=t.getAttribute('data-v');
   if(act==='scrim'){ if(ev.target!==t) return; act='modal-close' }
   switch(act){
-    case 'login-tab': ui.loginTab=v; ui.err=''; render(); break;
     case 'logout': ui.role=null; ui.empId=null; ui.err=''; ui.modal=null; ui.view='base'; render(); window.scrollTo(0,0); break;
     case 'to-base': ui.view='base'; ui.role=null; ui.err=''; ui.modal=null; render(); window.scrollTo(0,0); break;
     case 'to-login': ui.view='login'; ui.err=''; ui.modal=null; render(); window.scrollTo(0,0); break;
@@ -932,7 +948,6 @@ document.addEventListener('click',function(ev){
       break;
     case 'theme': toggleTheme(); break;
     case 'period': ui.period=v; render(); break;
-    case 'fill-id': var li=$('#lgId'); if(li){li.value=v; li.focus()} break;
     case 'nav': ui.tab=v; ui.confirmDel=null; render(); window.scrollTo(0,0); break;
     case 'emp-new': ui.modal={type:'emp',draft:{id:'',prenom:'',nom:'',ident:nextIdent(),poste:'macon',debut:DB.settings.stdStart,fin:DB.settings.stdEnd,photo:'',actif:true}}; renderModal(); break;
     case 'emp-edit': var e=DB.emps.find(function(x){return x.id===id}); if(e){ui.modal={type:'emp',draft:Object.assign({},e)};renderModal()} break;
@@ -985,15 +1000,8 @@ document.addEventListener('click',function(ev){
 document.addEventListener('submit',function(ev){
   if(ev.target.id!=='loginForm') return;
   ev.preventDefault();
-  if(ui.loginTab==='admin'){
-    if($('#lgCode').value===DB.settings.adminCode){ui.role='admin';ui.view='app';ui.tab='dash';ui.err='';render()}
-    else{ui.err='Code incorrect.';$('#lgErr').textContent=ui.err}
-  }else{
-    var id=$('#lgId').value.trim().toUpperCase();
-    var e=DB.emps.find(function(x){return x.ident.toUpperCase()===id&&x.actif});
-    if(e){ui.role='staff';ui.view='app';ui.empId=e.id;ui.err='';render()}
-    else{ui.err='Identifiant inconnu ou profil désactivé.';$('#lgErr').textContent=ui.err}
-  }
+  if($('#lgCode').value===DB.settings.adminCode){ui.role='admin';ui.view='app';ui.tab='dash';ui.err='';render()}
+  else{ui.err='Code incorrect.';$('#lgErr').textContent=ui.err}
 });
 
 document.addEventListener('input',function(ev){
