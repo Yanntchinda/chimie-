@@ -90,8 +90,9 @@ python3 -m http.server 8000
 ├── index.html                        # application complète (HTML/CSS/JS unique)
 ├── assets/
 │   ├── chantier-btp.jpg              # photos du slider (uniquement bâtiments en construction) :
-│   ├── chantier-2.jpg                #   - grues en silhouette au coucher de soleil
-│   ├── chantier-3.jpg                #   - immeubles + grue, ciel bleu / grue sur béton-brique
+│   ├── chantier-2.jpg                #   - immeuble de grande hauteur + grue à tour, ciel bleu
+│   ├── chantier-3.jpg                #   - 2 grues sur bâtiment béton inachevé / façade béton + grue
+│   │                                 # slider « Pointage du jour » : 250 px de haut (190 px mobile)
 │   ├── icon.png / icon-256.png       # icônes .exe / web (depuis le logo)
 └── README.md
 ```
