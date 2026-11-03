@@ -31,7 +31,7 @@ l'entreprise** (`assets/logo-leader-engineering.png`, fond transparent) affiché
 clair/sombre, responsive mobile (tableau empilé, navigation en barre basse).
 
 **Slider d'images de chantier** (défilement auto toutes les 4 s) : en fond de la page de
-connexion (`assets/slider-1..3.jpg`) — uniquement des bâtiments en construction et dans le panneau **« Pointage du jour »**
+connexion (`assets/chantier-a..c.jpg`) — uniquement des bâtiments en construction et dans le panneau **« Pointage du jour »**
 de la page d'accueil.
 
 ### 2. Espace administrateur (protégé)
@@ -89,9 +89,10 @@ python3 -m http.server 8000
 ├── Logo d’ingénierie et construction en bleu et jaune.png   # LOGO officiel du dépôt (utilisé partout + favicon)
 ├── index.html                        # application complète (HTML/CSS/JS unique)
 ├── assets/
-│   ├── slider-1.jpg                  # photos PRO du slider (uniquement bâtiments en construction) :
-│   ├── slider-2.jpg                  #   - grue jaune/rouge sur bloc béton, ciel bleu vif (Pexels)
-│   ├── slider-3.jpg                  #   - immeuble courbé + grue / 3 grues jaunes, contre-jour
+│   ├── chantier-a.jpg                # photos PRO du slider (uniquement bâtiments en construction) :
+│   ├── chantier-b.jpg                #   - vaste chantier + grues chenilles, ciel bleu vif (Pexels 13832413)
+│   ├── chantier-c.jpg                #   - chantier + grues au coucher de soleil (Pexels 1402923)
+│                                     #   - grue jaune + poteaux béton en construction (Pexels 3660282)
 │   │                                 # slider « Pointage du jour » : 250 px de haut (190 px mobile)
 │   ├── icon.png / icon-256.png       # icônes .exe / web (depuis le logo)
 └── README.md

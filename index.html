@@ -314,18 +314,24 @@ svg.chart{width:100%; height:auto; display:block}
 
 /* impression */
 @media print{
+  @page{margin:10mm}
+  html,body{min-height:0!important; height:auto!important}
   body{background:#fff; padding:0}
-  .side,.topbar .acts,.base-foot,.toast,.scrim,.banner .btn{display:none!important}
+  /* tout cacher sauf le contenu imprimable -> le texte commence en haut de la page 1 */
+  .side,.topbar,.base-foot,.toast,.scrim,.banner,.screen-only{display:none!important}
   .shell{display:block; max-width:none; padding:0}
-  .main{gap:12px}
-  .screen-only{display:none!important}
-  #printOnly{display:block!important}
-  .panel,.kpis{border:1px solid #ccc; box-shadow:none; break-inside:avoid}
+  .main{display:block!important; padding:0!important; gap:0!important}
+  #printOnly{display:block!important; margin:0!important}
+  #printOnly.panel{border:0; box-shadow:none; padding:0; break-inside:auto}
+  #printOnly .panel-head{margin-bottom:10px}
+  .tw{overflow:visible!important}
+  .panel,.kpis{border:1px solid #ccc; box-shadow:none}
   h1,h2{break-after:avoid}
   tr{break-inside:avoid}
+  /* impression depuis la modale "Etats generaux" : contenu des la page 1 */
   body.printing-modal .shell{display:none!important}
-  body.printing-modal .scrim{display:block!important; position:static; background:none; backdrop-filter:none; padding:0; overflow:visible}
-  body.printing-modal .modal{width:100%; max-height:none; box-shadow:none; border:0; padding:0; overflow:visible; border-radius:0}
+  body.printing-modal .scrim{display:block!important; position:static!important; place-items:start; min-height:0!important; background:none; backdrop-filter:none; padding:0; overflow:visible}
+  body.printing-modal .modal{display:block; width:100%; max-height:none; box-shadow:none; border:0; padding:0; overflow:visible; border-radius:0; gap:0}
   body.printing-modal .modal .foot,body.printing-modal .modal .tools .in{display:none!important}
 }
 /* ===== Polish pro ===== */
@@ -431,7 +437,7 @@ var ICONS={
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var LOGO='<img class="logo-img" src="Logo%20d%E2%80%99ing%C3%A9nierie%20et%20construction%20en%20bleu%20et%20jaune.png" alt="Leader Engineering Services — Construction Générale">';
-var CHANTIER=['assets/slider-1.jpg','assets/slider-2.jpg','assets/slider-3.jpg']; /* uniquement des bâtiments en construction — noms versionnés pour éviter le cache navigateur */
+var CHANTIER=['assets/chantier-a.jpg','assets/chantier-b.jpg','assets/chantier-c.jpg']; /* uniquement des bâtiments en construction — noms versionnés pour éviter le cache navigateur */
 function sliderHTML(cls){return '<div class="slider '+(cls||'')+'" aria-hidden="true">'+CHANTIER.map(function(src,i){return '<img class="slide'+(i===0?' on':'')+'" src="'+src+'" alt="" loading="lazy">'}).join('')+'</div>'}
 
 /* ---------- Données ---------- */
