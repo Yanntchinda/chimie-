@@ -302,7 +302,7 @@ svg.chart{width:100%; height:auto; display:block}
 .day-ticks span{position:absolute; transform:translateX(-50%); white-space:nowrap}
 
 /* vue base : tableau du personnel */
-.base{max-width:none; margin:0 auto; padding-block:20px 40px; display:flex; flex-direction:column; gap:16px; min-height:100vh}
+.base{max-width:none; margin:0 auto; padding-inline:0; padding-block:20px 40px; display:flex; flex-direction:column; gap:16px; min-height:100vh}
 .base-head{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
 .base-head .logo{color:var(--ink)}
 .base-hint{font-weight:600}
@@ -361,12 +361,13 @@ table.t tfoot td{border-top:2px solid var(--line);font-weight:800}
 .slider{position:relative;overflow:hidden;border-radius:var(--r);background:var(--surface2)}
 .slider .slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.1s ease}
 .slider .slide.on{opacity:1}
-.slider.banner{height:400px;margin:0 0 14px}
+.slider.banner{height:520px;margin:0 0 14px;background:linear-gradient(135deg,#0b1220,#1c2b45)}
+.slider.banner .slide{object-fit:contain}
 .slider.bg{position:absolute;inset:0;border-radius:0;z-index:0}
 .login-brand{position:relative;overflow:hidden}
 .login-brand::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(165deg,rgba(9,13,26,.82) 0%,rgba(9,13,26,.45) 48%,rgba(9,13,26,.78) 100%)}
 .login-brand>*:not(.slider){position:relative;z-index:2}
-@media (max-width:900px){.slider.banner{height:260px}}
+@media (max-width:900px){.slider.banner{height:320px}}
 @media print{.slider{display:none!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
