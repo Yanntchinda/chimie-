@@ -437,7 +437,7 @@ var ICONS={
 };
 function ico(n){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'}
 var LOGO='<img class="logo-img" src="Logo%20d%E2%80%99ing%C3%A9nierie%20et%20construction%20en%20bleu%20et%20jaune.png" alt="Leader Engineering Services — Construction Générale">';
-var CHANTIER=['assets/gc-pont.jpg','assets/gc-barrage.jpg','assets/gc-tunnels.jpg']; /* génie civil uniquement (pont, barrage, tunnels) — noms versionnés pour éviter le cache navigateur */
+var CHANTIER=['assets/gc-pont.jpg','assets/gc-barrage.jpg','assets/gc-tunnels.jpg','assets/gc-viaduc.jpg','assets/gc-route.jpg','assets/gc-port.jpg']; /* génie civil uniquement (pont, barrage, tunnels, viaduc, route, port) — noms versionnés pour éviter le cache navigateur */
 function sliderHTML(cls){return '<div class="slider '+(cls||'')+'" aria-hidden="true">'+CHANTIER.map(function(src,i){return '<img class="slide'+(i===0?' on':'')+'" src="'+src+'" alt="" loading="lazy">'}).join('')+'</div>'}
 
 /* ---------- Données ---------- */
