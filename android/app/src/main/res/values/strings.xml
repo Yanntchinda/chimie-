@@ -11,6 +11,9 @@
     <string name="setup_post_title">Affichage des notifications</string>
     <string name="setup_post_button">Autoriser l\'affichage</string>
 
+    <string name="setup_island_title">Îlot par-dessus les applications</string>
+    <string name="setup_island_button">Autoriser l\'affichage par-dessus</string>
+
     <string name="setup_replace_title">Remplacer les notifications d\'origine</string>
     <string name="setup_replace_body">Une seule notification reste affichée pour chaque message : celle du centre. Si cette option est désactivée, le message apparaît deux fois, avec le style d\'origine et avec celui du centre.</string>
     <string name="setup_replace_switch">Remplacer les notifications d\'origine</string>

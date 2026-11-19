@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Button;
@@ -24,6 +25,8 @@ public class MainActivity extends Activity {
 
     private TextView accessState;
     private TextView postState;
+    private TextView islandState;
+    private TextView receiveState;
     private Switch replaceSwitch;
 
     @Override
@@ -33,12 +36,16 @@ public class MainActivity extends Activity {
 
         accessState = findViewById(R.id.accessState);
         postState = findViewById(R.id.postState);
+        islandState = findViewById(R.id.islandState);
+        receiveState = findViewById(R.id.receiveState);
         replaceSwitch = findViewById(R.id.replaceSwitch);
         Button accessButton = findViewById(R.id.accessButton);
         Button postButton = findViewById(R.id.postButton);
+        Button islandButton = findViewById(R.id.islandButton);
 
         accessButton.setOnClickListener(view -> openListenerSettings());
         postButton.setOnClickListener(view -> requestPosting());
+        islandButton.setOnClickListener(view -> openOverlaySettings());
         replaceSwitch.setOnCheckedChangeListener((button, checked) ->
                 CenterPrefs.setReplaceOriginals(this, checked));
 
@@ -68,7 +75,32 @@ public class MainActivity extends Activity {
                 ? "Autorisé. Les cartes du centre peuvent s'afficher."
                 : "Refusé. Android bloque les notifications de cette application.");
 
+        boolean island = IslandOverlay.allowed(this);
+        islandState.setText(island
+                ? "Accordé. Une pastille descend du haut de l'écran à chaque message, par-dessus l'application en cours."
+                : "Non accordé. Sans cet accès, les cartes restent dans les notifications, sans îlot par-dessus les applications.");
+
+        int count = CenterPrefs.receivedCount(this);
+        long last = CenterPrefs.receivedLast(this);
+        if (count == 0) {
+            receiveState.setText("Aucun message reçu pour l'instant. Si l'accès est accordé et que rien n'arrive, "
+                    + "désactiver l'optimisation de la batterie pour cette application.");
+        } else {
+            receiveState.setText(count + " message" + (count > 1 ? "s" : "") + " reçu" + (count > 1 ? "s" : "")
+                    + ", le dernier à " + android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(last)) + ".");
+        }
+
         replaceSwitch.setChecked(CenterPrefs.replaceOriginals(this));
+    }
+
+    private void openOverlaySettings() {
+        try {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        } catch (Exception ignored) {
+            // Rien à ouvrir sur cet appareil.
+        }
     }
 
     private boolean isAccessGranted() {

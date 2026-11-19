@@ -58,6 +58,10 @@ jobs:
               echo "Affichage des notifications non déclaré dans $f" >&2
               exit 1
             fi
+            if ! echo "$PERMS" | grep -q "android.permission.SYSTEM_ALERT_WINDOW"; then
+              echo "Superposition non déclarée dans $f" >&2
+              exit 1
+            fi
             if ! "$AAPT2" dump badging "$f" | grep -q "launchable-activity: name='com.yanntchinda.centrenotifications.MainActivity'"; then
               echo "Activité de lancement absente de $f" >&2
               exit 1

@@ -128,7 +128,7 @@ final class StyledNotifier {
         return null;
     }
 
-    private static int dotFor(String pkg) {
+    static int dotFor(String pkg) {
         String name = pkg == null ? "" : pkg.toLowerCase();
         if (name.contains("whatsapp") || name.contains("messaging") || name.contains("mms")) {
             return R.drawable.dot_green;
