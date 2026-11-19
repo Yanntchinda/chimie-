@@ -35,6 +35,39 @@ c'est le volet de notifications du téléphone qui devient le centre.
 À partir de là, chaque message reçu — WhatsApp, Messages, Telegram, Gmail, autre —
 apparaît sous forme de carte sombre dans les notifications du téléphone.
 
+## Si Android affiche « paramètre restreint »
+
+Depuis Android 13, un système protège les accès sensibles : une application
+installée hors Play Store ne peut pas activer l'accès aux notifications tant que
+vous ne l'avez pas autorisée explicitement. Le commutateur apparaît grisé, avec le
+message « Paramètre restreint — pour votre sécurité, ce paramètre est actuellement
+indisponible ».
+
+La marche à suivre, une seule fois :
+
+1. **Paramètres** → **Applications** → **Voir toutes les applications** →
+   **Centre de notifications**.
+2. En haut à droite de cet écran, les **trois points ⋮** → **Autoriser les
+   paramètres restreints**.
+3. Confirmer avec l'empreinte ou le code de déverrouillage.
+4. Revenir à l'écran de l'application, puis **Autoriser l'accès aux notifications** :
+   le commutateur **Centre de notifications** est maintenant actif.
+
+Si les trois points n'apparaissent pas :
+
+- vérifier que l'on est bien sur la fiche de l'application (nom, version, stockage),
+  et non sur son écran de notifications ;
+- Samsung : Applications → Centre de notifications → ⋮ → Autoriser les paramètres
+  restreints ;
+- Xiaomi / Redmi : Applications → Gérer les applications → Centre de notifications →
+  ⋮ → Autoriser les paramètres restreints ;
+- certains appareils n'affichent cette entrée qu'après avoir touché une première fois
+  le commutateur grisé (le message peut proposer **Paramètres**, qui ouvre la fiche).
+
+Dernier recours, avec un ordinateur et le câble USB : installer l'APK par ADB
+(`adb install -r app-release.apk`). Une installation par ADB n'est pas marquée comme
+« source inconnue » et échappe à cette restriction.
+
 ## Utiliser
 
 - **Répondre** depuis la notification (bouton de réponse, ou réponse directe
