@@ -118,17 +118,22 @@ jobs:
           cat SHA256SUMS.txt
           cd "$GITHUB_WORKSPACE"
           {
-            echo "Application Android du centre de notifications."
+            echo "Application Android du centre de notifications : les messages reçus sont réécrits dans le style du centre, dans le volet du téléphone, avec l'îlot par-dessus les applications."
             echo
-            echo "Installation : télécharger \`app-release.apk\` sur le téléphone, l'ouvrir, autoriser l'installation depuis cette source."
+            echo "Installation : télécharger \`app-release.apk\`, l'ouvrir, autoriser l'installation depuis cette source."
             echo
-            echo "Après l'installation : bouton **+** → **Autoriser l'accès aux notifications**, puis activer **Centre de notifications** dans la liste Android. Sans cet accès, le centre reste vide."
+            echo "Après l'installation, une seule fois, dans l'application :"
+            echo "1. **Autoriser l'accès aux notifications** → activer **Centre de notifications** (si Android affiche « paramètre restreint » : Paramètres → Applications → Centre de notifications → ⋮ → Autoriser les paramètres restreints)."
+            echo "2. **Autoriser l'affichage** → accepter la permission de notifications."
+            echo "3. **Autoriser l'affichage par-dessus** → pour l'îlot."
             echo
-            echo "L'application ne déclare ni \`INTERNET\` ni \`POST_NOTIFICATIONS\` : elle lit les notifications du téléphone et ne peut rien envoyer au réseau."
+            echo "Le bloc **Diagnostic** indique combien de messages sont lus et combien de cartes sont publiées."
             echo
-            echo '```'
+            echo "Aucune permission réseau : rien ne peut sortir de l'appareil."
+            echo
+            echo '\`\`\`'
             cat /tmp/verification.txt
-            echo '```'
+            echo '\`\`\`'
           } > /tmp/notes.md
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Centre de notifications $GITHUB_REF_NAME" --notes-file /tmp/notes.md
           gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/notes.md
