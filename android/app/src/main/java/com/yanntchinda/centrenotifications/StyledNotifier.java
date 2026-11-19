@@ -53,7 +53,7 @@ final class StyledNotifier {
      * Affiche la carte du centre pour une notification d'origine.
      * Renvoie false si rien n'a pu être affiché : l'originale ne doit alors pas être retirée.
      */
-    static String post(Context context, StatusBarNotification sbn, String sender, String message) {
+    static String post(Context context, StatusBarNotification sbn, String sender, String message, String appLabel) {
         if (sbn == null || message == null || message.isEmpty()) return "vide";
         if (!canPost(context)) return "affichage-refuse";
 
@@ -73,6 +73,9 @@ final class StyledNotifier {
         card.setTextViewText(R.id.cardTime,
                 DateFormat.getTimeFormat(context).format(new Date(when)));
         card.setImageViewResource(R.id.cardDot, dotFor(sbn.getPackageName()));
+        if (appLabel != null && !appLabel.isEmpty()) {
+            card.setTextViewText(R.id.cardSource, appLabel);
+        }
 
         Intent clear = new Intent(context, ActionReceiver.class)
                 .setAction(ActionReceiver.ACTION_CLEAR)
@@ -97,6 +100,8 @@ final class StyledNotifier {
                 .setColor(0xFF1B1E2B)
                 .addAction(new Notification.Action.Builder(
                         null, context.getString(R.string.notif_action_clear), clearIntent).build());
+
+        if (appLabel != null && !appLabel.isEmpty()) builder.setSubText(appLabel);
 
         if (original != null) {
             if (original.category != null) builder.setCategory(original.category);
@@ -127,6 +132,7 @@ final class StyledNotifier {
         card.setTextViewText(R.id.cardMessage, "Si vous voyez cette carte dans vos notifications, le centre affiche correctement.");
         card.setTextViewText(R.id.cardTime, DateFormat.getTimeFormat(context).format(new Date(now)));
         card.setImageViewResource(R.id.cardDot, R.drawable.dot_blue);
+        card.setTextViewText(R.id.cardSource, "Centre de notifications · carte de démonstration");
 
         Intent clear = new Intent(context, ActionReceiver.class)
                 .setAction(ActionReceiver.ACTION_CLEAR)

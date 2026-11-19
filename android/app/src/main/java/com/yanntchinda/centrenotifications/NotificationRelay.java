@@ -39,6 +39,7 @@ public class NotificationRelay extends NotificationListenerService {
     public void onListenerConnected() {
         super.onListenerConnected();
         rememberInstance();
+        CenterPrefs.noteConnected(getApplicationContext());
         StatusBarNotification[] active = null;
         try {
             active = getActiveNotifications();
@@ -81,7 +82,8 @@ public class NotificationRelay extends NotificationListenerService {
             if (message.isEmpty()) message = textOf(extras.getCharSequence(Notification.EXTRA_TEXT));
             if (message.isEmpty()) message = textOf(extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT));
             if (message.isEmpty()) return;
-            if (sender.isEmpty()) sender = labelOf(sbn.getPackageName());
+            String appLabel = labelOf(sbn.getPackageName());
+            if (sender.isEmpty()) sender = appLabel;
 
             String key = sbn.getKey();
             if (key == null) return;
@@ -90,7 +92,7 @@ public class NotificationRelay extends NotificationListenerService {
             LAST_TEXT.put(key, message);
 
             CenterPrefs.noteReceived(getApplicationContext());
-            String status = StyledNotifier.post(getApplicationContext(), sbn, sender, message);
+            String status = StyledNotifier.post(getApplicationContext(), sbn, sender, message, appLabel);
             CenterPrefs.notePosted(getApplicationContext(), status);
             if ("ok".equals(status)) {
                 IslandOverlay.show(getApplicationContext(), sender, message,

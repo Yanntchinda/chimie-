@@ -110,7 +110,12 @@ public class MainActivity extends Activity {
         } else {
             meaning = "la dernière tentative a échoué (" + status + ").";
         }
-        diagnosticState.setText("Messages lus : " + read + " · cartes publiées : " + posted + "\n" + meaning);
+        long connected = CenterPrefs.connectedAt(this);
+        String service = connected == 0
+                ? "service jamais connecté"
+                : "service connecté à " + android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(connected));
+        diagnosticState.setText("Messages lus : " + read + " · cartes publiées : " + posted
+                + "\n" + service + "\n" + meaning);
 
         int count = CenterPrefs.receivedCount(this);
         long last = CenterPrefs.receivedLast(this);

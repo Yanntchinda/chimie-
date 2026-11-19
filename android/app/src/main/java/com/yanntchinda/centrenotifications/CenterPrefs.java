@@ -12,6 +12,7 @@ final class CenterPrefs {
     private static final String KEY_LAST = "received-last";
     private static final String KEY_POSTED = "posted-count";
     private static final String KEY_STATUS = "last-status";
+    private static final String KEY_CONNECTED = "listener-connected";
 
     private CenterPrefs() {
     }
@@ -57,6 +58,14 @@ final class CenterPrefs {
 
     static int postedCount(Context context) {
         return prefs(context).getInt(KEY_POSTED, 0);
+    }
+
+    static void noteConnected(Context context) {
+        prefs(context).edit().putLong(KEY_CONNECTED, System.currentTimeMillis()).apply();
+    }
+
+    static long connectedAt(Context context) {
+        return prefs(context).getLong(KEY_CONNECTED, 0L);
     }
 
     static String lastStatus(Context context) {
