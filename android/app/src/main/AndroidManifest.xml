@@ -5,7 +5,11 @@
       Aucune permission reseau : l'application ne peut rien recevoir d'Internet.
       Les notifications affichees viennent du telephone lui-meme, par le service
       d'ecoute ci-dessous, et restent sur l'appareil.
+
+      POST_NOTIFICATIONS ne sert qu'a reafficher ces memes messages dans le volet
+      du telephone, dans le style du centre.
     -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Permet de retrouver le nom des applications qui emettent les notifications -->
     <queries>
@@ -33,6 +37,10 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name=".ActionReceiver"
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

@@ -1,174 +1,106 @@
 package com.yanntchinda.centrenotifications;
 
-import android.annotation.SuppressLint;
+import android.Manifest;
 import android.app.Activity;
-import android.graphics.Color;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.DisplayCutout;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
-
-import org.json.JSONObject;
+import android.provider.Settings;
+import android.widget.Button;
+import android.widget.Switch;
+import android.widget.TextView;
 
 /**
- * Enveloppe native du centre de notifications.
+ * Écran de réglage, ouvert seulement quand on le demande.
  *
- * La page est chargee depuis les assets, sans acces reseau. Les notifications
- * reelles du telephone arrivent par le service d'ecoute (NotificationRelay) et
- * sont poussees dans la page, qui reste le seul endroit ou elles sont affichees.
+ * Le centre lui-même n'a pas d'écran : une fois l'accès accordé, les messages
+ * apparaissent directement dans les notifications du téléphone, dans le style du
+ * centre. Cet écran sert à accorder cet accès et à vérifier son état.
  */
-public class MainActivity extends Activity implements CenterBridge.Sink {
+public class MainActivity extends Activity {
 
-    private static final String PAGE = "file:///android_asset/index.html?app=1";
+    private static final int POST_NOTIFICATIONS_REQUEST = 1;
 
-    private WebView webView;
-    private CenterBridge bridge;
+    private TextView accessState;
+    private TextView postState;
+    private Switch replaceSwitch;
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_setup);
 
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(Color.BLACK);
-        applyImmersiveMode();
+        accessState = findViewById(R.id.accessState);
+        postState = findViewById(R.id.postState);
+        replaceSwitch = findViewById(R.id.replaceSwitch);
+        Button accessButton = findViewById(R.id.accessButton);
+        Button postButton = findViewById(R.id.postButton);
 
-        webView = new WebView(this);
-        webView.setBackgroundColor(Color.BLACK);
-        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        webView.setVerticalScrollBarEnabled(false);
-        webView.setHorizontalScrollBarEnabled(false);
+        accessButton.setOnClickListener(view -> openListenerSettings());
+        postButton.setOnClickListener(view -> requestPosting());
+        replaceSwitch.setOnCheckedChangeListener((button, checked) ->
+                CenterPrefs.setReplaceOriginals(this, checked));
 
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setAllowContentAccess(false);
-        settings.setBlockNetworkLoads(true);
-        settings.setSupportZoom(false);
-        settings.setBuiltInZoomControls(false);
-        settings.setDisplayZoomControls(false);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setTextZoom(100);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
-        webView.setWebViewClient(new WebViewClient());
-
-        bridge = new CenterBridge(this);
-        bridge.setSink(this);
-        webView.addJavascriptInterface(bridge, "Centre");
-
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.BLACK);
-        root.addView(webView, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-
-        // L'encoche ne doit pas recouvrir le haut de l'ecran : on decale la page
-        // de la hauteur utile de la decoupe, et de rien du tout ailleurs.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            root.setOnApplyWindowInsetsListener((view, insets) -> {
-                DisplayCutout cutout = insets.getDisplayCutout();
-                int top = cutout != null ? cutout.getSafeInsetTop() : 0;
-                if (view.getPaddingTop() != top) {
-                    view.setPadding(0, top, 0, 0);
-                }
-                return insets;
-            });
-        }
-
-        setContentView(root);
-        webView.loadUrl(PAGE);
-    }
-
-    /** Livraison d'une notification reelle dans la page. */
-    @Override
-    public void deliver(String jsonArray) {
-        final WebView view = webView;
-        if (view == null || jsonArray == null) return;
-        final String script = "window.__centreRecoit&&window.__centreRecoit(" + JSONObject.quote(jsonArray) + ");";
-        view.post(() -> {
-            if (webView != null) webView.evaluateJavascript(script, null);
-        });
-    }
-
-    private void applyImmersiveMode() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) applyImmersiveMode();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (bridge != null) bridge.setSink(null);
-        if (webView != null) webView.onPause();
+        StyledNotifier.ensureChannel(getApplicationContext());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (bridge != null) bridge.setSink(this);
-        if (webView != null) {
-            webView.onResume();
-            // Rattrape les notifications arrivees pendant l'absence.
-            webView.post(() -> {
-                if (webView != null) {
-                    webView.evaluateJavascript("window.__centreRelance&&window.__centreRelance();", null);
-                }
-            });
+        refresh();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        refresh();
+    }
+
+    private void refresh() {
+        boolean access = isAccessGranted();
+        accessState.setText(access
+                ? "Accordé. Chaque notification reçue s'affiche dans le style du centre."
+                : "Non accordé. Sans cet accès, le centre ne reçoit rien et aucune notification n'est réécrite.");
+
+        boolean posting = StyledNotifier.canPost(this);
+        postState.setText(posting
+                ? "Autorisé. Les cartes du centre peuvent s'afficher."
+                : "Refusé. Android bloque les notifications de cette application.");
+
+        replaceSwitch.setChecked(CenterPrefs.replaceOriginals(this));
+    }
+
+    private boolean isAccessGranted() {
+        try {
+            String enabled = Settings.Secure.getString(getContentResolver(),
+                    "enabled_notification_listeners");
+            return enabled != null && enabled.contains(getPackageName());
+        } catch (Exception err) {
+            return false;
         }
     }
 
-    /** Le bouton retour ferme d'abord le volet ouvert, puis quitte l'application. */
-    @Override
-    public void onBackPressed() {
-        if (webView == null) {
-            super.onBackPressed();
+    private void openListenerSettings() {
+        try {
+            startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+        } catch (Exception ignored) {
+            // Certains appareils n'exposent pas cet écran.
+        }
+    }
+
+    private void requestPosting() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, POST_NOTIFICATIONS_REQUEST);
             return;
         }
-        webView.evaluateJavascript(
-                "(function(){var b=document.body;"
-                        + "if(b&&b.classList.contains('sheet-open')){"
-                        + "var a=document.getElementById('sheetBackdrop');"
-                        + "if(a){a.click();}return 'ferme';}return 'libre';})()",
-                value -> {
-                    if (value == null || !value.contains("ferme")) {
-                        if (webView != null && webView.canGoBack()) {
-                            webView.goBack();
-                        } else {
-                            finish();
-                        }
-                    }
-                });
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (bridge != null) {
-            bridge.setSink(null);
-            bridge = null;
+        try {
+            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            startActivity(intent);
+        } catch (Exception ignored) {
+            // Rien à ouvrir : l'état reste affiché à l'écran.
         }
-        if (webView != null) {
-            webView.destroy();
-            webView = null;
-        }
-        super.onDestroy();
     }
 }

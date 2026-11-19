@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Centre de notifications</string>
+
+    <string name="setup_intro">Les notifications de votre téléphone s\'affichent avec le style du centre. Aucun écran à ouvrir : tout se passe dans vos notifications.</string>
+    <string name="setup_unknown">État inconnu.</string>
+
+    <string name="setup_access_title">Accès aux notifications</string>
+    <string name="setup_access_button">Autoriser l\'accès aux notifications</string>
+
+    <string name="setup_post_title">Affichage des notifications</string>
+    <string name="setup_post_button">Autoriser l\'affichage</string>
+
+    <string name="setup_replace_title">Remplacer les notifications d\'origine</string>
+    <string name="setup_replace_body">Une seule notification reste affichée pour chaque message : celle du centre. Si cette option est désactivée, le message apparaît deux fois, avec le style d\'origine et avec celui du centre.</string>
+    <string name="setup_replace_switch">Remplacer les notifications d\'origine</string>
+
+    <string name="setup_footer">Le centre ne demande aucun accès réseau : les notifications sont lues sur l\'appareil et rien n\'en sort.</string>
+
+    <string name="notif_channel_name">Messages</string>
+    <string name="notif_channel_description">Notifications réécrites dans le style du centre</string>
+    <string name="notif_action_clear">Effacer</string>
+    <string name="notif_group_summary">%1$s · %2$d nouveaux messages</string>
 </resources>
