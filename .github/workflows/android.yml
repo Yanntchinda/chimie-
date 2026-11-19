@@ -83,7 +83,8 @@ jobs:
             else
               echo "  aucune" >> /tmp/verification.txt
             fi
-            echo "signature : $(sed -n 's/^Signer #1 certificate DN: //p' /tmp/sign.txt | head -1)" >> /tmp/verification.txt
+            SIGNER=$(grep -m1 -i "Signer #1 certificate DN:" /tmp/sign.txt | sed 's/^[[:space:]]*.*DN:[[:space:]]*//' || true)
+            echo "signature : vérifiée${SIGNER:+ ($SIGNER)}" >> /tmp/verification.txt
             echo "activité de lancement : présente" >> /tmp/verification.txt
             echo >> /tmp/verification.txt
           done
