@@ -108,13 +108,27 @@ public class MainActivity extends Activity {
         if (webView != null) webView.onResume();
     }
 
+    /** Le bouton retour ferme d'abord le volet ouvert, puis quitte l'application. */
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
+        if (webView == null) {
             super.onBackPressed();
+            return;
         }
+        webView.evaluateJavascript(
+                "(function(){var b=document.body;"
+                        + "if(b&&b.classList.contains('sheet-open')){"
+                        + "var a=document.getElementById('sheetBackdrop');"
+                        + "if(a){a.click();}return 'ferme';}return 'libre';})()",
+                value -> {
+                    if (value == null || !value.contains("ferme")) {
+                        if (webView != null && webView.canGoBack()) {
+                            webView.goBack();
+                        } else {
+                            finish();
+                        }
+                    }
+                });
     }
 
     @Override

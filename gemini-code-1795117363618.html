@@ -1396,6 +1396,7 @@
     const backdrop = $("sheetBackdrop");
     if (!panel) return;
     panel.classList.toggle("open", open);
+    document.body.classList.toggle("sheet-open", !!open);
     if (backdrop) backdrop.classList.toggle("open", open);
   }
 
