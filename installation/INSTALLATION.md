@@ -29,6 +29,39 @@ directement sur le fichier. Le lien écrit, si besoin :
 L'application apparaît ensuite dans le tiroir d'applications sous le nom
 **Centre de notifications**, avec l'icône cloche.
 
+### Si Play Protect bloque l'installation
+
+L'application n'est pas signée par un développeur enregistré auprès de Google :
+Play Protect la traite donc comme une source inconnue. Deux chemins, du plus doux au
+plus radical.
+
+**1. Forcer l'installation sans rien désactiver** (essayer d'abord)
+
+- Sur l'écran d'avertissement, toucher **Plus de détails**, puis **Installer quand
+  même**. Ce bouton existe sur la plupart des téléphones récents.
+- S'il est absent, ou si l'écran affiche « Application bloquée par Play Protect »,
+  passer à l'étape 2.
+
+**2. Désactiver Play Protect le temps de l'installation**
+
+1. Ouvrir **Play Store**, toucher la photo de profil en haut à droite.
+2. **Play Protect** → icône **Paramètres** (roue dentée, en haut à droite).
+3. Désactiver **Analyser les applications avec Play Protect**.
+4. Revenir à l'APK, le toucher, **Installer**.
+5. Une fois l'application installée et lancée, **réactiver** l'option : elle protège
+   le reste du téléphone.
+
+Selon la marque, le même réglage est aussi ici : **Paramètres → Sécurité → Play
+Protect** (Samsung : Sécurité et confidentialité → autres paramètres de sécurité).
+
+**3. Autoriser la source du fichier**
+
+Indépendamment de Play Protect, Android exige d'autoriser l'application qui ouvre
+l'APK (Chrome, Fichiers, Gestionnaire de fichiers) :
+
+**Paramètres → Applications → Accès spéciaux → Installer des applications inconnues**
+→ choisir Chrome (ou Fichiers) → **Autoriser depuis cette source**.
+
 ### Si Android refuse l'installation
 
 - « Application non installée » alors qu'une ancienne version est présente :
