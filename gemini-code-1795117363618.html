@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur iOS — Montée progressive depuis la carte de tête</title>
+<style>
+  :root {
+    --phone-w: 390px;
+    --phone-h: 844px;
+    --radius: 50px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #0d0f17;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    padding: 24px;
+  }
+
+  /* Panneau de contrôle */
+  .controls-panel {
+    width: 325px;
+    background: #171a26;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .controls-panel h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  .controls-panel p {
+    font-size: 0.82rem;
+    color: #9aa2b8;
+    line-height: 1.45;
+  }
+
+  .btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: transform 0.12s ease;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    background: #0a84ff;
+    color: #fff;
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-danger {
+    background: rgba(255, 69, 58, 0.16);
+    color: #ff6961;
+    border: 1px solid rgba(255, 69, 58, 0.3);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field label {
+    font-size: 0.77rem;
+    color: #9aa2b8;
+  }
+
+  .field input, .field select {
+    background: #0f121b;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 9px 11px;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    user-select: text;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    width: fit-content;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff9f0a;
+  }
+
+  .unlocked .dot {
+    background: #30d158;
+  }
+
+  /* Boîtier iPhone */
+  .iphone-frame {
+    position: relative;
+    width: var(--phone-w);
+    height: var(--phone-h);
+    border-radius: var(--radius);
+    padding: 12px;
+    background: linear-gradient(145deg, #2b2f3d, #13151c);
+    box-shadow:
+      0 0 0 2px #44495e,
+      0 30px 70px rgba(0, 0, 0, 0.75),
+      inset 0 0 6px rgba(255, 255, 255, 0.15);
+  }
+
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius) - 10px);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 22% 24%, #5e5ce6 0%, transparent 46%),
+      radial-gradient(circle at 82% 32%, #ff375f 0%, transparent 46%),
+      radial-gradient(circle at 50% 84%, #0a84ff 0%, transparent 56%),
+      #141526;
+  }
+
+  .wallpaper-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(0px) brightness(1);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Barre d'état */
+  .status-bar {
+    position: relative;
+    z-index: 30;
+    height: 48px;
+    padding: 12px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 35;
+    width: 122px;
+    height: 34px;
+    background: #000;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    color: #fff;
+    transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                border-radius 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                padding 0.35s ease;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  }
+
+  .dynamic-island.expanded {
+    width: 356px;
+    height: 76px;
+    border-radius: 28px;
+    padding: 12px 14px;
+  }
+
+  .di-compact { display: flex; align-items: center; width: 100%; }
+  .di-camera {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #1c3b70, #07090f 75%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-left: auto;
+  }
+
+  .di-expanded {
+    display: none;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+  }
+
+  .dynamic-island.expanded .di-compact { display: none; }
+  .dynamic-island.expanded .di-expanded { display: flex; }
+
+  .di-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .di-text { flex: 1; min-width: 0; }
+  .di-sender { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .di-body { font-size: 0.78rem; color: rgba(255,255,255,0.82); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+
+  /* Écran verrouillé */
+  .lock-screen {
+    position: absolute;
+    inset: 48px 0 0 0;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px 26px;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+  }
+
+  .screen.unlocked .lock-screen {
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
+  }
+
+  .lock-top-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    will-change: opacity, transform;
+  }
+
+  .lock-badge { font-size: 0.85rem; margin-bottom: 4px; opacity: 0.9; }
+  .lock-date { font-size: 0.94rem; font-weight: 500; color: rgba(255, 255, 255, 0.94); margin-bottom: 2px; }
+  .lock-clock {
+    font-size: 4.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #fff;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Scène interactive progressive */
+  .notif-stage {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .notif-stage:active {
+    cursor: grabbing;
+  }
+
+  .center-title-bar {
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .center-title-bar span {
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .collapse-btn {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .prog-card {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    background: rgba(40, 44, 62, 0.85);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 22px;
+    padding: 13px 15px;
+    color: #fff;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+    will-change: transform, opacity;
+    transform-origin: center bottom;
+  }
+
+  .prog-card.entering {
+    animation: cardEnterBottom 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes cardEnterBottom {
+    from {
+      opacity: 0;
+      transform: translateY(34px) scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.73rem;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .notif-app {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .notif-app-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+    font-size: 0.68rem;
+  }
+
+  .notif-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .notif-message {
+    font-size: 0.84rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.32;
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .empty-state {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .stack-counter-pill {
+    position: absolute;
+    bottom: 112px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 4px 11px;
+    border-radius: 999px;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* Pied de l'écran verrouillé */
+  .lock-footer {
+    width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 18px 0;
+  }
+
+  .circle-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(12px);
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    color: #fff;
+  }
+
+  .swipe-hint {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  /* Écran d'accueil (déverrouillé) */
+  .home-screen {
+    position: absolute;
+    inset: 48px 0 0 0;
+    z-index: 8;
+    padding: 46px 22px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transform: scale(0.94);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .screen.unlocked .home-screen {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px 14px;
+  }
+
+  .app-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .app-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.55rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: 4px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ff3b30;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+
+  .dock {
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 28px;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  /* Barre Home (Swipe tout en bas pour déverrouiller) */
+  .swipe-zone {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 34px;
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .home-bar {
+    width: 136px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  }
+</style>
+</head>
+<body>
+
+  <!-- Panneau de contrôle -->
+  <aside class="controls-panel">
+    <div>
+      <h2>Simulateur iOS Progressif</h2>
+      <p>Faites tourner la <strong>molette</strong> ou glissez <strong>vers le haut</strong> : le message de tête (en bas) monte lui-même vers le haut tandis que les cartes derrière se déploient progressivement.</p>
+    </div>
+
+    <div id="statusPill" class="status-pill">
+      <span class="dot"></span>
+      <span id="statusText">Téléphone verrouillé</span>
+    </div>
+
+    <div class="btn-group">
+      <button id="toggleLockBtn" class="btn-primary">Déverrouiller</button>
+      <button id="simIncomingBtn" class="btn-secondary">+ Message auto</button>
+    </div>
+
+    <div class="field">
+      <label for="appSelect">Application</label>
+      <select id="appSelect">
+        <option value="Messages">Messages</option>
+        <option value="WhatsApp">WhatsApp</option>
+        <option value="Telegram">Telegram</option>
+        <option value="Mail">Mail</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="senderInput">Expéditeur</label>
+      <input id="senderInput" type="text" value="Sarah Martin" placeholder="Nom de l'expéditeur">
+    </div>
+
+    <div class="field">
+      <label for="msgInput">Contenu du message</label>
+      <input id="msgInput" type="text" value="Tu es dispo à 16h pour valider le projet ?" placeholder="Écrire un message...">
+    </div>
+
+    <div class="btn-group">
+      <button id="sendCustomBtn" class="btn-primary">Envoyer</button>
+      <button id="clearNotifsBtn" class="btn-danger">Effacer tout</button>
+    </div>
+  </aside>
+
+  <!-- iPhone -->
+  <div class="iphone-frame">
+    <div id="phoneScreen" class="screen locked">
+      <div id="wallpaperOverlay" class="wallpaper-overlay"></div>
+
+      <!-- Dynamic Island -->
+      <div id="dynamicIsland" class="dynamic-island">
+        <div class="di-compact"><div class="di-camera"></div></div>
+        <div class="di-expanded">
+          <div id="diIcon" class="di-icon">💬</div>
+          <div class="di-text">
+            <div id="diSender" class="di-sender">Expéditeur</div>
+            <div id="diBody" class="di-body">Nouveau message</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barre d'état -->
+      <div class="status-bar">
+        <span id="miniClock">18:18</span>
+        <div class="status-right">
+          <span>5G</span>
+          <span>•••</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <!-- Écran verrouillé -->
+      <section id="lockScreen" class="lock-screen">
+        <div id="lockTopHeader" class="lock-top-header">
+          <div class="lock-badge">🔒</div>
+          <div id="lockDate" class="lock-date">Jeudi 19 novembre</div>
+          <div id="lockClock" class="lock-clock">18:18</div>
+        </div>
+
+        <!-- Scène progressive de notifications -->
+        <div id="notifStage" class="notif-stage">
+          <div id="centerTitleBar" class="center-title-bar">
+            <span>Centre de notifications</span>
+            <button id="collapseBtn" class="collapse-btn">Empiler ↓</button>
+          </div>
+
+          <div id="stackCounterPill" class="stack-counter-pill" style="display:none;"></div>
+          <div id="cardsLayer"></div>
+          <div id="emptyState" class="empty-state">Aucune notification</div>
+        </div>
+
+        <div class="lock-footer">
+          <div class="circle-btn">🔦</div>
+          <span class="swipe-hint">Barre du bas ↑ pour ouvrir</span>
+          <div class="circle-btn">📷</div>
+        </div>
+      </section>
+
+      <!-- Écran d'accueil (déverrouillé) -->
+      <section class="home-screen">
+        <div class="app-grid">
+          <div class="app-item">
+            <span id="badge-Messages" class="badge" style="display:none">0</span>
+            <div class="app-icon" style="background: linear-gradient(180deg, #5ce675, #28cd41);">💬</div>
+            <span>Messages</span>
+          </div>
+          <div class="app-item">
+            <span id="badge-WhatsApp" class="badge" style="display:none">0</span>
+            <div class="app-icon" style="background: linear-gradient(180deg, #4be06b, #1fa845);">🟢</div>
+            <span>WhatsApp</span>
+          </div>
+          <div class="app-item">
+            <span id="badge-Telegram" class="badge" style="display:none">0</span>
+            <div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);">✈️</div>
+            <span>Telegram</span>
+          </div>
+          <div class="app-item">
+            <span id="badge-Mail" class="badge" style="display:none">0</span>
+            <div class="app-icon" style="background: linear-gradient(180deg, #60a5fa, #2563eb);">✉️</div>
+            <span>Mail</span>
+          </div>
+        </div>
+
+        <div class="dock">
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #4ade80, #16a34a);">📞</div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);">🌐</div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #fb7185, #e11d48);">🎵</div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #a78bfa, #7c3aed);">⚙️</div></div>
+        </div>
+      </section>
+
+      <!-- Barre de déverrouillage tout en bas -->
+      <div id="swipeZone" class="swipe-zone" title="Glisser vers le haut pour déverrouiller">
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const APP_META = {
+    Messages: { icon: "💬", color: "#28cd41" },
+    WhatsApp: { icon: "🟢", color: "#1fa845" },
+    Telegram: { icon: "✈️", color: "#0284c7" },
+    Mail:     { icon: "✉️", color: "#2563eb" }
+  };
+
+  const SAMPLE_MESSAGES = [
+    { app: "WhatsApp", sender: "Client Travex", text: "Le colis vient d'arriver au port, on confirme la livraison ?" },
+    { app: "Messages", sender: "Ida", text: "N'oublie pas de passer à la maison ce soir !" },
+    { app: "Telegram", sender: "Bot Trading XAU", text: "Alerte structure H1 : cassure haussière confirmée sur l'or." },
+    { app: "Mail", sender: "Support Hébergement", text: "Votre certificat SSL a été renouvelé avec succès." },
+    { app: "WhatsApp", sender: "Équipe Chantier", text: "Relevé des heures de la semaine envoyé au format PDF." },
+    { app: "Messages", sender: "Banque", text: "Virement entrant de 450 000 FCFA crédité sur votre compte." }
+  ];
+
+  const CARD_SLOT_HEIGHT = 96;
+  const notifications = [];     // index 0 = carte de tête (en bas au repos, monte vers le haut)
+  const cardElements = [];
+  const unreadByApp = { Messages: 0, WhatsApp: 0, Telegram: 0, Mail: 0 };
+
+  let isUnlocked = false;
+  let sampleIdx = 0;
+  let diTimer = null;
+
+  let scrollOffset = 0;
+  let targetOffset = 0;
+  let isDragging = false;
+  let animFrameId = null;
+
+  const phoneScreen = document.getElementById("phoneScreen");
+  const lockScreen = document.getElementById("lockScreen");
+  const lockTopHeader = document.getElementById("lockTopHeader");
+  const wallpaperOverlay = document.getElementById("wallpaperOverlay");
+  const notifStage = document.getElementById("notifStage");
+  const cardsLayer = document.getElementById("cardsLayer");
+  const centerTitleBar = document.getElementById("centerTitleBar");
+  const stackCounterPill = document.getElementById("stackCounterPill");
+  const emptyState = document.getElementById("emptyState");
+  const collapseBtn = document.getElementById("collapseBtn");
+  const statusPill = document.getElementById("statusPill");
+  const statusText = document.getElementById("statusText");
+  const toggleLockBtn = document.getElementById("toggleLockBtn");
+  const swipeZone = document.getElementById("swipeZone");
+  const dynamicIsland = document.getElementById("dynamicIsland");
+
+  function updateClock() {
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    document.getElementById("lockClock").textContent = timeStr;
+    document.getElementById("miniClock").textContent = timeStr;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
+
+  function clamp(val, min, max) {
+    return Math.min(max, Math.max(min, val));
+  }
+
+  function getMetrics() {
+    const total = notifications.length;
+    const stageH = notifStage.clientHeight || 540;
+    // Distance où la carte de tête (idx = 0) monte jusqu'en haut de la zone de notifications
+    const headAscentDistance = Math.max(96, stageH - 135);
+    const maxOffset = Math.max(0, headAscentDistance + Math.max(0, total - 1) * CARD_SLOT_HEIGHT - (stageH - 135));
+    return { total, stageH, headAscentDistance, maxOffset };
+  }
+
+  /* Rendu continu : la carte de tête (idx = 0) monte vers le haut, suivie des cartes suivantes */
+  function renderProgressiveFrame() {
+    const { total, stageH, headAscentDistance } = getMetrics();
+    emptyState.style.display = total === 0 ? "block" : "none";
+
+    if (total === 0) {
+      stackCounterPill.style.display = "none";
+      centerTitleBar.style.opacity = "0";
+      centerTitleBar.style.pointerEvents = "none";
+      lockTopHeader.style.opacity = "1";
+      lockTopHeader.style.transform = "translateY(0) scale(1)";
+      wallpaperOverlay.style.backdropFilter = "blur(0px) brightness(1)";
+      return;
+    }
+
+    // Progression de montée de la carte de tête [0 .. 1]
+    const headProgress = total <= 1 ? 0 : clamp(scrollOffset / headAscentDistance, 0, 1);
+
+    // 1. Fond d'écran & horloge s'adaptent progressivement
+    const blurPx = (headProgress * 18).toFixed(1);
+    const bright = (1 - headProgress * 0.32).toFixed(2);
+    wallpaperOverlay.style.backdropFilter = `blur(${blurPx}px) brightness(${bright})`;
+
+    lockTopHeader.style.opacity = String((1 - headProgress * 0.82).toFixed(2));
+    lockTopHeader.style.transform = `translateY(${(-headProgress * 12).toFixed(1)}px) scale(${(1 - headProgress * 0.08).toFixed(3)})`;
+
+    // 2. Barre "Centre de notifications"
+    const headerAlpha = clamp((headProgress - 0.55) / 0.45, 0, 1);
+    centerTitleBar.style.opacity = String(headerAlpha.toFixed(2));
+    centerTitleBar.style.pointerEvents = headerAlpha > 0.5 ? "auto" : "none";
+
+    // 3. Pastille compteur
+    if (total > 1) {
+      stackCounterPill.style.display = "block";
+      stackCounterPill.textContent = `↑ Glisser vers le haut (${total} notifications)`;
+      const pillAlpha = clamp(1 - headProgress * 2.5, 0, 1);
+      stackCounterPill.style.opacity = String(pillAlpha.toFixed(2));
+      stackCounterPill.style.transform = `translate(-50%, ${(-headProgress * 18).toFixed(1)}px)`;
+    } else {
+      stackCounterPill.style.display = "none";
+    }
+
+    // 4. Position de la carte de tête (idx = 0) : part de 0 (en bas) et monte vers -headAscentDistance (en haut)
+    const headY = -scrollOffset;
+
+    cardElements.forEach((card, idx) => {
+      // Position de repos empilée derrière la carte de tête
+      let stackY = 0;
+      let stackScale = 1;
+      let stackOpacity = 1;
+
+      if (idx === 0) {
+        stackY = 0;
+        stackScale = 1;
+        stackOpacity = 1;
+      } else if (idx === 1) {
+        stackY = 11;
+        stackScale = 0.94;
+        stackOpacity = 0.72;
+      } else if (idx === 2) {
+        stackY = 20;
+        stackScale = 0.88;
+        stackOpacity = 0.42;
+      } else {
+        stackY = 24;
+        stackScale = 0.84;
+        stackOpacity = 0;
+      }
+
+      // Quand la carte de tête monte (headY négatif), les cartes suivantes (idx >= 1)
+      // se déploient progressivement en colonne juste derrière elle
+      const trailingSpread = idx * CARD_SLOT_HEIGHT * headProgress;
+      const expandedY = headY + trailingSpread;
+
+      // Chaque carte suivante passe progressivement de son état empilé à sa position déployée
+      const cardUnfold = idx === 0 ? 1 : clamp(headProgress * (1 + idx * 0.25), 0, 1);
+      const currentY = stackY + (expandedY - stackY) * cardUnfold;
+      const currentScale = stackScale + (1 - stackScale) * cardUnfold;
+      let currentOpacity = stackOpacity + (1 - stackOpacity) * cardUnfold;
+
+      // Estompage progressif lorsque la carte atteint le haut de la zone (sous le titre)
+      const topLimit = -(stageH - 122);
+      if (currentY < topLimit) {
+        const overTop = topLimit - currentY;
+        currentOpacity *= clamp(1 - overTop / 55, 0, 1);
+      }
+
+      // Estompage si la carte descend sous le bas de l'écran
+      if (currentY > 24) {
+        currentOpacity *= clamp(1 - (currentY - 24) / 40, 0, 1);
+      }
+
+      card.style.zIndex = String(total - idx);
+      card.style.transform = `translate3d(0, ${currentY.toFixed(2)}px, 0) scale(${currentScale.toFixed(4)})`;
+      card.style.opacity = String(clamp(currentOpacity, 0, 1).toFixed(3));
+      card.style.pointerEvents = currentOpacity > 0.25 ? "auto" : "none";
+    });
+  }
+
+  function startPhysicsLoop() {
+    if (animFrameId) return;
+    function tick() {
+      if (!isDragging) {
+        const diff = targetOffset - scrollOffset;
+        if (Math.abs(diff) < 0.25) {
+          scrollOffset = targetOffset;
+          renderProgressiveFrame();
+          animFrameId = null;
+          return;
+        }
+        scrollOffset += diff * 0.16;
+      }
+      renderProgressiveFrame();
+      animFrameId = requestAnimationFrame(tick);
+    }
+    animFrameId = requestAnimationFrame(tick);
+  }
+
+  function animateTo(newTarget) {
+    const { maxOffset } = getMetrics();
+    targetOffset = clamp(newTarget, 0, maxOffset);
+    startPhysicsLoop();
+  }
+
+  function rebuildCardsDOM() {
+    cardsLayer.innerHTML = "";
+    cardElements.length = 0;
+
+    notifications.forEach((item, idx) => {
+      const meta = APP_META[item.app] || { icon: "🔔", color: "#0a84ff" };
+      const card = document.createElement("article");
+      card.className = "prog-card" + (idx === 0 && item.isNew ? " entering" : "");
+      item.isNew = false;
+
+      card.innerHTML = `
+        <div class="notif-header">
+          <span class="notif-app">
+            <span class="notif-app-dot" style="background:${meta.color}">${meta.icon}</span>
+            ${item.app}
+          </span>
+          <span>${item.time}</span>
+        </div>
+        <div class="notif-title">${escapeHtml(item.sender)}</div>
+        <div class="notif-message">${escapeHtml(item.text)}</div>
+      `;
+
+      card.addEventListener("click", () => {
+        if (movedDuringPointer) return;
+        const { headAscentDistance } = getMetrics();
+        if (notifications.length > 1 && scrollOffset < headAscentDistance * 0.4) {
+          animateTo(headAscentDistance);
+        } else {
+          unreadByApp[item.app] = 0;
+          updateBadges();
+          setLockState(true);
+        }
+      });
+
+      cardsLayer.appendChild(card);
+      cardElements.push(card);
+    });
+
+    renderProgressiveFrame();
+  }
+
+  function pushNotification(app, sender, text) {
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+    notifications.unshift({ app, sender, text, time, isNew: true });
+    unreadByApp[app] = (unreadByApp[app] || 0) + 1;
+    updateBadges();
+
+    if (!isUnlocked) {
+      scrollOffset = 0;
+      targetOffset = 0;
+    }
+
+    rebuildCardsDOM();
+
+    if (isUnlocked) {
+      triggerDynamicIsland(app, sender, text);
+    }
+  }
+
+  function triggerDynamicIsland(app, sender, text) {
+    const meta = APP_META[app] || { icon: "🔔", color: "#0a84ff" };
+    document.getElementById("diIcon").textContent = meta.icon;
+    document.getElementById("diIcon").style.background = meta.color;
+    document.getElementById("diSender").textContent = `${sender} · ${app}`;
+    document.getElementById("diBody").textContent = text;
+
+    dynamicIsland.classList.add("expanded");
+    clearTimeout(diTimer);
+    diTimer = setTimeout(() => dynamicIsland.classList.remove("expanded"), 3500);
+  }
+
+  function updateBadges() {
+    Object.keys(unreadByApp).forEach(app => {
+      const badge = document.getElementById(`badge-${app}`);
+      if (!badge) return;
+      const count = unreadByApp[app];
+      badge.style.display = count > 0 ? "grid" : "none";
+      badge.textContent = count > 99 ? "99+" : count;
+    });
+  }
+
+  function setLockState(unlocked) {
+    isUnlocked = unlocked;
+    lockScreen.style.transition = "";
+    lockScreen.style.transform = "";
+    lockScreen.style.opacity = "";
+
+    phoneScreen.classList.toggle("unlocked", unlocked);
+    phoneScreen.classList.toggle("locked", !unlocked);
+    statusPill.classList.toggle("unlocked", unlocked);
+    statusText.textContent = unlocked ? "Téléphone déverrouillé" : "Téléphone verrouillé";
+    toggleLockBtn.textContent = unlocked ? "Verrouiller" : "Déverrouiller";
+
+    if (!unlocked) {
+      scrollOffset = 0;
+      targetOffset = 0;
+      renderProgressiveFrame();
+    }
+  }
+
+  /* 1. SCROLL PROGRESSIF À LA MOLETTE */
+  notifStage.addEventListener("wheel", (e) => {
+    if (isUnlocked || notifications.length <= 1) return;
+    e.preventDefault();
+    const { maxOffset } = getMetrics();
+    targetOffset = clamp(targetOffset + e.deltaY * 0.85, 0, maxOffset);
+    startPhysicsLoop();
+  }, { passive: false });
+
+  /* 2. GLISSEMENT PROGRESSIF AU DOIGT / SOURIS */
+  let dragStartY = 0;
+  let dragStartOffset = 0;
+  let lastPointerY = 0;
+  let velocityY = 0;
+  let movedDuringPointer = false;
+
+  notifStage.addEventListener("pointerdown", (e) => {
+    if (isUnlocked || notifications.length <= 1) return;
+    if (e.target.closest("#collapseBtn")) return;
+
+    isDragging = true;
+    movedDuringPointer = false;
+    dragStartY = e.clientY;
+    lastPointerY = e.clientY;
+    dragStartOffset = scrollOffset;
+    velocityY = 0;
+    notifStage.setPointerCapture(e.pointerId);
+  });
+
+  notifStage.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    const dy = dragStartY - e.clientY;
+    if (Math.abs(dy) > 4) movedDuringPointer = true;
+
+    velocityY = lastPointerY - e.clientY;
+    lastPointerY = e.clientY;
+
+    const { maxOffset } = getMetrics();
+    let next = dragStartOffset + dy;
+
+    if (next < 0) next = next * 0.25;
+    if (next > maxOffset) next = maxOffset + (next - maxOffset) * 0.25;
+
+    scrollOffset = next;
+    targetOffset = next;
+    renderProgressiveFrame();
+  });
+
+  notifStage.addEventListener("pointerup", () => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const { headAscentDistance, maxOffset } = getMetrics();
+    let projected = scrollOffset + velocityY * 8;
+
+    if (projected < headAscentDistance * 0.35) {
+      projected = 0;
+    } else if (projected < headAscentDistance) {
+      projected = headAscentDistance;
+    }
+
+    targetOffset = clamp(projected, 0, maxOffset);
+    startPhysicsLoop();
+  });
+
+  collapseBtn.addEventListener("click", () => animateTo(0));
+
+  /* 3. DÉVERROUILLAGE SUR LA BARRE DU BAS */
+  let unlockStartY = null;
+  let unlockDeltaY = 0;
+
+  swipeZone.addEventListener("pointerdown", (e) => {
+    unlockStartY = e.clientY;
+    unlockDeltaY = 0;
+    swipeZone.setPointerCapture(e.pointerId);
+    if (!isUnlocked) lockScreen.style.transition = "none";
+  });
+
+  swipeZone.addEventListener("pointermove", (e) => {
+    if (unlockStartY === null || isUnlocked) return;
+    unlockDeltaY = Math.min(0, e.clientY - unlockStartY);
+    const progress = Math.min(1, Math.abs(unlockDeltaY) / 180);
+    lockScreen.style.transform = `translateY(${unlockDeltaY}px)`;
+    lockScreen.style.opacity = String(1 - progress * 0.55);
+  });
+
+  swipeZone.addEventListener("pointerup", () => {
+    if (unlockStartY === null) return;
+    const draggedUp = unlockDeltaY < -75;
+    const isTap = Math.abs(unlockDeltaY) < 6;
+    unlockStartY = null;
+
+    if (!isUnlocked && (draggedUp || isTap)) {
+      setLockState(true);
+    } else if (isUnlocked && isTap) {
+      setLockState(false);
+    } else {
+      lockScreen.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease";
+      lockScreen.style.transform = "translateY(0)";
+      lockScreen.style.opacity = "1";
+    }
+  });
+
+  toggleLockBtn.addEventListener("click", () => setLockState(!isUnlocked));
+
+  document.getElementById("simIncomingBtn").addEventListener("click", () => {
+    const sample = SAMPLE_MESSAGES[sampleIdx % SAMPLE_MESSAGES.length];
+    sampleIdx++;
+    pushNotification(sample.app, sample.sender, sample.text);
+  });
+
+  document.getElementById("sendCustomBtn").addEventListener("click", () => {
+    const app = document.getElementById("appSelect").value;
+    const sender = document.getElementById("senderInput").value.trim() || "Contact";
+    const text = document.getElementById("msgInput").value.trim() || "Nouveau message reçu.";
+    pushNotification(app, sender, text);
+  });
+
+  document.getElementById("clearNotifsBtn").addEventListener("click", () => {
+    notifications.length = 0;
+    Object.keys(unreadByApp).forEach(k => unreadByApp[k] = 0);
+    scrollOffset = 0;
+    targetOffset = 0;
+    updateBadges();
+    rebuildCardsDOM();
+    dynamicIsland.classList.remove("expanded");
+  });
+
+  updateClock();
+  setInterval(updateClock, 15000);
+
+  pushNotification("Mail", "Herlo Global", "Nouvelle commande validée sur la boutique.");
+  pushNotification("Messages", "Banque", "Virement entrant crédité sur votre compte.");
+  pushNotification("Telegram", "Bot Trading XAU", "Signal scalp détecté sur M5.");
+  pushNotification("WhatsApp", "Équipe Logistique", "Dossier d'expédition mis à jour.");
+  pushNotification("Messages", "Karim", "Tu passes cet après-midi ?");
+</script>
+</body>
+</html>
