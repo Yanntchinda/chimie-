@@ -3,11 +3,16 @@ package com.yanntchinda.centrenotifications;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.DisplayCutout;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 /**
  * Enveloppe native du centre de notifications.
@@ -16,6 +21,8 @@ import android.webkit.WebViewClient;
  * peut recevoir des notifications que par son propre centre, une fois installee.
  */
 public class MainActivity extends Activity {
+
+    private static final String PAGE = "file:///android_asset/index.html?app=1";
 
     private WebView webView;
 
@@ -37,8 +44,10 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(false);
+        settings.setBlockNetworkLoads(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
@@ -47,9 +56,28 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         webView.setWebViewClient(new WebViewClient());
-        setContentView(webView);
 
-        webView.loadUrl("file:///android_asset/index.html?app=1");
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        root.addView(webView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // L'encoche ne doit pas recouvrir le haut de l'ecran : on decale la page
+        // de la hauteur utile de la decoupe, et de rien du tout ailleurs.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            root.setOnApplyWindowInsetsListener((view, insets) -> {
+                DisplayCutout cutout = insets.getDisplayCutout();
+                int top = cutout != null ? cutout.getSafeInsetTop() : 0;
+                if (view.getPaddingTop() != top) {
+                    view.setPadding(0, top, 0, 0);
+                }
+                return insets;
+            });
+        }
+
+        setContentView(root);
+        webView.loadUrl(PAGE);
     }
 
     private void applyImmersiveMode() {
@@ -66,6 +94,18 @@ public class MainActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) applyImmersiveMode();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (webView != null) webView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) webView.onResume();
     }
 
     @Override
