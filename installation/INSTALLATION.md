@@ -1,13 +1,13 @@
 # Installer l'application
 
 Le fichier à installer est un APK Android : `app-release.apk`, joint à la version
-[v1.1.0](../../releases/tag/v1.1.0).
+[v1.2.0](../../releases/tag/v1.2.0).
 
 ![QR vers l'APK](qr-android.png)
 
 Scannez ce code avec l'appareil photo du téléphone : le téléchargement démarre
 directement sur le fichier. Le lien écrit, si besoin :
-`https://github.com/Yanntchinda/chimie-/releases/download/v1.1.0/app-release.apk`
+`https://github.com/Yanntchinda/chimie-/releases/download/v1.2.0/app-release.apk`
 
 ## Android : cinq étapes
 
@@ -34,7 +34,7 @@ L'application apparaît ensuite dans le tiroir d'applications sous le nom
 - « Application non installée » alors qu'une ancienne version est présente :
   désinstaller l'ancienne d'abord (les données du centre seront perdues).
 - « Application non installée » sans ancienne version : le fichier a souvent été
-  tronqué au téléchargement. Retélécharger, en vérifiant la taille : 32 431 octets.
+  tronqué au téléchargement. Retélécharger, en vérifiant la taille : 38 119 octets.
 - Le fichier s'ouvre comme une archive au lieu de s'installer : il a été renommé en
   `.zip` par le navigateur ; le renommer en `app-release.apk`.
 
