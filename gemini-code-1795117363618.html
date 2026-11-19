@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulateur iOS — Montée progressive depuis la carte de tête</title>
+<title>Simulateur iOS — Centre de notifications avancé</title>
 <style>
   :root {
     --phone-w: 390px;
     --phone-h: 844px;
     --radius: 50px;
+    --card-bg: rgba(38, 42, 58, 0.97);
   }
 
   * {
@@ -34,7 +35,7 @@
 
   /* Panneau de contrôle */
   .controls-panel {
-    width: 325px;
+    width: 336px;
     background: #171a26;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
@@ -56,6 +57,15 @@
     line-height: 1.45;
   }
 
+  .section-title {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #6d768e;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
   .btn-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -69,7 +79,7 @@
     padding: 11px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    transition: transform 0.12s ease;
+    transition: transform 0.12s ease, background 0.15s ease;
   }
 
   button:active {
@@ -91,6 +101,10 @@
     background: rgba(255, 69, 58, 0.16);
     color: #ff6961;
     border: 1px solid rgba(255, 69, 58, 0.3);
+  }
+
+  .btn-full {
+    grid-column: 1 / -1;
   }
 
   .field {
@@ -134,8 +148,66 @@
     background: #ff9f0a;
   }
 
-  .unlocked .dot {
+  .status-pill.unlocked .dot {
     background: #30d158;
+  }
+
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .legend-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font-size: 0.77rem;
+    color: #b6bdd0;
+    line-height: 1.35;
+  }
+
+  .legend-row b {
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .legend-key {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    margin-top: 5px;
+    border-radius: 2px;
+    background: #0a84ff;
+  }
+
+  .snooze-row {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: #ffd60a;
+    background: rgba(255, 214, 10, 0.1);
+    border: 1px solid rgba(255, 214, 10, 0.28);
+    border-radius: 12px;
+    padding: 8px 11px;
+  }
+
+  .snooze-row button {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    background: rgba(255, 214, 10, 0.16);
+    color: #ffe066;
+    border-radius: 8px;
+  }
+
+  .last-action {
+    font-size: 0.75rem;
+    color: #7f889f;
+    min-height: 1.1em;
+    line-height: 1.35;
   }
 
   /* Boîtier iPhone */
@@ -199,7 +271,7 @@
     position: absolute;
     top: 11px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(0) scale(1);
     z-index: 35;
     width: 122px;
     height: 34px;
@@ -213,16 +285,27 @@
     transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
                 height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
                 border-radius 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-                padding 0.35s ease;
+                padding 0.35s ease,
+                transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.2s ease;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    touch-action: none;
   }
 
   .dynamic-island.expanded {
     width: 356px;
-    height: 76px;
+    height: 82px;
     border-radius: 28px;
-    padding: 12px 14px;
+    padding: 10px 14px 16px;
+    pointer-events: auto;
+    cursor: grab;
+  }
+
+  .dynamic-island.live {
+    height: 88px;
+    border-radius: 30px;
   }
 
   .di-compact { display: flex; align-items: center; width: 100%; }
@@ -251,13 +334,63 @@
     border-radius: 11px;
     display: grid;
     place-items: center;
-    font-size: 1.15rem;
+    color: #fff;
     flex-shrink: 0;
   }
 
+  .di-icon svg { width: 21px; height: 21px; }
+
   .di-text { flex: 1; min-width: 0; }
   .di-sender { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .di-body { font-size: 0.78rem; color: rgba(255,255,255,0.82); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .di-body {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.82);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+    min-height: 1.1em;
+  }
+
+  .di-typing {
+    display: none;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .dynamic-island.typing .di-body { display: none; }
+  .dynamic-island.typing .di-typing { display: flex; }
+
+  .di-typing i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.75);
+    animation: typingDot 1s infinite ease-in-out;
+  }
+
+  .di-typing i:nth-child(2) { animation-delay: 0.15s; }
+  .di-typing i:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes typingDot {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-2px); }
+  }
+
+  .di-hint {
+    display: none;
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .dynamic-island.expanded .di-hint { display: block; }
 
   /* Écran verrouillé */
   .lock-screen {
@@ -285,7 +418,15 @@
     will-change: opacity, transform;
   }
 
-  .lock-badge { font-size: 0.85rem; margin-bottom: 4px; opacity: 0.9; }
+  .lock-badge {
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, 0.92);
+    display: grid;
+    place-items: center;
+  }
+
+  .lock-badge svg { width: 15px; height: 15px; }
+
   .lock-date { font-size: 0.94rem; font-weight: 500; color: rgba(255, 255, 255, 0.94); margin-bottom: 2px; }
   .lock-clock {
     font-size: 4.5rem;
@@ -339,12 +480,99 @@
     font-weight: 600;
   }
 
-  .prog-card {
+  /* Voile d'aperçu (Peek) */
+  .peek-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 900;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, backdrop-filter 0.2s ease;
+  }
+
+  .peek-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+  }
+
+  /* Emplacement de carte (porte le placement, la carte porte le balayage) */
+  .card-slot {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 14px;
-    background: rgba(40, 44, 62, 0.85);
+    will-change: transform, opacity;
+    transform-origin: center bottom;
+  }
+
+  /* Pile empilee : seules la carte de tete et la pile ouverte montrent le detail */
+  .card-slot:not(.is-head) .burst-summary,
+  .card-slot:not(.is-head) .thread-toggle,
+  .card-slot:not(.is-head) .quick-reply,
+  .card-slot:not(.is-head) .reply-hint {
+    display: none;
+  }
+
+  .cards-expanded .card-slot .burst-summary { display: flex; }
+  .cards-expanded .card-slot .thread-toggle { display: inline-flex; }
+  .cards-expanded .card-slot .peek-actions { display: none; }
+
+  .swipe-actions {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+    z-index: 1;
+  }
+
+  .swipe-actions.visible { opacity: 1; }
+
+  .swipe-actions.left {
+    justify-content: flex-end;
+    background: linear-gradient(90deg, rgba(255, 69, 58, 0.25), rgba(255, 69, 58, 0.9));
+  }
+
+  .swipe-actions.right {
+    justify-content: flex-start;
+    background: linear-gradient(270deg, rgba(10, 132, 255, 0.2), rgba(10, 132, 255, 0.85));
+  }
+
+  .swipe-btn {
+    width: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 6px;
+  }
+
+  .swipe-btn svg { width: 19px; height: 19px; }
+
+  .swipe-actions.left .swipe-btn { background: rgba(255, 45, 35, 0.55); }
+  .swipe-actions.right .swipe-btn.pin { background: rgba(10, 100, 220, 0.5); }
+  .swipe-actions.right .swipe-btn.snooze { background: rgba(255, 159, 10, 0.42); }
+
+  .prog-card {
+    position: relative;
+    z-index: 2;
+    background: var(--card-bg);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.18);
@@ -352,8 +580,30 @@
     padding: 13px 15px;
     color: #fff;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
-    will-change: transform, opacity;
-    transform-origin: center bottom;
+    will-change: transform;
+    pointer-events: auto;
+    touch-action: none;
+    transition: border-color 0.2s ease, box-shadow 0.25s ease;
+  }
+
+  .prog-card.urgent {
+    border-color: rgba(255, 159, 10, 0.65);
+    box-shadow: 0 0 0 1px rgba(255, 159, 10, 0.35), 0 0 26px rgba(255, 159, 10, 0.22), 0 10px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  .prog-card.peeking {
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  }
+
+  .prog-card.peeking .notif-message {
+    -webkit-line-clamp: 8;
+  }
+
+  .prog-card.deleting {
+    transition: transform 0.24s ease-in, opacity 0.24s ease-in;
+    transform: translateX(-120%) scale(0.92) !important;
+    opacity: 0 !important;
   }
 
   .prog-card.entering {
@@ -375,6 +625,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     margin-bottom: 5px;
     font-size: 0.73rem;
     color: rgba(255, 255, 255, 0.72);
@@ -387,16 +638,57 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    min-width: 0;
   }
 
-  .notif-app-dot {
-    width: 16px;
-    height: 16px;
+  .notif-app-icon {
+    width: 17px;
+    height: 17px;
     border-radius: 5px;
     display: grid;
     place-items: center;
-    font-size: 0.68rem;
+    color: #fff;
+    flex-shrink: 0;
   }
+
+  .notif-app-icon svg { width: 11px; height: 11px; }
+
+  .notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+  }
+
+  .chip svg { width: 9px; height: 9px; }
+
+  .chip.pin {
+    color: #8ec5ff;
+    background: rgba(10, 132, 255, 0.18);
+    border-color: rgba(10, 132, 255, 0.4);
+    cursor: pointer;
+  }
+
+  .chip.urgent {
+    color: #ffcf66;
+    background: rgba(255, 159, 10, 0.16);
+    border-color: rgba(255, 159, 10, 0.42);
+  }
+
+  .notif-time { font-variant-numeric: tabular-nums; }
 
   .notif-title {
     font-size: 0.88rem;
@@ -404,16 +696,205 @@
     line-height: 1.25;
   }
 
+  .burst-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin-top: 5px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+  }
+
+  .burst-label {
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #9fd0ff;
+    border: 1px solid rgba(10, 132, 255, 0.45);
+    background: rgba(10, 132, 255, 0.15);
+    border-radius: 4px;
+    padding: 1px 4px;
+    flex-shrink: 0;
+  }
+
+  .burst-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .burst-toggle {
+    padding: 2px 6px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #9fd0ff;
+    background: transparent;
+    border: 1px solid rgba(10, 132, 255, 0.4);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
   .notif-message {
     font-size: 0.84rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.32;
-    margin-top: 2px;
+    margin-top: 3px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .thread-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 7px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .thread-toggle svg { width: 9px; height: 9px; }
+
+  .thread-list {
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 148px;
+    overflow-y: auto;
+  }
+
+  .thread-msg {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 0.76rem;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .thread-msg .thread-time {
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.45);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .thread-msg.out .thread-text { color: #9fd0ff; }
+
+  .thread-msg.out .thread-text::before {
+    content: "Vous : ";
+    color: rgba(159, 208, 255, 0.65);
+    font-size: 0.68rem;
+  }
+
+  .quick-reply {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .prog-card.reply-open .quick-reply { display: flex; }
+
+  .quick-input {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 0.8rem;
+    outline: none;
+    user-select: text;
+  }
+
+  .quick-input::placeholder { color: rgba(255, 255, 255, 0.45); }
+
+  .quick-send {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #0a84ff;
+    color: #fff;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .quick-send svg { width: 15px; height: 15px; }
+
+  .reply-hint {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.64rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .prog-card.reply-open .reply-hint { display: block; }
+
+  .sent-note {
+    margin-top: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6ee7a8;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .sent-note svg { width: 11px; height: 11px; }
+
+  .peek-actions {
+    display: none;
+    gap: 8px;
+    margin-top: 11px;
+  }
+
+  .prog-card.peeking .peek-actions { display: flex; }
+
+  .peek-actions button {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.76rem;
+    border-radius: 10px;
+  }
+
+  .peek-actions .peek-reply {
+    background: #0a84ff;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .peek-actions .peek-close {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .peek-actions svg { width: 13px; height: 13px; }
 
   .empty-state {
     position: absolute;
@@ -439,6 +920,7 @@
     border-radius: 999px;
     pointer-events: none;
     white-space: nowrap;
+    z-index: 40;
   }
 
   /* Pied de l'écran verrouillé */
@@ -459,9 +941,10 @@
     backdrop-filter: blur(12px);
     display: grid;
     place-items: center;
-    font-size: 1rem;
     color: #fff;
   }
+
+  .circle-btn svg { width: 19px; height: 19px; }
 
   .swipe-hint {
     font-size: 0.72rem;
@@ -513,9 +996,11 @@
     border-radius: 14px;
     display: grid;
     place-items: center;
-    font-size: 1.55rem;
+    color: #fff;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
   }
+
+  .app-icon svg { width: 26px; height: 26px; }
 
   .badge {
     position: absolute;
@@ -532,6 +1017,7 @@
     display: grid;
     place-items: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    z-index: 3;
   }
 
   .dock {
@@ -545,7 +1031,7 @@
     gap: 12px;
   }
 
-  /* Barre Home (Swipe tout en bas pour déverrouiller) */
+  /* Barre Home */
   .swipe-zone {
     position: absolute;
     bottom: 0;
@@ -568,6 +1054,30 @@
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 52px;
+    transform: translate(-50%, 10px);
+    z-index: 60;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(20, 22, 32, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 </style>
 </head>
 <body>
@@ -575,8 +1085,8 @@
   <!-- Panneau de contrôle -->
   <aside class="controls-panel">
     <div>
-      <h2>Simulateur iOS Progressif</h2>
-      <p>Faites tourner la <strong>molette</strong> ou glissez <strong>vers le haut</strong> : le message de tête (en bas) monte lui-même vers le haut tandis que les cartes derrière se déploient progressivement.</p>
+      <h2>Centre de notifications avancé</h2>
+      <p>Molette ou glissement vertical : la carte de tête monte et la pile se déploie. Les cartes réagissent au doigt et à la souris.</p>
     </div>
 
     <div id="statusPill" class="status-pill">
@@ -584,9 +1094,20 @@
       <span id="statusText">Téléphone verrouillé</span>
     </div>
 
+    <div class="section-title">Gestes sur une carte</div>
+    <div class="legend">
+      <div class="legend-row"><span class="legend-key"></span><span><b>Double-clic</b> : réponse rapide dans la carte</span></div>
+      <div class="legend-row"><span class="legend-key"></span><span><b>Appui long</b> : aperçu agrandi du message</span></div>
+      <div class="legend-row"><span class="legend-key"></span><span><b>Glisser à gauche</b> : effacer</span></div>
+      <div class="legend-row"><span class="legend-key"></span><span><b>Glisser à droite</b> : épingler ou rappel 10 min</span></div>
+      <div class="legend-row"><span class="legend-key"></span><span><b>Compteur du fil</b> : ouvre la conversation en accordéon</span></div>
+    </div>
+
     <div class="btn-group">
       <button id="toggleLockBtn" class="btn-primary">Déverrouiller</button>
-      <button id="simIncomingBtn" class="btn-secondary">+ Message auto</button>
+      <button id="simIncomingBtn" class="btn-secondary">Message auto</button>
+      <button id="burstBtn" class="btn-secondary btn-full">Rafale de 4 messages (même expéditeur)</button>
+      <button id="urgentBtn" class="btn-secondary btn-full">Message prioritaire (virement / alerte)</button>
     </div>
 
     <div class="field">
@@ -613,6 +1134,13 @@
       <button id="sendCustomBtn" class="btn-primary">Envoyer</button>
       <button id="clearNotifsBtn" class="btn-danger">Effacer tout</button>
     </div>
+
+    <div id="snoozeRow" class="snooze-row">
+      <span id="snoozeText">Rappel programmé : 10 min</span>
+      <button id="snoozeNowBtn">Rappeler</button>
+    </div>
+
+    <div id="lastAction" class="last-action">Aucune action pour le moment.</div>
   </aside>
 
   <!-- iPhone -->
@@ -624,12 +1152,14 @@
       <div id="dynamicIsland" class="dynamic-island">
         <div class="di-compact"><div class="di-camera"></div></div>
         <div class="di-expanded">
-          <div id="diIcon" class="di-icon">💬</div>
+          <div id="diIcon" class="di-icon"></div>
           <div class="di-text">
             <div id="diSender" class="di-sender">Expéditeur</div>
             <div id="diBody" class="di-body">Nouveau message</div>
+            <div class="di-typing"><i></i><i></i><i></i></div>
           </div>
         </div>
+        <div class="di-hint">Glisser vers le haut pour ranger</div>
       </div>
 
       <!-- Barre d'état -->
@@ -637,7 +1167,6 @@
         <span id="miniClock">18:18</span>
         <div class="status-right">
           <span>5G</span>
-          <span>•••</span>
           <span>100%</span>
         </div>
       </div>
@@ -645,7 +1174,7 @@
       <!-- Écran verrouillé -->
       <section id="lockScreen" class="lock-screen">
         <div id="lockTopHeader" class="lock-top-header">
-          <div class="lock-badge">🔒</div>
+          <div class="lock-badge" id="lockBadge"></div>
           <div id="lockDate" class="lock-date">Jeudi 19 novembre</div>
           <div id="lockClock" class="lock-clock">18:18</div>
         </div>
@@ -654,18 +1183,19 @@
         <div id="notifStage" class="notif-stage">
           <div id="centerTitleBar" class="center-title-bar">
             <span>Centre de notifications</span>
-            <button id="collapseBtn" class="collapse-btn">Empiler ↓</button>
+            <button id="collapseBtn" class="collapse-btn">Empiler</button>
           </div>
 
           <div id="stackCounterPill" class="stack-counter-pill" style="display:none;"></div>
+          <div id="peekBackdrop" class="peek-backdrop"></div>
           <div id="cardsLayer"></div>
           <div id="emptyState" class="empty-state">Aucune notification</div>
         </div>
 
         <div class="lock-footer">
-          <div class="circle-btn">🔦</div>
-          <span class="swipe-hint">Barre du bas ↑ pour ouvrir</span>
-          <div class="circle-btn">📷</div>
+          <div class="circle-btn" id="flashlightBtn"></div>
+          <span class="swipe-hint">Barre du bas : glisser vers le haut</span>
+          <div class="circle-btn" id="cameraBtn"></div>
         </div>
       </section>
 
@@ -674,33 +1204,35 @@
         <div class="app-grid">
           <div class="app-item">
             <span id="badge-Messages" class="badge" style="display:none">0</span>
-            <div class="app-icon" style="background: linear-gradient(180deg, #5ce675, #28cd41);">💬</div>
+            <div class="app-icon" style="background: linear-gradient(180deg, #5ce675, #28cd41);" data-icon="bubble"></div>
             <span>Messages</span>
           </div>
           <div class="app-item">
             <span id="badge-WhatsApp" class="badge" style="display:none">0</span>
-            <div class="app-icon" style="background: linear-gradient(180deg, #4be06b, #1fa845);">🟢</div>
+            <div class="app-icon" style="background: linear-gradient(180deg, #4be06b, #1fa845);" data-icon="phone"></div>
             <span>WhatsApp</span>
           </div>
           <div class="app-item">
             <span id="badge-Telegram" class="badge" style="display:none">0</span>
-            <div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);">✈️</div>
+            <div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);" data-icon="plane"></div>
             <span>Telegram</span>
           </div>
           <div class="app-item">
             <span id="badge-Mail" class="badge" style="display:none">0</span>
-            <div class="app-icon" style="background: linear-gradient(180deg, #60a5fa, #2563eb);">✉️</div>
+            <div class="app-icon" style="background: linear-gradient(180deg, #60a5fa, #2563eb);" data-icon="mail"></div>
             <span>Mail</span>
           </div>
         </div>
 
         <div class="dock">
-          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #4ade80, #16a34a);">📞</div></div>
-          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);">🌐</div></div>
-          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #fb7185, #e11d48);">🎵</div></div>
-          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #a78bfa, #7c3aed);">⚙️</div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #4ade80, #16a34a);" data-icon="phone"></div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #38bdf8, #0284c7);" data-icon="globe"></div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #fb7185, #e11d48);" data-icon="music"></div></div>
+          <div class="app-item"><div class="app-icon" style="background: linear-gradient(180deg, #a78bfa, #7c3aed);" data-icon="sliders"></div></div>
         </div>
       </section>
+
+      <div id="toast" class="toast"></div>
 
       <!-- Barre de déverrouillage tout en bas -->
       <div id="swipeZone" class="swipe-zone" title="Glisser vers le haut pour déverrouiller">
@@ -710,61 +1242,143 @@
   </div>
 
 <script>
-  const APP_META = {
-    Messages: { icon: "💬", color: "#28cd41" },
-    WhatsApp: { icon: "🟢", color: "#1fa845" },
-    Telegram: { icon: "✈️", color: "#0284c7" },
-    Mail:     { icon: "✉️", color: "#2563eb" }
+  /* ------------------------------------------------------------------ *
+   *  Icônes SVG (aucun emoji dans l'interface)
+   * ------------------------------------------------------------------ */
+  const svg = (inner, opts) => {
+    const o = opts || {};
+    const fill = o.stroke ? "none" : "currentColor";
+    const stroke = o.stroke ? ' stroke="currentColor" stroke-width="' + (o.width || 1.8) + '" stroke-linecap="round" stroke-linejoin="round"' : "";
+    return '<svg viewBox="0 0 24 24" fill="' + fill + '"' + stroke + ' aria-hidden="true">' + inner + "</svg>";
   };
+
+  const ICONS = {
+    bubble: svg('<path d="M12 3.4c-5 0-9 3.3-9 7.4 0 2.3 1.3 4.4 3.3 5.7V21l3.2-1.8c.8.2 1.6.3 2.5.3 5 0 9-3.3 9-7.4s-4-7.7-9-7.7z"/>'),
+    phone: svg('<path d="M8.6 3H5.4A2.4 2.4 0 0 0 3 5.4C3 13.6 10.4 21 18.6 21A2.4 2.4 0 0 0 21 18.6v-3.1l-4.3-1.4-1.9 1.9a14.2 14.2 0 0 1-5.8-5.8l1.9-1.9L8.6 3z"/>'),
+    plane: svg('<path d="M22 2 2 9.5l6.5 2.4L16 5.3 10.2 13l4.6 7.4L22 2z"/>'),
+    mail: svg('<path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm.4 3.1 7.6 5.1 7.6-5.1V7.2L12 12.3 4.4 7.2v.9z"/>'),
+    lock: svg('<path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm0 2.2A2.8 2.8 0 0 1 14.8 7v2H9.2V7A2.8 2.8 0 0 1 12 4.2z"/>'),
+    flashlight: svg('<path d="M9 2h6l-.6 5h.6v2.6l-2 3.1V22h-2v-9.3l-2-3.1V7h.6L9 2z"/>'),
+    camera: svg('<path d="M9 4h6l1.2 2H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.8L9 4zm3 5.4a4.1 4.1 0 1 0 0 8.2 4.1 4.1 0 0 0 0-8.2zm0 2a2.1 2.1 0 1 1 0 4.2 2.1 2.1 0 0 1 0-4.2z"/>'),
+    globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3.4 9.3h17.2M3.4 14.7h17.2M12 3c2.6 3 2.6 15 0 18M12 3c-2.6 3-2.6 15 0 18"/>', { stroke: true, width: 1.7 }),
+    music: svg('<path d="M9 17.5V5.2l10-2v12.3"/><circle cx="6.4" cy="18" r="2.6"/><circle cx="16.4" cy="16.3" r="2.6"/>', { stroke: true, width: 1.7 }),
+    sliders: svg('<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h9M17 17h3"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="17" r="2"/>', { stroke: true, width: 1.7 }),
+    pin: svg('<path d="M14.7 2 22 9.3l-2.7 1-3.3 3.3.3 3.3-1.6 1.6-9-9 1.6-1.6 3.3.3 3.3-3.3L14.7 2z"/><path d="M6.6 17.4 2.4 21.6l1.4-4.6"/>'),
+    clock: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7.2V12l3.4 2"/>', { stroke: true, width: 1.9 }),
+    trash: svg('<path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 10.2A2.2 2.2 0 0 1 14.8 21H9.2A2.2 2.2 0 0 1 7 19.2L6 9z"/>'),
+    reply: svg('<path d="M9.4 4 3 10.2l6.4 6.2v-3.9h2.4c3 0 5.3 1.1 7.2 4-.8-5.3-3.3-8.4-7.2-8.4H9.4V4z"/>'),
+    close: svg('<path d="m6 6 12 12M18 6 6 18"/>', { stroke: true, width: 2 }),
+    chevronUp: svg('<path d="m6 14.5 6-6 6 6"/>', { stroke: true, width: 2.2 }),
+    chevronDown: svg('<path d="m6 9.5 6 6 6-6"/>', { stroke: true, width: 2.2 }),
+    send: svg('<path d="M3 20.4 21.5 12 3 3.6l3 8.4-3 8.4z"/>'),
+    check: svg('<path d="m4 12.5 5 5L20 6.5"/>', { stroke: true, width: 2.2 }),
+    bolt: svg('<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>')
+  };
+
+  /* ------------------------------------------------------------------ *
+   *  Données
+   * ------------------------------------------------------------------ */
+  const APP_META = {
+    Messages: { icon: ICONS.bubble, color: "#28cd41" },
+    WhatsApp: { icon: ICONS.phone, color: "#1fa845" },
+    Telegram: { icon: ICONS.plane, color: "#0284c7" },
+    Mail:     { icon: ICONS.mail, color: "#2563eb" }
+  };
+
+  const PRIORITY_WORDS = ["urgent", "urgence", "virement", "alerte", "appel manque", "appel manqué", "critique", "immediat", "immédiat", "sos", "panne"];
+  const SUMMARY_WORDS = ["confirme", "confirmation", "demande", "valider", "livraison", "bordereau", "dossier", "chantier", "montant", "rapport", "reunion", "réunion", "signature", "paiement", "facture", "certificat", "commande"];
 
   const SAMPLE_MESSAGES = [
     { app: "WhatsApp", sender: "Client Travex", text: "Le colis vient d'arriver au port, on confirme la livraison ?" },
-    { app: "Messages", sender: "Ida", text: "N'oublie pas de passer à la maison ce soir !" },
+    { app: "Messages", sender: "Ida", text: "N'oublie pas de passer à la maison ce soir." },
     { app: "Telegram", sender: "Bot Trading XAU", text: "Alerte structure H1 : cassure haussière confirmée sur l'or." },
-    { app: "Mail", sender: "Support Hébergement", text: "Votre certificat SSL a été renouvelé avec succès." },
+    { app: "Mail", sender: "Support Hebergement", text: "Votre certificat SSL a été renouvelé avec succès." },
     { app: "WhatsApp", sender: "Équipe Chantier", text: "Relevé des heures de la semaine envoyé au format PDF." },
     { app: "Messages", sender: "Banque", text: "Virement entrant de 450 000 FCFA crédité sur votre compte." }
   ];
 
+  const BURST_SAMPLES = [
+    { sender: "Équipe Logistique", app: "WhatsApp", texts: [
+      "Le camion est chargé et part dans dix minutes.",
+      "Le bordereau de livraison est prêt, je te l'envoie.",
+      "Livraison confirmée à 16h sur le site de Nsam.",
+      "Confirme-moi la présence du chef d'équipe."
+    ]},
+    { sender: "Karim", app: "Messages", texts: [
+      "Salut, tu es sur le chantier cet après-midi ?",
+      "J'ai besoin du plan du niveau deux.",
+      "Le béton arrive à 15h.",
+      "Réponds-moi dès que possible."
+    ]}
+  ];
+
+  const URGENT_SAMPLES = [
+    { app: "Messages", sender: "Banque", text: "Urgent : virement de 2 400 000 FCFA en attente de validation." },
+    { app: "Messages", sender: "Appel manque", text: "Appel manqué de la direction, rappel attendu avant 17h." },
+    { app: "Telegram", sender: "Bot Trading XAU", text: "Alerte critique : position ouverte sur l'or, vérifiez le risque." }
+  ];
+
   const CARD_SLOT_HEIGHT = 96;
-  const notifications = [];     // index 0 = carte de tête (en bas au repos, monte vers le haut)
-  const cardElements = [];
-  const unreadByApp = { Messages: 0, WhatsApp: 0, Telegram: 0, Mail: 0 };
+  const MERGE_WINDOW = 120000;
+  const BURST_WINDOW = 15000;
+  const SWIPE_OPEN_LEFT = 96;
+  const SWIPE_OPEN_RIGHT = 184;
 
-  let isUnlocked = false;
+  /* ------------------------------------------------------------------ *
+   *  État
+   * ------------------------------------------------------------------ */
+  const state = {
+    threads: [],
+    seq: 0,
+    isUnlocked: false,
+    scrollOffset: 0,
+    targetOffset: 0,
+    isDragging: false,
+    animFrameId: null,
+    peekId: null,
+    swipeX: new Map(),
+    openSwipe: null,
+    snoozed: [],
+    lastActionAt: 0,
+    lastTap: null,
+    tapTimer: null
+  };
+
+  let cardElements = [];
+  let gesture = null;
   let sampleIdx = 0;
-  let diTimer = null;
+  let burstIdx = 0;
+  let urgentIdx = 0;
+  let islandTimer = null;
+  let liveTimer = null;
+  let toastTimer = null;
+  let snoozeTicker = null;
 
-  let scrollOffset = 0;
-  let targetOffset = 0;
-  let isDragging = false;
-  let animFrameId = null;
+  const $ = (id) => document.getElementById(id);
 
-  const phoneScreen = document.getElementById("phoneScreen");
-  const lockScreen = document.getElementById("lockScreen");
-  const lockTopHeader = document.getElementById("lockTopHeader");
-  const wallpaperOverlay = document.getElementById("wallpaperOverlay");
-  const notifStage = document.getElementById("notifStage");
-  const cardsLayer = document.getElementById("cardsLayer");
-  const centerTitleBar = document.getElementById("centerTitleBar");
-  const stackCounterPill = document.getElementById("stackCounterPill");
-  const emptyState = document.getElementById("emptyState");
-  const collapseBtn = document.getElementById("collapseBtn");
-  const statusPill = document.getElementById("statusPill");
-  const statusText = document.getElementById("statusText");
-  const toggleLockBtn = document.getElementById("toggleLockBtn");
-  const swipeZone = document.getElementById("swipeZone");
-  const dynamicIsland = document.getElementById("dynamicIsland");
+  const phoneScreen = $("phoneScreen");
+  const lockScreen = $("lockScreen");
+  const lockTopHeader = $("lockTopHeader");
+  const wallpaperOverlay = $("wallpaperOverlay");
+  const notifStage = $("notifStage");
+  const cardsLayer = $("cardsLayer");
+  const centerTitleBar = $("centerTitleBar");
+  const stackCounterPill = $("stackCounterPill");
+  const emptyState = $("emptyState");
+  const collapseBtn = $("collapseBtn");
+  const statusPill = $("statusPill");
+  const statusText = $("statusText");
+  const toggleLockBtn = $("toggleLockBtn");
+  const swipeZone = $("swipeZone");
+  const dynamicIsland = $("dynamicIsland");
+  const peekBackdrop = $("peekBackdrop");
+  const toastEl = $("toast");
 
-  function updateClock() {
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    document.getElementById("lockClock").textContent = timeStr;
-    document.getElementById("miniClock").textContent = timeStr;
-  }
-
+  /* ------------------------------------------------------------------ *
+   *  Utilitaires
+   * ------------------------------------------------------------------ */
   function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, m => ({
+    return String(str).replace(/[&<>"']/g, (m) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     }[m]));
   }
@@ -773,17 +1387,357 @@
     return Math.min(max, Math.max(min, val));
   }
 
+  function fmtTime(ts) {
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  function getThread(id) {
+    return state.threads.find((t) => String(t.id) === String(id));
+  }
+
+  function findCardEl(id) {
+    return cardElements.find((el) => String(el.id) === String(id));
+  }
+
+  function toast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1900);
+  }
+
+  function logAction(message) {
+    state.lastActionAt = Date.now();
+    $("lastAction").textContent = message + " (" + fmtTime(Date.now()) + ")";
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Analyse : priorité, rafale, résumé automatique
+   * ------------------------------------------------------------------ */
+  function isPriorityText(text) {
+    const l = text.toLowerCase();
+    return PRIORITY_WORDS.some((w) => l.includes(w));
+  }
+
+  function textScore(text) {
+    const l = text.toLowerCase();
+    let score = 0;
+    PRIORITY_WORDS.forEach((w) => { if (l.includes(w)) score += 3; });
+    SUMMARY_WORDS.forEach((w) => { if (l.includes(w)) score += 2; });
+    if (/\d/.test(text)) score += 1;
+    if (/\b\d{1,2}\s?h\b/.test(l)) score += 2;
+    return score;
+  }
+
+  /* Résumé extractif local : deux phrases les plus informatives, dans l'ordre */
+  function summarize(thread) {
+    const texts = [];
+    thread.messages.forEach((m) => {
+      if (m.dir === "in" && texts.indexOf(m.text) === -1) texts.push(m.text);
+    });
+    if (!texts.length) return "";
+    const ranked = texts
+      .map((text, index) => ({ text, index, score: textScore(text) }))
+      .sort((a, b) => (b.score - a.score) || (a.index - b.index))
+      .slice(0, 2)
+      .sort((a, b) => a.index - b.index);
+    let out = ranked.map((r) => r.text.replace(/[.!?]+$/, "").trim()).join(" ; ");
+    if (out.length > 104) out = out.slice(0, 101).trim() + "...";
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+
+  function refreshAnalysis(thread) {
+    const now = Date.now();
+    const recentIn = thread.messages.filter((m) => m.dir === "in" && now - m.at <= BURST_WINDOW);
+    thread.burst = recentIn.length > 3;
+    thread.summary = thread.burst ? summarize(thread) : "";
+    thread.priority = thread.messages.some((m) => m.dir === "in" && isPriorityText(m.text));
+  }
+
+  function resort() {
+    state.threads.sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (a.priority !== b.priority) return a.priority ? -1 : 1;
+      return b.lastAt - a.lastAt;
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Modèle : réception, fusion en fil, badges
+   * ------------------------------------------------------------------ */
+  function receive(app, sender, text, options) {
+    const opts = options || {};
+    const now = Date.now();
+    const time = fmtTime(now);
+    let thread = opts.forceNew ? null : state.threads.find(
+      (t) => t.app === app && t.sender === sender && now - t.lastAt < MERGE_WINDOW
+    );
+
+    if (thread) {
+      thread.messages.push({ dir: "in", text, time, at: now });
+      thread.unread += 1;
+      thread.isNew = true;
+      thread.lastAt = now;
+    } else {
+      thread = {
+        id: ++state.seq,
+        app,
+        sender,
+        messages: [{ dir: "in", text, time, at: now }],
+        unread: 1,
+        pinned: false,
+        expanded: false,
+        replyOpen: false,
+        sentNote: false,
+        isNew: true,
+        lastAt: now
+      };
+      state.threads.push(thread);
+    }
+
+    refreshAnalysis(thread);
+    resort();
+
+    if (!state.isUnlocked) {
+      state.scrollOffset = 0;
+      state.targetOffset = 0;
+    }
+
+    rebuildCards();
+    updateBadges();
+
+    if (state.isUnlocked) {
+      const recentIn = thread.messages.filter((m) => m.dir === "in" && Date.now() - m.at <= BURST_WINDOW).length;
+      if (recentIn >= 3) updateLivePill(thread);
+      else showIsland(thread);
+    }
+    return thread;
+  }
+
+  function updateBadges() {
+    const counts = { Messages: 0, WhatsApp: 0, Telegram: 0, Mail: 0 };
+    state.threads.forEach((t) => { counts[t.app] = (counts[t.app] || 0) + t.unread; });
+    Object.keys(counts).forEach((app) => {
+      const badge = $("badge-" + app);
+      if (!badge) return;
+      const count = counts[app];
+      badge.style.display = count > 0 ? "grid" : "none";
+      badge.textContent = count > 99 ? "99+" : String(count);
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Rendu des cartes
+   * ------------------------------------------------------------------ */
+  function threadLabel(count) {
+    return count > 1 ? count + " autres messages" : "1 autre message";
+  }
+
+  function cardTemplate(thread) {
+    const meta = APP_META[thread.app] || { icon: ICONS.bubble, color: "#0a84ff" };
+    const last = thread.messages[thread.messages.length - 1];
+    const others = thread.messages.length - 1;
+    let html = "";
+
+    html += '<div class="notif-header">' +
+      '<span class="notif-app"><span class="notif-app-icon" style="background:' + meta.color + '">' + meta.icon + "</span>" + escapeHtml(thread.app) + "</span>" +
+      '<span class="notif-meta">' +
+        (thread.pinned ? '<button type="button" class="chip pin" data-role="unpin" title="Désépingler">' + ICONS.pin + "Épinglé</button>" : "") +
+        (thread.priority ? '<span class="chip urgent">' + ICONS.bolt + "Prioritaire</span>" : "") +
+        '<span class="notif-time">' + last.time + "</span>" +
+      "</span>" +
+    "</div>";
+
+    html += '<div class="notif-title">' + escapeHtml(thread.sender) + "</div>";
+
+    if (thread.summary) {
+      html += '<div class="burst-summary">' +
+        '<span class="burst-label">Résumé</span>' +
+        '<span class="burst-text">' + escapeHtml(thread.summary) + "</span>" +
+        '<button type="button" class="burst-toggle" data-role="raw">Messages</button>' +
+      "</div>";
+    }
+
+    html += '<div class="notif-message">' + escapeHtml(last.text) + "</div>";
+
+    if (others > 0) {
+      html += '<button type="button" class="thread-toggle" data-role="thread">' +
+        (thread.expanded ? "Réduire le fil" : threadLabel(others)) +
+        (thread.expanded ? ICONS.chevronUp : ICONS.chevronDown) +
+      "</button>";
+    }
+
+    if (thread.expanded && thread.messages.length > 1) {
+      html += '<div class="thread-list">' + thread.messages.map((m) =>
+        '<div class="thread-msg ' + (m.dir === "out" ? "out" : "in") + '">' +
+          '<span class="thread-text">' + escapeHtml(m.text) + "</span>" +
+          '<span class="thread-time">' + m.time + "</span>" +
+        "</div>"
+      ).join("") + "</div>";
+    }
+
+    html += '<form class="quick-reply" data-role="reply-form">' +
+      '<input class="quick-input" type="text" placeholder="Réponse rapide" autocomplete="off" maxlength="140">' +
+      '<button type="submit" class="quick-send" title="Envoyer">' + ICONS.send + "</button>" +
+    "</form>";
+    html += '<div class="reply-hint">Entrée pour envoyer, Échap pour fermer</div>';
+
+    if (thread.sentNote) {
+      html += '<div class="sent-note">' + ICONS.check + "Réponse envoyée dans la conversation</div>";
+    }
+
+    html += '<div class="peek-actions">' +
+      '<button type="button" class="peek-reply" data-role="reply">' + ICONS.reply + "Répondre</button>" +
+      '<button type="button" class="peek-close" data-role="unpeek">Fermer</button>' +
+    "</div>";
+
+    return html;
+  }
+
+  function rebuildCards() {
+    cardsLayer.innerHTML = "";
+    cardElements = [];
+
+    state.threads.forEach((thread) => {
+      const slot = document.createElement("div");
+      slot.className = "card-slot" + (state.threads.indexOf(thread) === 0 ? " is-head" : "");
+      slot.dataset.id = String(thread.id);
+
+      const left = document.createElement("div");
+      left.className = "swipe-actions left";
+      left.innerHTML = '<button type="button" class="swipe-btn" data-action="delete">' + ICONS.trash + "<span>Effacer</span></button>";
+
+      const right = document.createElement("div");
+      right.className = "swipe-actions right";
+      right.innerHTML =
+        '<button type="button" class="swipe-btn pin" data-action="pin">' + ICONS.pin + "<span>Épingler</span></button>" +
+        '<button type="button" class="swipe-btn snooze" data-action="snooze">' + ICONS.clock + "<span>Rappel 10 min</span></button>";
+
+      const card = document.createElement("article");
+      card.className = "prog-card" +
+        (thread.priority ? " urgent" : "") +
+        (thread.replyOpen ? " reply-open" : "") +
+        (state.peekId === thread.id ? " peeking" : "") +
+        (thread.isNew ? " entering" : "");
+      card.dataset.id = String(thread.id);
+      card.innerHTML = cardTemplate(thread);
+      thread.isNew = false;
+
+      slot.appendChild(left);
+      slot.appendChild(right);
+      slot.appendChild(card);
+      cardsLayer.appendChild(slot);
+
+      cardElements.push({ id: thread.id, slot, card });
+
+      card.addEventListener("pointerdown", onCardDown);
+      card.addEventListener("pointermove", onCardMove);
+      card.addEventListener("pointerup", onCardUp);
+      card.addEventListener("pointercancel", onCardUp);
+      card.addEventListener("dblclick", (event) => {
+        if (event.target.closest("input, button, form, .thread-list")) return;
+        event.preventDefault();
+        openQuickReply(card.dataset.id);
+      });
+      card.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeQuickReply(card.dataset.id);
+      });
+
+      slot.addEventListener("click", onSlotClick);
+      card.addEventListener("click", onCardClick);
+      card.addEventListener("submit", onReplySubmit);
+    });
+
+    renderFrame();
+    applySwipePositions();
+  }
+
+  /* Boutons révélés par le balayage : ils vivent à côté de la carte, dans l'emplacement */
+  function onSlotClick(event) {
+    const actionEl = event.target.closest("[data-action]");
+    if (!actionEl) return;
+    const slot = event.currentTarget;
+    const thread = getThread(slot.dataset.id);
+    if (!thread) return;
+    event.stopPropagation();
+    const action = actionEl.dataset.action;
+    if (action === "delete") deleteThread(thread.id, "bouton");
+    if (action === "pin") togglePin(thread.id);
+    if (action === "snooze") snoozeThread(thread.id);
+  }
+
+  function onCardClick(event) {
+    const card = event.currentTarget;
+    const thread = getThread(card.dataset.id);
+    if (!thread) return;
+
+    const roleEl = event.target.closest("[data-role]");
+    const actionEl = event.target.closest("[data-action]");
+
+    if (actionEl) {
+      event.stopPropagation();
+      const action = actionEl.dataset.action;
+      if (action === "delete") deleteThread(thread.id, "bouton");
+      if (action === "pin") togglePin(thread.id);
+      if (action === "snooze") snoozeThread(thread.id);
+      return;
+    }
+
+    if (roleEl) {
+      event.stopPropagation();
+      const role = roleEl.dataset.role;
+      if (role === "thread") toggleThread(thread.id);
+      if (role === "raw") { thread.expanded = true; rebuildCards(); }
+      if (role === "reply") openQuickReply(thread.id);
+      if (role === "unpeek") closePeek();
+      if (role === "unpin") { thread.pinned = false; afterMutation(thread, "Désépinglée"); }
+      return;
+    }
+
+    if (event.target.closest("input, form, .peek-actions")) return;
+    if (gestureJustEnded()) return;
+
+    // Un simple clic déploie la pile, puis ouvre l'application.
+    const metrics = getMetrics();
+    if (metrics.total > 1 && state.scrollOffset < metrics.headAscentDistance * 0.4) {
+      animateTo(metrics.headAscentDistance);
+    } else {
+      thread.unread = 0;
+      updateBadges();
+      setLockState(true);
+    }
+  }
+
+  let gestureEndedAt = 0;
+  function gestureJustEnded() {
+    return performance.now() - gestureEndedAt < 120;
+  }
+
+  function applySwipePositions() {
+    cardElements.forEach((el) => {
+      const x = state.swipeX.get(el.id) || 0;
+      el.card.style.transform = "translateX(" + x.toFixed(2) + "px)";
+      const slot = el.slot;
+      const left = slot.querySelector(".swipe-actions.left");
+      const right = slot.querySelector(".swipe-actions.right");
+      if (left) left.classList.toggle("visible", x < -6);
+      if (right) right.classList.toggle("visible", x > 6);
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Placement progressif de la pile
+   * ------------------------------------------------------------------ */
   function getMetrics() {
-    const total = notifications.length;
+    const total = state.threads.length;
     const stageH = notifStage.clientHeight || 540;
-    // Distance où la carte de tête (idx = 0) monte jusqu'en haut de la zone de notifications
     const headAscentDistance = Math.max(96, stageH - 135);
     const maxOffset = Math.max(0, headAscentDistance + Math.max(0, total - 1) * CARD_SLOT_HEIGHT - (stageH - 135));
     return { total, stageH, headAscentDistance, maxOffset };
   }
 
-  /* Rendu continu : la carte de tête (idx = 0) monte vers le haut, suivie des cartes suivantes */
-  function renderProgressiveFrame() {
+  function renderFrame() {
     const { total, stageH, headAscentDistance } = getMetrics();
     emptyState.style.display = total === 0 ? "block" : "none";
 
@@ -797,200 +1751,598 @@
       return;
     }
 
-    // Progression de montée de la carte de tête [0 .. 1]
-    const headProgress = total <= 1 ? 0 : clamp(scrollOffset / headAscentDistance, 0, 1);
+    const headProgress = total <= 1 ? 0 : clamp(state.scrollOffset / headAscentDistance, 0, 1);
+    cardsLayer.classList.toggle("cards-expanded", headProgress > 0.38);
 
-    // 1. Fond d'écran & horloge s'adaptent progressivement
-    const blurPx = (headProgress * 18).toFixed(1);
-    const bright = (1 - headProgress * 0.32).toFixed(2);
-    wallpaperOverlay.style.backdropFilter = `blur(${blurPx}px) brightness(${bright})`;
-
+    wallpaperOverlay.style.backdropFilter = "blur(" + (headProgress * 18).toFixed(1) + "px) brightness(" + (1 - headProgress * 0.32).toFixed(2) + ")";
     lockTopHeader.style.opacity = String((1 - headProgress * 0.82).toFixed(2));
-    lockTopHeader.style.transform = `translateY(${(-headProgress * 12).toFixed(1)}px) scale(${(1 - headProgress * 0.08).toFixed(3)})`;
+    lockTopHeader.style.transform = "translateY(" + (-headProgress * 12).toFixed(1) + "px) scale(" + (1 - headProgress * 0.08).toFixed(3) + ")";
 
-    // 2. Barre "Centre de notifications"
     const headerAlpha = clamp((headProgress - 0.55) / 0.45, 0, 1);
     centerTitleBar.style.opacity = String(headerAlpha.toFixed(2));
     centerTitleBar.style.pointerEvents = headerAlpha > 0.5 ? "auto" : "none";
 
-    // 3. Pastille compteur
     if (total > 1) {
       stackCounterPill.style.display = "block";
-      stackCounterPill.textContent = `↑ Glisser vers le haut (${total} notifications)`;
-      const pillAlpha = clamp(1 - headProgress * 2.5, 0, 1);
-      stackCounterPill.style.opacity = String(pillAlpha.toFixed(2));
-      stackCounterPill.style.transform = `translate(-50%, ${(-headProgress * 18).toFixed(1)}px)`;
+      stackCounterPill.textContent = "Glisser vers le haut (" + total + " fils)";
+      stackCounterPill.style.opacity = String(clamp(1 - headProgress * 2.5, 0, 1).toFixed(2));
+      stackCounterPill.style.transform = "translate(-50%, " + (-headProgress * 18).toFixed(1) + "px)";
     } else {
       stackCounterPill.style.display = "none";
     }
 
-    // 4. Position de la carte de tête (idx = 0) : part de 0 (en bas) et monte vers -headAscentDistance (en haut)
-    const headY = -scrollOffset;
+    const headY = -state.scrollOffset;
 
-    cardElements.forEach((card, idx) => {
-      // Position de repos empilée derrière la carte de tête
+    cardElements.forEach((el, idx) => {
+      const thread = getThread(el.id);
+      if (!thread) return;
+
       let stackY = 0;
       let stackScale = 1;
       let stackOpacity = 1;
 
-      if (idx === 0) {
-        stackY = 0;
-        stackScale = 1;
-        stackOpacity = 1;
-      } else if (idx === 1) {
-        stackY = 11;
-        stackScale = 0.94;
-        stackOpacity = 0.72;
-      } else if (idx === 2) {
-        stackY = 20;
-        stackScale = 0.88;
-        stackOpacity = 0.42;
-      } else {
-        stackY = 24;
-        stackScale = 0.84;
-        stackOpacity = 0;
-      }
+      if (idx === 1) { stackY = 11; stackScale = 0.94; stackOpacity = 0.72; }
+      else if (idx === 2) { stackY = 20; stackScale = 0.88; stackOpacity = 0.42; }
+      else if (idx > 2) { stackY = 24; stackScale = 0.84; stackOpacity = 0; }
 
-      // Quand la carte de tête monte (headY négatif), les cartes suivantes (idx >= 1)
-      // se déploient progressivement en colonne juste derrière elle
       const trailingSpread = idx * CARD_SLOT_HEIGHT * headProgress;
       const expandedY = headY + trailingSpread;
-
-      // Chaque carte suivante passe progressivement de son état empilé à sa position déployée
       const cardUnfold = idx === 0 ? 1 : clamp(headProgress * (1 + idx * 0.25), 0, 1);
       const currentY = stackY + (expandedY - stackY) * cardUnfold;
       const currentScale = stackScale + (1 - stackScale) * cardUnfold;
       let currentOpacity = stackOpacity + (1 - stackOpacity) * cardUnfold;
 
-      // Estompage progressif lorsque la carte atteint le haut de la zone (sous le titre)
       const topLimit = -(stageH - 122);
       if (currentY < topLimit) {
-        const overTop = topLimit - currentY;
-        currentOpacity *= clamp(1 - overTop / 55, 0, 1);
+        currentOpacity *= clamp(1 - (topLimit - currentY) / 55, 0, 1);
       }
-
-      // Estompage si la carte descend sous le bas de l'écran
       if (currentY > 24) {
         currentOpacity *= clamp(1 - (currentY - 24) / 40, 0, 1);
       }
 
-      card.style.zIndex = String(total - idx);
-      card.style.transform = `translate3d(0, ${currentY.toFixed(2)}px, 0) scale(${currentScale.toFixed(4)})`;
-      card.style.opacity = String(clamp(currentOpacity, 0, 1).toFixed(3));
-      card.style.pointerEvents = currentOpacity > 0.25 ? "auto" : "none";
+      const peeking = state.peekId === thread.id;
+      const scale = currentScale * (peeking ? 1.03 : 1);
+
+      el.slot.style.zIndex = peeking ? "999" : String(total - idx);
+      el.slot.style.transform = "translate3d(0, " + currentY.toFixed(2) + "px, 0) scale(" + scale.toFixed(4) + ")";
+      el.slot.style.opacity = String(clamp(currentOpacity, 0, 1).toFixed(3));
+      el.card.style.pointerEvents = currentOpacity > 0.25 ? "auto" : "none";
     });
   }
 
   function startPhysicsLoop() {
-    if (animFrameId) return;
+    if (state.animFrameId) return;
     function tick() {
-      if (!isDragging) {
-        const diff = targetOffset - scrollOffset;
+      if (!state.isDragging) {
+        const diff = state.targetOffset - state.scrollOffset;
         if (Math.abs(diff) < 0.25) {
-          scrollOffset = targetOffset;
-          renderProgressiveFrame();
-          animFrameId = null;
+          state.scrollOffset = state.targetOffset;
+          renderFrame();
+          state.animFrameId = null;
           return;
         }
-        scrollOffset += diff * 0.16;
+        state.scrollOffset += diff * 0.16;
       }
-      renderProgressiveFrame();
-      animFrameId = requestAnimationFrame(tick);
+      renderFrame();
+      state.animFrameId = requestAnimationFrame(tick);
     }
-    animFrameId = requestAnimationFrame(tick);
+    state.animFrameId = requestAnimationFrame(tick);
   }
 
   function animateTo(newTarget) {
     const { maxOffset } = getMetrics();
-    targetOffset = clamp(newTarget, 0, maxOffset);
+    state.targetOffset = clamp(newTarget, 0, maxOffset);
     startPhysicsLoop();
   }
 
-  function rebuildCardsDOM() {
-    cardsLayer.innerHTML = "";
-    cardElements.length = 0;
+  /* ------------------------------------------------------------------ *
+   *  Gestes sur les cartes : balayage, appui long, double-clic, scroll
+   * ------------------------------------------------------------------ */
+  function onCardDown(event) {
+    if (event.button !== undefined && event.button !== 0) return;
+    const card = event.currentTarget;
+    if (event.target.closest("input, form, button, .thread-list")) return;
 
-    notifications.forEach((item, idx) => {
-      const meta = APP_META[item.app] || { icon: "🔔", color: "#0a84ff" };
-      const card = document.createElement("article");
-      card.className = "prog-card" + (idx === 0 && item.isNew ? " entering" : "");
-      item.isNew = false;
+    const thread = getThread(card.dataset.id);
+    if (!thread) return;
+    event.stopPropagation();
 
-      card.innerHTML = `
-        <div class="notif-header">
-          <span class="notif-app">
-            <span class="notif-app-dot" style="background:${meta.color}">${meta.icon}</span>
-            ${item.app}
-          </span>
-          <span>${item.time}</span>
-        </div>
-        <div class="notif-title">${escapeHtml(item.sender)}</div>
-        <div class="notif-message">${escapeHtml(item.text)}</div>
-      `;
+    if (state.peekId && state.peekId !== thread.id) closePeek();
+    if (state.openSwipe && String(state.openSwipe.id) !== String(thread.id)) closeSwipeIfOpen();
 
-      card.addEventListener("click", () => {
-        if (movedDuringPointer) return;
-        const { headAscentDistance } = getMetrics();
-        if (notifications.length > 1 && scrollOffset < headAscentDistance * 0.4) {
-          animateTo(headAscentDistance);
-        } else {
-          unreadByApp[item.app] = 0;
-          updateBadges();
-          setLockState(true);
-        }
-      });
+    gesture = {
+      id: thread.id,
+      card,
+      startX: event.clientX,
+      startY: event.clientY,
+      x: 0,
+      y: 0,
+      mode: "pending",
+      velocity: 0,
+      lastY: event.clientY,
+      dragOffset: state.scrollOffset,
+      downAt: performance.now(),
+      longTimer: null,
+      pointerId: event.pointerId
+    };
 
-      cardsLayer.appendChild(card);
-      cardElements.push(card);
-    });
+    gesture.longTimer = setTimeout(() => {
+      if (gesture && gesture.mode === "pending" && gesture.id === thread.id) {
+        gesture.mode = "peek";
+        openPeek(thread.id);
+      }
+    }, 460);
 
-    renderProgressiveFrame();
+    try { card.setPointerCapture(event.pointerId); } catch (err) { /* ignore */ }
   }
 
-  function pushNotification(app, sender, text) {
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  function onCardMove(event) {
+    if (!gesture || gesture.card !== event.currentTarget) return;
+    const dx = event.clientX - gesture.startX;
+    const dy = event.clientY - gesture.startY;
+    gesture.x = dx;
+    gesture.y = dy;
 
-    notifications.unshift({ app, sender, text, time, isNew: true });
-    unreadByApp[app] = (unreadByApp[app] || 0) + 1;
+    if (gesture.mode === "pending" && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      clearTimeout(gesture.longTimer);
+      if (Math.abs(dx) > Math.abs(dy)) {
+        gesture.mode = "swipe";
+        gesture.card.style.transition = "none";
+      } else {
+        gesture.mode = "scroll";
+        gesture.dragOffset = state.scrollOffset;
+        state.isDragging = true;
+      }
+    }
+
+    if (gesture.mode === "swipe") {
+      const width = cardsLayer.clientWidth || 330;
+      let x = dx;
+      const limit = width * 0.62;
+      if (x > limit) x = limit + (x - limit) * 0.22;
+      if (x < -limit) x = -limit + (x + limit) * 0.22;
+      state.swipeX.set(gesture.id, x);
+      applySwipePositions();
+    } else if (gesture.mode === "scroll") {
+      const { maxOffset } = getMetrics();
+      gesture.velocity = gesture.lastY - event.clientY;
+      gesture.lastY = event.clientY;
+      let next = gesture.dragOffset + (gesture.startY - event.clientY);
+      if (next < 0) next *= 0.25;
+      if (next > maxOffset) next = maxOffset + (next - maxOffset) * 0.25;
+      state.scrollOffset = next;
+      state.targetOffset = next;
+      renderFrame();
+    }
+  }
+
+  function onCardUp(event) {
+    if (!gesture || gesture.card !== event.currentTarget) return;
+    clearTimeout(gesture.longTimer);
+    const g = gesture;
+    gesture = null;
+    state.isDragging = false;
+    gestureEndedAt = performance.now();
+
+    if (g.mode === "peek") return;
+
+    if (g.mode === "swipe") {
+      const width = cardsLayer.clientWidth || 330;
+      if (g.x <= -width * 0.52) { deleteThread(g.id, "balayage"); return; }
+      if (g.x >= width * 0.52) { togglePin(g.id); return; }
+
+      if (g.x <= -44) {
+        state.openSwipe = { id: g.id, dir: "left" };
+        setSwipeX(g.id, -SWIPE_OPEN_LEFT, true);
+      } else if (g.x >= 44) {
+        state.openSwipe = { id: g.id, dir: "right" };
+        setSwipeX(g.id, SWIPE_OPEN_RIGHT, true);
+      } else {
+        state.openSwipe = null;
+        setSwipeX(g.id, 0, true);
+      }
+      return;
+    }
+
+    if (g.mode === "scroll") {
+      const { headAscentDistance, maxOffset } = getMetrics();
+      let projected = state.scrollOffset + g.velocity * 8;
+      if (projected < headAscentDistance * 0.35) projected = 0;
+      else if (projected < headAscentDistance) projected = headAscentDistance;
+      state.targetOffset = clamp(projected, 0, maxOffset);
+      startPhysicsLoop();
+      return;
+    }
+
+    if (g.mode === "pending" && performance.now() - g.downAt < 420) {
+      handleTap(g.id);
+    }
+  }
+
+  function handleTap(id) {
+    const now = performance.now();
+    if (state.lastTap && state.lastTap.id === id && now - state.lastTap.at < 330) {
+      clearTimeout(state.tapTimer);
+      state.lastTap = null;
+      openQuickReply(id);
+      return;
+    }
+    state.lastTap = { id, at: now };
+    clearTimeout(state.tapTimer);
+    state.tapTimer = setTimeout(() => {
+      state.lastTap = null;
+      const metrics = getMetrics();
+      const thread = getThread(id);
+      if (!thread) return;
+      if (state.scrollOffset < metrics.headAscentDistance * 0.4) {
+        animateTo(metrics.headAscentDistance);
+      } else {
+        thread.unread = 0;
+        updateBadges();
+        setLockState(true);
+      }
+    }, 310);
+  }
+
+  function setSwipeX(id, x, animated) {
+    const el = findCardEl(id);
+    state.swipeX.set(id, x);
+    if (el) {
+      if (!animated) {
+        el.card.style.transition = "none";
+      } else {
+        el.card.style.transition = "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)";
+        setTimeout(() => {
+          const current = findCardEl(id);
+          if (current) current.card.style.transition = "";
+        }, 300);
+      }
+    }
+    applySwipePositions();
+  }
+
+  function resetSwipe(id) {
+    state.openSwipe = null;
+    setSwipeX(id, 0, true);
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Aperçu (Peek)
+   * ------------------------------------------------------------------ */
+  function openPeek(id) {
+    state.peekId = id;
+    peekBackdrop.classList.add("active");
+    rebuildCards();
+    closeSwipeIfOpen();
+  }
+
+  function closePeek() {
+    if (!state.peekId) return;
+    state.peekId = null;
+    peekBackdrop.classList.remove("active");
+    rebuildCards();
+  }
+
+  function closeSwipeIfOpen() {
+    if (!state.openSwipe) return;
+    const open = state.openSwipe;
+    state.openSwipe = null;
+    setSwipeX(open.id, 0, true);
+  }
+
+  peekBackdrop.addEventListener("click", closePeek);
+
+  /* ------------------------------------------------------------------ *
+   *  Réponse rapide intégrée
+   * ------------------------------------------------------------------ */
+  function openQuickReply(id) {
+    const thread = getThread(id);
+    if (!thread) return;
+    if (thread.replyOpen) {
+      const current = findCardEl(id);
+      const field = current && current.card.querySelector(".quick-input");
+      if (field) field.focus();
+      return;
+    }
+    closePeek();
+    closeSwipeIfOpen();
+    state.threads.forEach((t) => { if (t.id !== thread.id) t.replyOpen = false; });
+    thread.replyOpen = true;
+    rebuildCards();
+    requestAnimationFrame(() => {
+      const el = findCardEl(id);
+      const input = el && el.card.querySelector(".quick-input");
+      if (input) { input.focus(); input.select(); }
+    });
+    logAction("Réponse rapide ouverte pour " + thread.sender);
+  }
+
+  function closeQuickReply(id) {
+    const thread = getThread(id);
+    if (!thread || !thread.replyOpen) return;
+    thread.replyOpen = false;
+    rebuildCards();
+  }
+
+  function onReplySubmit(event) {
+    event.preventDefault();
+    const card = event.currentTarget;
+    const thread = getThread(card.dataset.id);
+    if (!thread) return;
+    const input = card.querySelector(".quick-input");
+    const text = input ? input.value.trim() : "";
+    if (!text) { if (input) input.focus(); return; }
+
+    thread.messages.push({ dir: "out", text, time: fmtTime(Date.now()), at: Date.now() });
+    thread.replyOpen = false;
+    thread.sentNote = true;
+    thread.unread = 0;
+    thread.expanded = true;
+
     updateBadges();
+    rebuildCards();
+    logAction("Réponse envoyée à " + thread.sender);
 
-    if (!isUnlocked) {
-      scrollOffset = 0;
-      targetOffset = 0;
+    const targetId = thread.id;
+    setTimeout(() => {
+      const t = getThread(targetId);
+      if (!t) return;
+      t.sentNote = false;
+      rebuildCards();
+    }, 2600);
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Fils et accordéon
+   * ------------------------------------------------------------------ */
+  function toggleThread(id) {
+    const thread = getThread(id);
+    if (!thread) return;
+    thread.expanded = !thread.expanded;
+    rebuildCards();
+    logAction((thread.expanded ? "Fil ouvert" : "Fil réduit") + " : " + thread.sender);
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Épingler / Rappel / Suppression
+   * ------------------------------------------------------------------ */
+  function afterMutation(thread, message) {
+    resort();
+    rebuildCards();
+    updateBadges();
+    if (message) logAction(message);
+  }
+
+  function togglePin(id) {
+    const thread = getThread(id);
+    if (!thread) return;
+    thread.pinned = !thread.pinned;
+    resetSwipe(id);
+    afterMutation(thread, thread.pinned ? "Épinglée en tête de pile : " + thread.sender : "Désépinglée : " + thread.sender);
+    toast(thread.pinned ? "Épinglée en tête de pile" : "Épingle retirée");
+  }
+
+  function snoozeThread(id) {
+    const thread = getThread(id);
+    if (!thread) return;
+    resetSwipe(id);
+
+    state.snoozed.push({
+      thread,
+      dueAt: Date.now() + 10 * 60 * 1000,
+      title: thread.sender
+    });
+    rebuildWithFlip(() => {
+      state.threads = state.threads.filter((t) => t.id !== thread.id);
+      state.scrollOffset = 0;
+      state.targetOffset = 0;
+    });
+
+    logAction("Rappel dans 10 min : " + thread.sender);
+    toast("Rappel dans 10 min");
+    renderSnoozeRow();
+    startSnoozeTicker();
+  }
+
+  function restoreSnooze(entry) {
+    state.snoozed = state.snoozed.filter((s) => s !== entry);
+    const thread = entry.thread;
+    thread.isNew = true;
+    thread.lastAt = Date.now();
+    thread.messages.push({ dir: "in", text: "Rappel : " + thread.messages[thread.messages.length - 1].text, time: fmtTime(Date.now()), at: Date.now() });
+    refreshAnalysis(thread);
+    state.threads.push(thread);
+    resort();
+    rebuildCards();
+    updateBadges();
+    renderSnoozeRow();
+    logAction("Rappel restauré : " + thread.sender);
+    toast("Rappel affiché");
+  }
+
+  function startSnoozeTicker() {
+    if (snoozeTicker) return;
+    snoozeTicker = setInterval(() => {
+      const now = Date.now();
+      const due = state.snoozed.filter((s) => s.dueAt <= now);
+      due.forEach(restoreSnooze);
+      renderSnoozeRow();
+      if (!state.snoozed.length) {
+        clearInterval(snoozeTicker);
+        snoozeTicker = null;
+      }
+    }, 1000);
+  }
+
+  function renderSnoozeRow() {
+    const row = $("snoozeRow");
+    if (!state.snoozed.length) {
+      row.style.display = "none";
+      return;
     }
+    row.style.display = "flex";
+    const next = state.snoozed.slice().sort((a, b) => a.dueAt - b.dueAt)[0];
+    const seconds = Math.max(0, Math.round((next.dueAt - Date.now()) / 1000));
+    const min = Math.floor(seconds / 60);
+    const sec = String(seconds % 60).padStart(2, "0");
+    $("snoozeText").textContent = "Rappel programmé : " + next.title + " dans " + min + ":" + sec;
+  }
 
-    rebuildCardsDOM();
+  function deleteThread(id, origin) {
+    const thread = getThread(id);
+    if (!thread) return;
+    const el = findCardEl(id);
+    state.swipeX.delete(id);
+    state.openSwipe = null;
 
-    if (isUnlocked) {
-      triggerDynamicIsland(app, sender, text);
+    const finish = () => {
+      rebuildWithFlip(() => {
+        state.threads = state.threads.filter((t) => t.id !== id);
+        const { maxOffset } = getMetrics();
+        state.targetOffset = clamp(state.targetOffset, 0, maxOffset);
+        state.scrollOffset = clamp(state.scrollOffset, 0, maxOffset);
+      });
+      updateBadges();
+      logAction("Notification effacée (" + origin + ") : " + thread.sender);
+      toast("Notification effacée");
+    };
+
+    if (el) {
+      el.card.classList.add("deleting");
+      setTimeout(finish, 230);
+    } else {
+      finish();
     }
   }
 
-  function triggerDynamicIsland(app, sender, text) {
-    const meta = APP_META[app] || { icon: "🔔", color: "#0a84ff" };
-    document.getElementById("diIcon").textContent = meta.icon;
-    document.getElementById("diIcon").style.background = meta.color;
-    document.getElementById("diSender").textContent = `${sender} · ${app}`;
-    document.getElementById("diBody").textContent = text;
+  /* Reconstruit les cartes en animant les cartes restantes vers leur nouvelle place */
+  function rebuildWithFlip(mutator) {
+    const before = new Map();
+    cardElements.forEach((el) => before.set(String(el.id), el.slot.style.transform));
 
-    dynamicIsland.classList.add("expanded");
-    clearTimeout(diTimer);
-    diTimer = setTimeout(() => dynamicIsland.classList.remove("expanded"), 3500);
-  }
+    mutator();
+    rebuildCards();
 
-  function updateBadges() {
-    Object.keys(unreadByApp).forEach(app => {
-      const badge = document.getElementById(`badge-${app}`);
-      if (!badge) return;
-      const count = unreadByApp[app];
-      badge.style.display = count > 0 ? "grid" : "none";
-      badge.textContent = count > 99 ? "99+" : count;
+    cardElements.forEach((el) => {
+      const oldTransform = before.get(String(el.id));
+      if (!oldTransform) return;
+      const newTransform = el.slot.style.transform;
+      if (!newTransform || oldTransform === newTransform) return;
+
+      el.slot.style.transition = "none";
+      el.slot.style.transform = oldTransform;
+      el.slot.style.opacity = "0.85";
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.slot.style.transition = "transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease";
+          el.slot.style.transform = newTransform;
+          el.slot.style.opacity = "1";
+          setTimeout(() => {
+            el.slot.style.transition = "";
+            renderFrame();
+          }, 380);
+        });
+      });
     });
   }
 
+  /* ------------------------------------------------------------------ *
+   *  Dynamic Island : bannière, fil continu, glissement vers le haut
+   * ------------------------------------------------------------------ */
+  function setIslandContent(thread) {
+    const meta = APP_META[thread.app] || { icon: ICONS.bubble, color: "#0a84ff" };
+    const last = thread.messages[thread.messages.length - 1];
+    const iconEl = $("diIcon");
+    iconEl.innerHTML = meta.icon;
+    iconEl.style.background = meta.color;
+    $("diSender").textContent = thread.sender + " - " + thread.app;
+    $("diBody").textContent = last.text;
+    dynamicIsland.dataset.thread = String(thread.id);
+  }
+
+  function showIsland(thread) {
+    setIslandContent(thread);
+    dynamicIsland.classList.remove("typing");
+    dynamicIsland.classList.remove("live");
+    dynamicIsland.classList.add("expanded");
+    dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
+    dynamicIsland.style.opacity = "1";
+    clearTimeout(islandTimer);
+    clearTimeout(liveTimer);
+    islandTimer = setTimeout(closeIsland, 3500);
+  }
+
+  function updateLivePill(thread) {
+    setIslandContent(thread);
+    dynamicIsland.classList.remove("typing");
+    dynamicIsland.classList.add("expanded", "live");
+    dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
+    dynamicIsland.style.opacity = "1";
+    clearTimeout(islandTimer);
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => {
+      // Le fil reste ouvert tant que les messages arrivent, puis se referme.
+      closeIsland();
+    }, 2800);
+    logAction("Fil continu dans la Dynamic Island : " + thread.sender);
+  }
+
+  function closeIsland() {
+    clearTimeout(islandTimer);
+    clearTimeout(liveTimer);
+    dynamicIsland.classList.remove("expanded", "live", "typing");
+    dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
+    dynamicIsland.style.opacity = "1";
+  }
+
+  function showTyping(on) {
+    dynamicIsland.classList.toggle("typing", !!on);
+  }
+
+  let islandGesture = null;
+  dynamicIsland.addEventListener("pointerdown", (event) => {
+    if (!dynamicIsland.classList.contains("expanded")) return;
+    islandGesture = { startY: event.clientY, y: 0, lastY: event.clientY };
+    dynamicIsland.style.transition = "none";
+    try { dynamicIsland.setPointerCapture(event.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  dynamicIsland.addEventListener("pointermove", (event) => {
+    if (!islandGesture) return;
+    const dy = Math.min(0, event.clientY - islandGesture.startY);
+    islandGesture.y = dy;
+    islandGesture.lastY = event.clientY;
+    const progress = clamp(1 - Math.abs(dy) / 150, 0.2, 1);
+    dynamicIsland.style.transform = "translateX(-50%) translateY(" + dy + "px) scale(" + (1 - clamp(Math.abs(dy) / 900, 0, 0.12)).toFixed(3) + ")";
+    dynamicIsland.style.opacity = String(progress);
+  });
+
+  dynamicIsland.addEventListener("pointerup", () => {
+    if (!islandGesture) return;
+    const moved = islandGesture.y;
+    const wasLive = dynamicIsland.classList.contains("live");
+    islandGesture = null;
+    dynamicIsland.style.transition = "";
+
+    if (moved <= -26) {
+      // Glissement vers le haut : la notification est rangée dans le Centre.
+      dynamicIsland.style.transform = "translateX(-50%) translateY(-90px) scale(0.86)";
+      dynamicIsland.style.opacity = "0";
+      setTimeout(closeIsland, 190);
+      if (wasLive) showTyping(false);
+      logAction("Bannière rangée dans le Centre de notifications");
+      toast("Rangée dans le Centre de notifications");
+      return;
+    }
+    dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
+    dynamicIsland.style.opacity = "1";
+  });
+
+  /* ------------------------------------------------------------------ *
+   *  Verrouillage, horloge, badges
+   * ------------------------------------------------------------------ */
   function setLockState(unlocked) {
-    isUnlocked = unlocked;
+    state.isUnlocked = unlocked;
     lockScreen.style.transition = "";
     lockScreen.style.transform = "";
     lockScreen.style.opacity = "";
@@ -1002,95 +2354,106 @@
     toggleLockBtn.textContent = unlocked ? "Verrouiller" : "Déverrouiller";
 
     if (!unlocked) {
-      scrollOffset = 0;
-      targetOffset = 0;
-      renderProgressiveFrame();
+      state.scrollOffset = 0;
+      state.targetOffset = 0;
+      closePeek();
+      renderFrame();
+    } else {
+      closePeek();
+      closeIsland();
     }
   }
 
-  /* 1. SCROLL PROGRESSIF À LA MOLETTE */
-  notifStage.addEventListener("wheel", (e) => {
-    if (isUnlocked || notifications.length <= 1) return;
-    e.preventDefault();
+  function updateClock() {
+    const now = new Date();
+    const timeStr = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    $("lockClock").textContent = timeStr;
+    $("miniClock").textContent = timeStr;
+    const days = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+    const months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+    $("lockDate").textContent = days[now.getDay()] + " " + now.getDate() + " " + months[now.getMonth()];
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Molette et glissement de la scène
+   * ------------------------------------------------------------------ */
+  notifStage.addEventListener("wheel", (event) => {
+    if (state.isUnlocked || state.threads.length <= 1) return;
+    if (state.peekId) return;
+    event.preventDefault();
     const { maxOffset } = getMetrics();
-    targetOffset = clamp(targetOffset + e.deltaY * 0.85, 0, maxOffset);
+    state.targetOffset = clamp(state.targetOffset + event.deltaY * 0.85, 0, maxOffset);
     startPhysicsLoop();
   }, { passive: false });
 
-  /* 2. GLISSEMENT PROGRESSIF AU DOIGT / SOURIS */
-  let dragStartY = 0;
-  let dragStartOffset = 0;
-  let lastPointerY = 0;
-  let velocityY = 0;
-  let movedDuringPointer = false;
+  let stageGesture = null;
 
-  notifStage.addEventListener("pointerdown", (e) => {
-    if (isUnlocked || notifications.length <= 1) return;
-    if (e.target.closest("#collapseBtn")) return;
+  notifStage.addEventListener("pointerdown", (event) => {
+    if (state.isUnlocked || state.threads.length <= 1) return;
+    if (state.peekId) return;
+    if (event.target.closest("#collapseBtn, .prog-card, .swipe-actions, .peek-backdrop")) return;
 
-    isDragging = true;
-    movedDuringPointer = false;
-    dragStartY = e.clientY;
-    lastPointerY = e.clientY;
-    dragStartOffset = scrollOffset;
-    velocityY = 0;
-    notifStage.setPointerCapture(e.pointerId);
+    stageGesture = {
+      startY: event.clientY,
+      lastY: event.clientY,
+      dragOffset: state.scrollOffset,
+      velocity: 0
+    };
+    state.isDragging = true;
+    try { notifStage.setPointerCapture(event.pointerId); } catch (err) { /* ignore */ }
   });
 
-  notifStage.addEventListener("pointermove", (e) => {
-    if (!isDragging) return;
-    const dy = dragStartY - e.clientY;
-    if (Math.abs(dy) > 4) movedDuringPointer = true;
-
-    velocityY = lastPointerY - e.clientY;
-    lastPointerY = e.clientY;
-
+  notifStage.addEventListener("pointermove", (event) => {
+    if (!stageGesture) return;
     const { maxOffset } = getMetrics();
-    let next = dragStartOffset + dy;
-
-    if (next < 0) next = next * 0.25;
+    stageGesture.velocity = stageGesture.lastY - event.clientY;
+    stageGesture.lastY = event.clientY;
+    let next = stageGesture.dragOffset + (stageGesture.startY - event.clientY);
+    if (next < 0) next *= 0.25;
     if (next > maxOffset) next = maxOffset + (next - maxOffset) * 0.25;
-
-    scrollOffset = next;
-    targetOffset = next;
-    renderProgressiveFrame();
+    state.scrollOffset = next;
+    state.targetOffset = next;
+    renderFrame();
   });
 
   notifStage.addEventListener("pointerup", () => {
-    if (!isDragging) return;
-    isDragging = false;
-
+    if (!stageGesture) return;
     const { headAscentDistance, maxOffset } = getMetrics();
-    let projected = scrollOffset + velocityY * 8;
-
-    if (projected < headAscentDistance * 0.35) {
-      projected = 0;
-    } else if (projected < headAscentDistance) {
-      projected = headAscentDistance;
-    }
-
-    targetOffset = clamp(projected, 0, maxOffset);
+    let projected = state.scrollOffset + stageGesture.velocity * 8;
+    if (projected < headAscentDistance * 0.35) projected = 0;
+    else if (projected < headAscentDistance) projected = headAscentDistance;
+    state.targetOffset = clamp(projected, 0, maxOffset);
+    stageGesture = null;
+    state.isDragging = false;
     startPhysicsLoop();
   });
 
-  collapseBtn.addEventListener("click", () => animateTo(0));
+  collapseBtn.addEventListener("click", () => {
+    closePeek();
+    state.openSwipe = null;
+    state.swipeX.clear();
+    animateTo(0);
+    rebuildCards();
+  });
 
-  /* 3. DÉVERROUILLAGE SUR LA BARRE DU BAS */
+  /* ------------------------------------------------------------------ *
+   *  Déverrouillage par la barre du bas
+   * ------------------------------------------------------------------ */
   let unlockStartY = null;
   let unlockDeltaY = 0;
 
-  swipeZone.addEventListener("pointerdown", (e) => {
-    unlockStartY = e.clientY;
+  swipeZone.addEventListener("pointerdown", (event) => {
+    unlockStartY = event.clientY;
     unlockDeltaY = 0;
-    swipeZone.setPointerCapture(e.pointerId);
-    if (!isUnlocked) lockScreen.style.transition = "none";
+    try { swipeZone.setPointerCapture(event.pointerId); } catch (err) { /* ignore */ }
+    if (!state.isUnlocked) lockScreen.style.transition = "none";
   });
 
-  swipeZone.addEventListener("pointermove", (e) => {
-    if (unlockStartY === null || isUnlocked) return;
-    unlockDeltaY = Math.min(0, e.clientY - unlockStartY);
+  swipeZone.addEventListener("pointermove", (event) => {
+    if (unlockStartY === null || state.isUnlocked) return;
+    unlockDeltaY = Math.min(0, event.clientY - unlockStartY);
     const progress = Math.min(1, Math.abs(unlockDeltaY) / 180);
-    lockScreen.style.transform = `translateY(${unlockDeltaY}px)`;
+    lockScreen.style.transform = "translateY(" + unlockDeltaY + "px)";
     lockScreen.style.opacity = String(1 - progress * 0.55);
   });
 
@@ -1100,9 +2463,9 @@
     const isTap = Math.abs(unlockDeltaY) < 6;
     unlockStartY = null;
 
-    if (!isUnlocked && (draggedUp || isTap)) {
+    if (!state.isUnlocked && (draggedUp || isTap)) {
       setLockState(true);
-    } else if (isUnlocked && isTap) {
+    } else if (state.isUnlocked && isTap) {
       setLockState(false);
     } else {
       lockScreen.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease";
@@ -1111,39 +2474,111 @@
     }
   });
 
-  toggleLockBtn.addEventListener("click", () => setLockState(!isUnlocked));
+  /* ------------------------------------------------------------------ *
+   *  Panneau de contrôle
+   * ------------------------------------------------------------------ */
+  toggleLockBtn.addEventListener("click", () => setLockState(!state.isUnlocked));
 
-  document.getElementById("simIncomingBtn").addEventListener("click", () => {
+  $("simIncomingBtn").addEventListener("click", () => {
     const sample = SAMPLE_MESSAGES[sampleIdx % SAMPLE_MESSAGES.length];
-    sampleIdx++;
-    pushNotification(sample.app, sample.sender, sample.text);
+    sampleIdx += 1;
+    receive(sample.app, sample.sender, sample.text);
+    logAction("Message reçu : " + sample.sender);
   });
 
-  document.getElementById("sendCustomBtn").addEventListener("click", () => {
-    const app = document.getElementById("appSelect").value;
-    const sender = document.getElementById("senderInput").value.trim() || "Contact";
-    const text = document.getElementById("msgInput").value.trim() || "Nouveau message reçu.";
-    pushNotification(app, sender, text);
+  $("burstBtn").addEventListener("click", () => {
+    const burst = BURST_SAMPLES[burstIdx % BURST_SAMPLES.length];
+    burstIdx += 1;
+    sendBurst(burst.app, burst.sender, burst.texts);
+    logAction("Rafale envoyée par " + burst.sender);
   });
 
-  document.getElementById("clearNotifsBtn").addEventListener("click", () => {
-    notifications.length = 0;
-    Object.keys(unreadByApp).forEach(k => unreadByApp[k] = 0);
-    scrollOffset = 0;
-    targetOffset = 0;
+  $("urgentBtn").addEventListener("click", () => {
+    const sample = URGENT_SAMPLES[urgentIdx % URGENT_SAMPLES.length];
+    urgentIdx += 1;
+    receive(sample.app, sample.sender, sample.text);
+    logAction("Message prioritaire : " + sample.sender);
+  });
+
+  $("sendCustomBtn").addEventListener("click", () => {
+    const app = $("appSelect").value;
+    const sender = $("senderInput").value.trim() || "Contact";
+    const text = $("msgInput").value.trim() || "Nouveau message reçu.";
+    receive(app, sender, text);
+    logAction("Message envoyé vers le simulateur : " + sender);
+  });
+
+  $("clearNotifsBtn").addEventListener("click", () => {
+    state.threads = [];
+    state.swipeX.clear();
+    state.openSwipe = null;
+    state.snoozed = [];
+    state.scrollOffset = 0;
+    state.targetOffset = 0;
+    state.peekId = null;
+    peekBackdrop.classList.remove("active");
+    closeIsland();
     updateBadges();
-    rebuildCardsDOM();
-    dynamicIsland.classList.remove("expanded");
+    rebuildCards();
+    renderSnoozeRow();
+    logAction("Centre de notifications vide");
   });
 
-  updateClock();
-  setInterval(updateClock, 15000);
+  $("snoozeNowBtn").addEventListener("click", () => {
+    if (!state.snoozed.length) return;
+    restoreSnooze(state.snoozed[0]);
+  });
 
-  pushNotification("Mail", "Herlo Global", "Nouvelle commande validée sur la boutique.");
-  pushNotification("Messages", "Banque", "Virement entrant crédité sur votre compte.");
-  pushNotification("Telegram", "Bot Trading XAU", "Signal scalp détecté sur M5.");
-  pushNotification("WhatsApp", "Équipe Logistique", "Dossier d'expédition mis à jour.");
-  pushNotification("Messages", "Karim", "Tu passes cet après-midi ?");
+  /* Envoi d'une rafale : indicateur de saisie puis messages rapprochés */
+  function sendBurst(app, sender, texts) {
+    let index = 0;
+    const step = () => {
+      if (index >= texts.length) return;
+      if (state.isUnlocked) {
+        showTyping(true);
+        dynamicIsland.classList.add("expanded", "live");
+        $("diSender").textContent = sender + " - " + app;
+      }
+      setTimeout(() => {
+        showTyping(false);
+        receive(app, sender, texts[index]);
+        index += 1;
+        if (index < texts.length) setTimeout(step, 520);
+        else if (state.isUnlocked) setTimeout(closeIsland, 2800);
+      }, state.isUnlocked ? 720 : 120);
+    };
+    step();
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Démarrage
+   * ------------------------------------------------------------------ */
+  function boot() {
+    $("lockBadge").innerHTML = ICONS.lock;
+    $("flashlightBtn").innerHTML = ICONS.flashlight;
+    $("cameraBtn").innerHTML = ICONS.camera;
+    document.querySelectorAll("[data-icon]").forEach((el) => {
+      el.innerHTML = ICONS[el.dataset.icon] || ICONS.bubble;
+    });
+
+    updateClock();
+    setInterval(updateClock, 15000);
+    renderSnoozeRow();
+
+    receive("WhatsApp", "Équipe Logistique", "Le dossier d'expédition a été mis à jour.", { forceNew: true });
+    receive("WhatsApp", "Équipe Logistique", "Le bordereau est prêt, livraison confirmée à 16h.");
+    receive("WhatsApp", "Équipe Logistique", "Confirme la présence du chef d'équipe sur le site.");
+    receive("WhatsApp", "Équipe Logistique", "Dernier point avant le départ du camion.");
+    receive("Messages", "Banque", "Virement entrant de 450 000 FCFA crédité sur votre compte.");
+    receive("Telegram", "Bot Trading XAU", "Alerte structure H1 : cassure haussière confirmée sur l'or.");
+    receive("Mail", "Herlo Global", "Nouvelle commande validée sur la boutique.");
+    receive("Messages", "Karim", "Tu passes cet après-midi ?");
+
+    renderFrame();
+    logAction("Simulateur prêt");
+  }
+
+  boot();
 </script>
 </body>
 </html>
