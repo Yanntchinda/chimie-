@@ -1318,7 +1318,8 @@
     { app: "Telegram", sender: "Bot Trading XAU", text: "Alerte critique : position ouverte sur l'or, vérifiez le risque." }
   ];
 
-  const CARD_SLOT_HEIGHT = 96;
+  const CARD_SLOT_HEIGHT = 96;   // hauteur de secours si la mesure echoue
+  const CARD_GAP = 8;            // respiration entre deux cartes depliees
   const MERGE_WINDOW = 120000;
   const BURST_WINDOW = 15000;
   const SWIPE_OPEN_LEFT = 96;
@@ -1345,6 +1346,7 @@
   };
 
   let cardElements = [];
+  let cardHeights = new Map();
   let gesture = null;
   let sampleIdx = 0;
   let burstIdx = 0;
@@ -1649,11 +1651,34 @@
       card.addEventListener("submit", onReplySubmit);
     });
 
+    measureCardHeights();
     renderFrame();
     applySwipePositions();
   }
 
   /* Boutons révélés par le balayage : ils vivent à côté de la carte, dans l'emplacement */
+  function measureCardHeights() {
+    const hadExpanded = cardsLayer.classList.contains("cards-expanded");
+    cardsLayer.classList.add("cards-expanded");
+    cardHeights = new Map();
+    cardElements.forEach((el) => {
+      const measured = el.card.offsetHeight || 0;
+      cardHeights.set(String(el.id), measured > 24 ? measured : estimateCardHeight(el.card));
+    });
+    if (!hadExpanded) cardsLayer.classList.remove("cards-expanded");
+  }
+
+  /* Secours quand la mesure n'est pas disponible (rendu hors navigateur) */
+  function estimateCardHeight(card) {
+    let height = CARD_SLOT_HEIGHT;
+    if (card.querySelector(".burst-summary")) height += 26;
+    if (card.querySelector(".thread-toggle")) height += 27;
+    if (card.querySelector(".thread-list")) height += 64;
+    if (card.querySelector(".quick-reply")) height += 44;
+    if (card.querySelector(".sent-note")) height += 20;
+    return height;
+  }
+
   function onSlotClick(event) {
     const actionEl = event.target.closest("[data-action]");
     if (!actionEl) return;
@@ -1729,16 +1754,36 @@
   /* ------------------------------------------------------------------ *
    *  Placement progressif de la pile
    * ------------------------------------------------------------------ */
+  function cardHeight(id) {
+    return cardHeights.get(String(id)) || CARD_SLOT_HEIGHT;
+  }
+
+  /* Distance de chaque carte par rapport a la carte de tete, dans la colonne depliee */
+  function columnOffsets() {
+    const offsets = [];
+    let acc = 0;
+    state.threads.forEach((thread, idx) => {
+      // La carte de tete ouvre la colonne ; chaque carte suivante se place
+      // sous la precedente en ajoutant sa propre hauteur et la respiration.
+      if (idx > 0) acc += cardHeight(thread.id) + CARD_GAP;
+      offsets.push(acc);
+    });
+    return offsets;
+  }
+
   function getMetrics() {
     const total = state.threads.length;
     const stageH = notifStage.clientHeight || 540;
     const headAscentDistance = Math.max(96, stageH - 135);
-    const maxOffset = Math.max(0, headAscentDistance + Math.max(0, total - 1) * CARD_SLOT_HEIGHT - (stageH - 135));
-    return { total, stageH, headAscentDistance, maxOffset };
+    const offsets = columnOffsets();
+    // On peut faire defiler jusqu'a ce que la derniere carte touche le bas
+    const columnEnd = total > 1 ? offsets[total - 1] : 0;
+    const maxOffset = Math.max(0, total > 1 ? Math.max(headAscentDistance, columnEnd) : 0);
+    return { total, stageH, headAscentDistance, maxOffset, offsets };
   }
 
   function renderFrame() {
-    const { total, stageH, headAscentDistance } = getMetrics();
+    const { total, stageH, headAscentDistance, offsets } = getMetrics();
     emptyState.style.display = total === 0 ? "block" : "none";
 
     if (total === 0) {
@@ -1777,6 +1822,8 @@
       const thread = getThread(el.id);
       if (!thread) return;
 
+      const height = cardHeight(thread.id);
+
       let stackY = 0;
       let stackScale = 1;
       let stackOpacity = 1;
@@ -1785,16 +1832,19 @@
       else if (idx === 2) { stackY = 20; stackScale = 0.88; stackOpacity = 0.42; }
       else if (idx > 2) { stackY = 24; stackScale = 0.84; stackOpacity = 0; }
 
-      const trailingSpread = idx * CARD_SLOT_HEIGHT * headProgress;
+      // La colonne se construit a partir des hauteurs reelles : aucune carte n'en recouvre une autre
+      const trailingSpread = (offsets[idx] || 0) * headProgress;
       const expandedY = headY + trailingSpread;
       const cardUnfold = idx === 0 ? 1 : clamp(headProgress * (1 + idx * 0.25), 0, 1);
       const currentY = stackY + (expandedY - stackY) * cardUnfold;
       const currentScale = stackScale + (1 - stackScale) * cardUnfold;
       let currentOpacity = stackOpacity + (1 - stackOpacity) * cardUnfold;
 
-      const topLimit = -(stageH - 122);
-      if (currentY < topLimit) {
-        currentOpacity *= clamp(1 - (topLimit - currentY) / 55, 0, 1);
+      // Estompage seulement quand la carte sort entierement par le haut
+      const topLimit = -(stageH - 118);
+      if (currentY - height < topLimit) {
+        const overTop = topLimit - (currentY - height);
+        currentOpacity *= clamp(1 - overTop / 90, 0, 1);
       }
       if (currentY > 24) {
         currentOpacity *= clamp(1 - (currentY - 24) / 40, 0, 1);
@@ -2564,6 +2614,17 @@
     updateClock();
     setInterval(updateClock, 15000);
     renderSnoozeRow();
+
+    window.addEventListener("resize", () => {
+      measureCardHeights();
+      renderFrame();
+    });
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(() => {
+        measureCardHeights();
+        renderFrame();
+      });
+    }
 
     receive("WhatsApp", "Équipe Logistique", "Le dossier d'expédition a été mis à jour.", { forceNew: true });
     receive("WhatsApp", "Équipe Logistique", "Le bordereau est prêt, livraison confirmée à 16h.");
