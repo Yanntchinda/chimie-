@@ -1,46 +1,64 @@
-# Installer l'application
+# Installer le centre de notifications
 
-Le fichier à installer est un APK Android : `app-release.apk`, joint à la version
-[v1.2.0](../../releases/tag/v1.2.0).
+Le fichier à installer est un APK Android : `app-release.apk`.
 
 ![QR vers l'APK](qr-android.png)
 
 Scannez ce code avec l'appareil photo du téléphone : le téléchargement démarre
 directement sur le fichier. Le lien écrit, si besoin :
-`https://github.com/Yanntchinda/chimie-/releases/download/v1.2.0/app-release.apk`
+`https://github.com/Yanntchinda/chimie-/releases/latest/download/app-release.apk`
 
-## Android : cinq étapes
+## Android : installer
 
-1. **Télécharger** en scannant le code ci-dessus, ou en ouvrant la page des versions
-   dans Chrome sur le téléphone, puis en touchant `app-release.apk`.
-2. Chrome affiche « Ce type de fichier peut endommager votre appareil ». C'est
-   l'avertissement habituel pour tout APK : toucher **Télécharger quand même**.
-3. Ouvrir le fichier téléchargé (notification de téléchargement, ou
-   Paramètres → Téléchargements → `app-release.apk`).
+1. **Télécharger** en scannant le code ci-dessus, ou depuis la page des versions.
+2. Chrome affiche « Ce type de fichier peut endommager votre appareil » : c'est
+   l'avertissement habituel pour tout APK. Toucher **Télécharger quand même**.
+3. Ouvrir le fichier téléchargé.
 4. Android demande l'autorisation « Installer des applications inconnues » pour
-   Chrome ou Fichiers : **Autoriser**, revenir en arrière, puis **Installer**.
-5. Play Protect peut prévenir qu'il ne connaît pas l'application : toucher
-   **Installer quand même**. Puis **Ouvrir**.
-6. Toucher le bouton **+** en bas à droite, puis **Autoriser l'accès aux
-   notifications** : Android ouvre la liste des services d'accès. Activer
-   **Centre de notifications**, revenir en arrière. Le volet affiche alors
-   « accès accordé ».
+   Chrome ou Fichiers : **Autoriser**, revenir, puis **Installer**.
+5. Play Protect peut prévenir qu'il ne connaît pas l'application : **Installer
+   quand même**, puis **Ouvrir**.
 
-L'application apparaît ensuite dans le tiroir d'applications sous le nom
-**Centre de notifications**, avec l'icône cloche.
+## Android : autoriser, une seule fois
 
-### Si Play Protect bloque l'installation
+L'application s'ouvre sur un écran de réglage. Elle n'a pas d'écran de consultation :
+c'est le volet de notifications du téléphone qui devient le centre.
+
+1. Bloc **Accès aux notifications** → **Autoriser l'accès aux notifications**.
+   Android ouvre la liste des services d'accès : activer
+   **Centre de notifications**, revenir en arrière.
+2. Bloc **Affichage des notifications** → **Autoriser l'affichage**, puis accepter
+   la demande d'Android (Android 13 et plus).
+3. Les deux blocs affichent alors « Accordé » et « Autorisé ». L'application peut
+   être refermée définitivement.
+
+À partir de là, chaque message reçu — WhatsApp, Messages, Telegram, Gmail, autre —
+apparaît sous forme de carte sombre dans les notifications du téléphone.
+
+## Utiliser
+
+- **Répondre** depuis la notification (bouton de réponse, ou réponse directe
+  d'Android) : le texte part dans l'application d'origine.
+- **Toucher la carte** : ouvre l'application qui a envoyé le message.
+- **Effacer** : retire la carte et la notification d'origine.
+- **Écran verrouillé** : les cartes y apparaissent comme toute autre notification ;
+  leur contenu s'affiche selon le réglage Android « Afficher le contenu sensible ».
+
+### Option de remplacement
+
+Activée par défaut : seule la carte du centre reste dans le volet. Désactivée, la
+notification d'origine reste visible à côté. Le réglage se trouve dans l'écran de
+l'application.
+
+## Si Play Protect bloque l'installation
 
 L'application n'est pas signée par un développeur enregistré auprès de Google :
-Play Protect la traite donc comme une source inconnue. Deux chemins, du plus doux au
-plus radical.
+Play Protect la traite donc comme une source inconnue.
 
 **1. Forcer l'installation sans rien désactiver** (essayer d'abord)
 
 - Sur l'écran d'avertissement, toucher **Plus de détails**, puis **Installer quand
-  même**. Ce bouton existe sur la plupart des téléphones récents.
-- S'il est absent, ou si l'écran affiche « Application bloquée par Play Protect »,
-  passer à l'étape 2.
+  même**.
 
 **2. Désactiver Play Protect le temps de l'installation**
 
@@ -48,52 +66,37 @@ plus radical.
 2. **Play Protect** → icône **Paramètres** (roue dentée, en haut à droite).
 3. Désactiver **Analyser les applications avec Play Protect**.
 4. Revenir à l'APK, le toucher, **Installer**.
-5. Une fois l'application installée et lancée, **réactiver** l'option : elle protège
-   le reste du téléphone.
+5. Une fois l'application installée, **réactiver** l'option.
 
-Selon la marque, le même réglage est aussi ici : **Paramètres → Sécurité → Play
-Protect** (Samsung : Sécurité et confidentialité → autres paramètres de sécurité).
+Sur certaines marques : **Paramètres → Sécurité → Play Protect** (Samsung : Sécurité
+et confidentialité → autres paramètres de sécurité).
 
 **3. Autoriser la source du fichier**
-
-Indépendamment de Play Protect, Android exige d'autoriser l'application qui ouvre
-l'APK (Chrome, Fichiers, Gestionnaire de fichiers) :
 
 **Paramètres → Applications → Accès spéciaux → Installer des applications inconnues**
 → choisir Chrome (ou Fichiers) → **Autoriser depuis cette source**.
 
-### Si Android refuse l'installation
+## Si l'installation échoue
 
 - « Application non installée » alors qu'une ancienne version est présente :
-  désinstaller l'ancienne d'abord (les données du centre seront perdues).
-- « Application non installée » sans ancienne version : le fichier a souvent été
-  tronqué au téléchargement. Retélécharger, en vérifiant la taille : 38 119 octets.
-- Le fichier s'ouvre comme une archive au lieu de s'installer : il a été renommé en
-  `.zip` par le navigateur ; le renommer en `app-release.apk`.
-
-## iPhone
-
-iOS n'accepte pas les APK. La même page s'installe comme application web, sans rien
-perdre des fonctions du centre :
-
-1. Ouvrir la page du projet dans **Safari** (pas Chrome).
-2. Bouton **Partager**, puis **Sur l'écran d'accueil**.
-3. Lancer l'icône créée : la page s'ouvre en plein écran, sans barre d'adresse, et
-   conserve les notifications entre deux ouvertures.
-
-## Après l'activation
-
-Les notifications des autres applications apparaissent dans le centre, avec le nom de
-l'application, l'expéditeur et le texte. Elles restent groupées en fils, et :
-
-- **répondre** dans une carte envoie la réponse à l'application d'origine ;
-- **effacer** une carte retire la notification du téléphone ;
-- un message reçu pendant que l'application est fermée est conservé et s'affiche à
-  la réouverture.
+  la désinstaller d'abord.
+- « Application non installée » sans ancienne version : fichier tronqué au
+  téléchargement. Le retélécharger ; sa taille est indiquée dans les notes de la
+  version.
+- Le fichier s'ouvre comme une archive : le navigateur l'a renommé en `.zip`.
+  Le renommer en `app-release.apk`.
 
 ## Ce que l'application demande
 
-Un seul accès : lire les notifications. Pas d'accès réseau (aucune permission
-`INTERNET`), donc rien ne peut partir de l'appareil, et pas de publication dans la
-barre d'état : le centre intégré reste le seul endroit où l'on lit et traite ces
-notifications.
+- **Accès aux notifications** : lit les messages reçus pour les réafficher dans le
+  style du centre et leur ajouter l'action de réponse.
+- **Affichage des notifications** : nécessaire pour que ces cartes apparaissent
+  dans le volet.
+- **Aucun accès réseau** : la permission `INTERNET` n'est pas déclarée, rien ne peut
+  sortir de l'appareil.
+
+## iPhone
+
+iOS n'accepte pas les APK et n'autorise aucune application à réécrire les
+notifications des autres. Sur iPhone, seules les notifications de l'application
+elle-même peuvent être personnalisées : ce centre n'existe donc que sur Android.

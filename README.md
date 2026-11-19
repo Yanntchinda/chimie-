@@ -1,57 +1,53 @@
 # Centre de notifications
 
-Un centre de notifications façon iOS, avec trois blocs : réponse express, balayage
-(supprimer / épingler) et aperçu par appui long, des fils regroupés par application
-avec priorité, et un fil continu dans la Dynamic Island.
+Un système de notifications pour Android qui remplace le style d'affichage des
+messages reçus : carte sombre translucide, bords fins, métadonnées discrètes.
+**Aucun écran à ouvrir** : une fois installé et autorisé, chaque message reçu
+apparaît dans le volet de notifications du téléphone avec ce style.
 
-Depuis la version Android, le même écran est empaqueté dans une application native qui
-lit les **notifications réelles du téléphone** : WhatsApp, Messages, Telegram, Gmail et
-les autres apparaissent dans le centre, où l'on peut y répondre, les épingler ou les
-effacer — la réponse part dans l'application d'origine. Aucun accès réseau n'est demandé.
+## Ce que fait l'application
 
-## Installer l'application
+1. Elle écoute les notifications du téléphone (service d'écoute Android).
+2. Elle retire la notification d'origine et affiche la sienne, dans le style du
+   centre : pastille de l'application, expéditeur, texte, heure.
+3. Elle conserve l'action de réponse de l'application d'origine : répondre depuis
+   la carte écrit directement dans WhatsApp, Messages, Telegram, Gmail…
+4. Toucher la carte ouvre l'application qui a envoyé le message.
+5. Le bouton **Effacer** retire la carte et la notification d'origine.
 
-Guide détaillé, avec code à scanner : [installation/INSTALLATION.md](installation/INSTALLATION.md).
+Rien ne quitte l'appareil : aucune permission `INTERNET` n'est déclarée, donc
+l'application ne peut joindre aucun serveur.
 
-1. Ouvrir les [Releases](../../releases) du dépôt.
-2. Télécharger `app-release.apk` sur le téléphone.
-3. Ouvrir le fichier téléchargé et autoriser l'installation depuis cette source
-   (Android demande cette confirmation pour toute application hors Play Store).
-4. Lancer **Centre de notifications**, puis, dans le volet ouvert par le bouton **+**,
-   toucher **Autoriser l'accès aux notifications** et activer **Centre de notifications**
-   dans la liste Android. Sans cette étape, le centre reste vide : il ne reçoit que ce
-   que ce service lui transmet.
+## Installer
 
-L'application se présente en plein écran, sans barre d'adresse ni de navigation.
-Fermée puis rouverte, elle retrouve les fils, les épingles et les rappels tels quels.
+Guide détaillé, avec code à scanner et dépannage Play Protect :
+[installation/INSTALLATION.md](installation/INSTALLATION.md).
 
-## D'où viennent les notifications
+1. Télécharger `app-release.apk` depuis les [versions](../../releases).
+2. Ouvrir le fichier, autoriser l'installation depuis cette source.
+3. Lancer **Centre de notifications** une seule fois : l'écran de réglage indique
+   deux accès à accorder.
+   - **Autoriser l'accès aux notifications** → activer **Centre de notifications**
+     dans la liste Android.
+   - **Autoriser l'affichage** → accepter les notifications (Android 13 et plus).
+4. Refermer l'application : elle n'a plus besoin d'être ouverte.
 
-Le service d'écoute Android (`NotificationListenerService`) transmet au centre les
-notifications émises par les autres applications, avec le nom de l'application, le
-titre et le texte. Elles sont ensuite affichées, regroupées en fils, exactement comme
-les notifications de démonstration de la version web.
+L'écran de réglage reste accessible depuis l'icône, uniquement pour vérifier l'état
+des accès et l'option de remplacement.
 
-Le manifeste ne déclare **ni `INTERNET` ni `POST_NOTIFICATIONS`** : l'application ne
-peut ni joindre un serveur, ni publier dans la barre d'état. Ce qui est affiché vient
-du téléphone et ne sort pas de l'appareil (état conservé dans le `localStorage` de la
-page embarquée).
+## Réglages
 
-Actions réelles, dans les deux sens :
+- **Remplacer les notifications d'origine** (activé par défaut) : une seule carte
+  reste dans le volet, celle du centre. Désactivé, le message apparaît deux fois,
+  avec le style d'origine et avec celui du centre — utile pour comparer.
+- L'importance, le son et l'affichage sur l'écran verrouillé se règlent dans
+  Android : Paramètres → Applications → Centre de notifications → Notifications.
 
-- **Répondre** dans une carte envoie le texte à la notification d'origine, quand elle
-  propose une réponse directe ; sinon le centre le signale au lieu de faire semblant.
-- **Effacer** une carte retire aussi la notification correspondante du téléphone.
+## Maquette web
 
-## Utilisation
-
-- **Double toucher** sur une carte : ouvrir la réponse et répondre sans quitter l'écran.
-- **Glisser vers la gauche** : supprimer. **Vers la droite** : épingler en tête.
-- **Appui long** (460 ms) : aperçu de l'application concernée.
-- **Bouton +** : volet de contrôle, accès aux notifications, envoi de messages de
-  démonstration, effacement.
-
-Les explications d'usage restent dans ce volet, jamais dans le téléphone lui-même.
+`gemini-code-1795117363618.html` contient la maquette interactive d'origine
+(écran verrouillé simulé, îlot dynamique, fils, gestes). Elle sert de référence de
+design et d'aperçu dans un navigateur ; l'APK ne l'embarque pas.
 
 ## Construire soi-même
 
@@ -62,31 +58,28 @@ gradle wrapper --gradle-version 8.7   # une seule fois, si gradlew est absent
 ./gradlew assembleRelease             # APK release, signé avec la clé de debug
 ```
 
-La page web est copiée dans les assets avant la compilation par la tâche
-`syncWebAssets` (`app/build.gradle`) : la version web et la version Android ne peuvent
-pas diverger.
-
 ## Compilation continue
 
 `.github/workflows/android.yml` compile les deux APK à chaque modification de
-`android/` ou de la page, les publie comme artefact `centre-notifications-apk`, et
-les joint à la Release quand un tag est poussé :
+`android/`, vérifie le contenu réel de l'APK (signature, permission d'affichage
+présente, permission réseau absente, service d'écoute présent), publie l'artefact
+`centre-notifications-apk` et joint les fichiers à la Release quand un tag est poussé :
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 ## Structure
 
 ```
-gemini-code-1795117363618.html        écran complet (HTML/CSS/JS, aucune dépendance)
-android/settings.gradle               modules et dépôts
-android/app/build.gradle              compilation, tâche syncWebAssets
-android/app/src/main/AndroidManifest.xml   aucune permission
-android/app/src/main/java/.../MainActivity.java   WebView plein écran, fichier local
-android/app/src/main/java/.../NotificationRelay.java   écoute des notifications réelles
-android/app/src/main/java/.../CenterBridge.java   passerelle entre Android et la page
-android/app/src/main/res/             thème sombre, icône adaptative
-.github/workflows/android.yml         compilation et publication des APK
+gemini-code-1795117363618.html          maquette web (référence de design)
+android/app/src/main/AndroidManifest.xml   aucune permission réseau
+android/.../NotificationRelay.java         écoute et réécriture des notifications
+android/.../StyledNotifier.java            carte du centre dans le volet Android
+android/.../ActionReceiver.java            action « Effacer »
+android/.../CenterPrefs.java               option de remplacement
+android/.../MainActivity.java              écran de réglage (aucun écran de consultation)
+android/app/src/main/res/layout/           carte de notification et écran de réglage
+.github/workflows/android.yml              compilation et vérification de l'APK
 ```
