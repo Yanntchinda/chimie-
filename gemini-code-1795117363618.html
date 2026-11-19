@@ -296,15 +296,15 @@
 
   .dynamic-island.expanded {
     width: 356px;
-    height: 82px;
+    height: 76px;
     border-radius: 28px;
-    padding: 10px 14px 16px;
+    padding: 12px 14px;
     pointer-events: auto;
     cursor: grab;
   }
 
   .dynamic-island.live {
-    height: 88px;
+    height: 82px;
     border-radius: 30px;
   }
 
@@ -376,21 +376,6 @@
     0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
     30% { opacity: 1; transform: translateY(-2px); }
   }
-
-  .di-hint {
-    display: none;
-    position: absolute;
-    bottom: 5px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 0.58rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  .dynamic-island.expanded .di-hint { display: block; }
 
   /* Écran verrouillé */
   .lock-screen {
@@ -512,8 +497,7 @@
 
   /* Pile empilee : seules la carte de tete et la pile ouverte montrent le detail */
   .card-slot:not(.is-head) .thread-toggle,
-  .card-slot:not(.is-head) .quick-reply,
-  .card-slot:not(.is-head) .reply-hint {
+  .card-slot:not(.is-head) .quick-reply {
     display: none;
   }
 
@@ -823,15 +807,6 @@
 
   .quick-send svg { width: 15px; height: 15px; }
 
-  .reply-hint {
-    display: none;
-    margin-top: 6px;
-    font-size: 0.64rem;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .prog-card.reply-open .reply-hint { display: block; }
-
   .sent-note {
     margin-top: 8px;
     font-size: 0.7rem;
@@ -911,6 +886,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 18px 0;
+    min-height: 52px;
   }
 
   .circle-btn {
@@ -925,12 +901,6 @@
   }
 
   .circle-btn svg { width: 19px; height: 19px; }
-
-  .swipe-hint {
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.82);
-  }
 
   /* Écran d'accueil (déverrouillé) */
   .home-screen {
@@ -1139,7 +1109,6 @@
             <div class="di-typing"><i></i><i></i><i></i></div>
           </div>
         </div>
-        <div class="di-hint">Glisser vers le haut pour ranger</div>
       </div>
 
       <!-- Barre d'état -->
@@ -1174,7 +1143,6 @@
 
         <div class="lock-footer">
           <div class="circle-btn" id="flashlightBtn"></div>
-          <span class="swipe-hint">Barre du bas : glisser vers le haut</span>
           <div class="circle-btn" id="cameraBtn"></div>
         </div>
       </section>
@@ -1215,7 +1183,7 @@
       <div id="toast" class="toast"></div>
 
       <!-- Barre de déverrouillage tout en bas -->
-      <div id="swipeZone" class="swipe-zone" title="Glisser vers le haut pour déverrouiller">
+      <div id="swipeZone" class="swipe-zone" aria-label="Déverrouiller">
         <div class="home-bar"></div>
       </div>
     </div>
@@ -1528,7 +1496,6 @@
       '<input class="quick-input" type="text" placeholder="Réponse rapide" autocomplete="off" maxlength="140">' +
       '<button type="submit" class="quick-send" title="Envoyer">' + ICONS.send + "</button>" +
     "</form>";
-    html += '<div class="reply-hint">Entrée pour envoyer, Échap pour fermer</div>';
 
     if (thread.sentNote) {
       html += '<div class="sent-note">' + ICONS.check + "Réponse envoyée dans la conversation</div>";
@@ -1752,7 +1719,8 @@
 
     if (total > 1) {
       stackCounterPill.style.display = "block";
-      stackCounterPill.textContent = "Glisser vers le haut (" + total + " fils)";
+      const messageCount = state.threads.reduce((sum, thread) => sum + thread.messages.length, 0);
+      stackCounterPill.textContent = messageCount + (messageCount > 1 ? " messages" : " message");
       stackCounterPill.style.opacity = String(clamp(1 - headProgress * 2.5, 0, 1).toFixed(2));
       stackCounterPill.style.transform = "translate(-50%, " + (-headProgress * 18).toFixed(1) + "px)";
     } else {
