@@ -511,14 +511,12 @@
   }
 
   /* Pile empilee : seules la carte de tete et la pile ouverte montrent le detail */
-  .card-slot:not(.is-head) .burst-summary,
   .card-slot:not(.is-head) .thread-toggle,
   .card-slot:not(.is-head) .quick-reply,
   .card-slot:not(.is-head) .reply-hint {
     display: none;
   }
 
-  .cards-expanded .card-slot .burst-summary { display: flex; }
   .cards-expanded .card-slot .thread-toggle { display: inline-flex; }
   .cards-expanded .card-slot .peek-actions { display: none; }
 
@@ -587,8 +585,8 @@
   }
 
   .prog-card.urgent {
-    border-color: rgba(255, 159, 10, 0.65);
-    box-shadow: 0 0 0 1px rgba(255, 159, 10, 0.35), 0 0 26px rgba(255, 159, 10, 0.22), 0 10px 28px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 176, 64, 0.34);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 176, 64, 0.08);
   }
 
   .prog-card.peeking {
@@ -639,6 +637,9 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
     min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .notif-app-icon {
@@ -660,87 +661,60 @@
     flex-shrink: 0;
   }
 
-  .chip {
+  /* Étiquettes discrètes : pas de fond, pas de contour, pas de capitales */
+  .meta-tag {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding: 2px 6px;
-    border-radius: 999px;
-    border: 1px solid transparent;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 0.63rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.55);
+    white-space: nowrap;
   }
 
-  .chip svg { width: 9px; height: 9px; }
+  .meta-tag svg {
+    width: 9px;
+    height: 9px;
+    opacity: 0.85;
+  }
 
-  .chip.pin {
-    color: #8ec5ff;
-    background: rgba(10, 132, 255, 0.18);
-    border-color: rgba(10, 132, 255, 0.4);
+  .meta-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ffb340;
+    flex-shrink: 0;
+  }
+
+  .meta-tag.priority { color: rgba(255, 199, 122, 0.9); }
+
+  .meta-tag.pin {
+    color: rgba(158, 199, 255, 0.9);
     cursor: pointer;
+    transition: opacity 0.15s ease;
   }
 
-  .chip.urgent {
-    color: #ffcf66;
-    background: rgba(255, 159, 10, 0.16);
-    border-color: rgba(255, 159, 10, 0.42);
+  .meta-tag.pin:active { opacity: 0.55; }
+
+  .meta-sep {
+    width: 1px;
+    height: 9px;
+    background: rgba(255, 255, 255, 0.16);
   }
 
-  .notif-time { font-variant-numeric: tabular-nums; }
+  .notif-time {
+    color: rgba(255, 255, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+  }
 
   .notif-title {
     font-size: 0.88rem;
     font-weight: 700;
     line-height: 1.25;
-  }
-
-  .burst-summary {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: nowrap;
-    margin-top: 5px;
-    padding: 6px 8px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.85);
-    line-height: 1.3;
-  }
-
-  .burst-label {
-    font-size: 0.55rem;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: #9fd0ff;
-    border: 1px solid rgba(10, 132, 255, 0.45);
-    background: rgba(10, 132, 255, 0.15);
-    border-radius: 4px;
-    padding: 1px 4px;
-    flex-shrink: 0;
-  }
-
-  .burst-text {
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .burst-toggle {
-    padding: 2px 6px;
-    font-size: 0.62rem;
-    font-weight: 700;
-    color: #9fd0ff;
-    background: transparent;
-    border: 1px solid rgba(10, 132, 255, 0.4);
-    border-radius: 6px;
-    flex-shrink: 0;
   }
 
   .notif-message {
@@ -758,17 +732,23 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-top: 7px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.78);
-    font-size: 0.68rem;
-    font-weight: 600;
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: color 0.15s ease;
   }
 
-  .thread-toggle svg { width: 9px; height: 9px; }
+  .thread-toggle:hover { color: rgba(255, 255, 255, 0.8); }
+
+  .thread-toggle svg {
+    width: 9px;
+    height: 9px;
+    opacity: 0.8;
+  }
 
   .thread-list {
     margin-top: 9px;
@@ -1286,7 +1266,6 @@
   };
 
   const PRIORITY_WORDS = ["urgent", "urgence", "virement", "alerte", "appel manque", "appel manqué", "critique", "immediat", "immédiat", "sos", "panne"];
-  const SUMMARY_WORDS = ["confirme", "confirmation", "demande", "valider", "livraison", "bordereau", "dossier", "chantier", "montant", "rapport", "reunion", "réunion", "signature", "paiement", "facture", "certificat", "commande"];
 
   const SAMPLE_MESSAGES = [
     { app: "WhatsApp", sender: "Client Travex", text: "Le colis vient d'arriver au port, on confirme la livraison ?" },
@@ -1415,45 +1394,17 @@
   }
 
   /* ------------------------------------------------------------------ *
-   *  Analyse : priorité, rafale, résumé automatique
+   *  Analyse : priorité et rafale
    * ------------------------------------------------------------------ */
   function isPriorityText(text) {
     const l = text.toLowerCase();
     return PRIORITY_WORDS.some((w) => l.includes(w));
   }
 
-  function textScore(text) {
-    const l = text.toLowerCase();
-    let score = 0;
-    PRIORITY_WORDS.forEach((w) => { if (l.includes(w)) score += 3; });
-    SUMMARY_WORDS.forEach((w) => { if (l.includes(w)) score += 2; });
-    if (/\d/.test(text)) score += 1;
-    if (/\b\d{1,2}\s?h\b/.test(l)) score += 2;
-    return score;
-  }
-
-  /* Résumé extractif local : deux phrases les plus informatives, dans l'ordre */
-  function summarize(thread) {
-    const texts = [];
-    thread.messages.forEach((m) => {
-      if (m.dir === "in" && texts.indexOf(m.text) === -1) texts.push(m.text);
-    });
-    if (!texts.length) return "";
-    const ranked = texts
-      .map((text, index) => ({ text, index, score: textScore(text) }))
-      .sort((a, b) => (b.score - a.score) || (a.index - b.index))
-      .slice(0, 2)
-      .sort((a, b) => a.index - b.index);
-    let out = ranked.map((r) => r.text.replace(/[.!?]+$/, "").trim()).join(" ; ");
-    if (out.length > 104) out = out.slice(0, 101).trim() + "...";
-    return out.charAt(0).toUpperCase() + out.slice(1);
-  }
-
   function refreshAnalysis(thread) {
     const now = Date.now();
     const recentIn = thread.messages.filter((m) => m.dir === "in" && now - m.at <= BURST_WINDOW);
     thread.burst = recentIn.length > 3;
-    thread.summary = thread.burst ? summarize(thread) : "";
     thread.priority = thread.messages.some((m) => m.dir === "in" && isPriorityText(m.text));
   }
 
@@ -1545,21 +1496,15 @@
     html += '<div class="notif-header">' +
       '<span class="notif-app"><span class="notif-app-icon" style="background:' + meta.color + '">' + meta.icon + "</span>" + escapeHtml(thread.app) + "</span>" +
       '<span class="notif-meta">' +
-        (thread.pinned ? '<button type="button" class="chip pin" data-role="unpin" title="Désépingler">' + ICONS.pin + "Épinglé</button>" : "") +
-        (thread.priority ? '<span class="chip urgent">' + ICONS.bolt + "Prioritaire</span>" : "") +
+        (thread.priority ? '<span class="meta-tag priority" title="Message prioritaire"><span class="meta-dot"></span>Prioritaire</span>' : "") +
+        (thread.priority && thread.pinned ? '<span class="meta-sep"></span>' : "") +
+        (thread.pinned ? '<button type="button" class="meta-tag pin" data-role="unpin" title="Désépingler">' + ICONS.pin + "Épinglé</button>" : "") +
+        ((thread.priority || thread.pinned) ? '<span class="meta-sep"></span>' : "") +
         '<span class="notif-time">' + last.time + "</span>" +
       "</span>" +
     "</div>";
 
     html += '<div class="notif-title">' + escapeHtml(thread.sender) + "</div>";
-
-    if (thread.summary) {
-      html += '<div class="burst-summary">' +
-        '<span class="burst-label">Résumé</span>' +
-        '<span class="burst-text">' + escapeHtml(thread.summary) + "</span>" +
-        '<button type="button" class="burst-toggle" data-role="raw">Messages</button>' +
-      "</div>";
-    }
 
     html += '<div class="notif-message">' + escapeHtml(last.text) + "</div>";
 
@@ -1671,7 +1616,6 @@
   /* Secours quand la mesure n'est pas disponible (rendu hors navigateur) */
   function estimateCardHeight(card) {
     let height = CARD_SLOT_HEIGHT;
-    if (card.querySelector(".burst-summary")) height += 26;
     if (card.querySelector(".thread-toggle")) height += 27;
     if (card.querySelector(".thread-list")) height += 64;
     if (card.querySelector(".quick-reply")) height += 44;
@@ -1713,7 +1657,6 @@
       event.stopPropagation();
       const role = roleEl.dataset.role;
       if (role === "thread") toggleThread(thread.id);
-      if (role === "raw") { thread.expanded = true; rebuildCards(); }
       if (role === "reply") openQuickReply(thread.id);
       if (role === "unpeek") closePeek();
       if (role === "unpin") { thread.pinned = false; afterMutation(thread, "Désépinglée"); }
