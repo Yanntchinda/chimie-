@@ -68,14 +68,40 @@ Dernier recours, avec un ordinateur et le câble USB : installer l'APK par ADB
 (`adb install -r app-release.apk`). Une installation par ADB n'est pas marquée comme
 « source inconnue » et échappe à cette restriction.
 
-## Utiliser
+## Ce qui se passe une fois autorisé
 
-- **Répondre** depuis la notification (bouton de réponse, ou réponse directe
-  d'Android) : le texte part dans l'application d'origine.
+1. L'écran de réglage affiche « Accordé » et « Autorisé ». On peut refermer
+   l'application : elle n'a plus besoin d'être ouverte.
+2. Les notifications déjà présentes dans le volet sont réécrites immédiatement.
+   Ensuite, chaque nouveau message suit le même chemin :
+3. Le téléphone sonne ou vibre **une fois**, comme d'habitude (le son vient de
+   l'application d'origine au moment où elle publie son message).
+4. La notification d'origine est retirée et remplacée par la carte du centre :
+   pastille, expéditeur, texte, heure. Elle apparaît en bannière en haut de l'écran
+   et sur l'écran verrouillé.
+5. Un nouveau message dans la même conversation **met à jour la même carte** au lieu
+   d'en empiler une deuxième.
+6. Les notifications sans contenu (lecteur de musique, téléchargement en cours,
+   appels en cours) ne sont pas touchées.
+
+### Dans la carte
+
+- **Répondre** (bouton de la notification, ou réponse directe d'Android) : le texte
+  part dans l'application d'origine.
 - **Toucher la carte** : ouvre l'application qui a envoyé le message.
 - **Effacer** : retire la carte et la notification d'origine.
 - **Écran verrouillé** : les cartes y apparaissent comme toute autre notification ;
   leur contenu s'affiche selon le réglage Android « Afficher le contenu sensible ».
+
+### Si plus rien n'apparaît
+
+- Vérifier les deux états dans l'application : accès aux notifications accordé, et
+  affichage autorisé.
+- Sur Xiaomi, Tecno, Infinix, Oppo : désactiver l'optimisation de la batterie pour
+  **Centre de notifications** (Paramètres → Applications → Centre de notifications →
+  Batterie → **Sans restriction**). Ces surcouches arrêtent sinon les services
+  d'arrière-plan.
+- Envoyer un message depuis un autre téléphone pour vérifier.
 
 ### Option de remplacement
 
