@@ -119,6 +119,32 @@ Activée par défaut : seule la carte du centre reste dans le volet. Désactivé
 notification d'origine reste visible à côté. Le réglage se trouve dans l'écran de
 l'application.
 
+## Prendre la main sur le système de notifications
+
+**Ne désactivez pas les notifications des applications** (WhatsApp, Messages,
+Telegram…). Le centre lit leurs notifications pour les réécrire : sans elles, il n'a
+plus rien à afficher et votre téléphone devient muet. C'est le piège à éviter.
+
+La prise de contrôle se fait à l'intérieur du centre :
+
+1. Dans l'application, laisser **Remplacer les notifications d'origine** activé
+   (c'est le réglage par défaut). Chaque message publié est retiré du volet et
+   remplacé par la carte du centre, dans la seconde. Seules les cartes du centre
+   restent visibles : c'est cela, prendre la main.
+2. Pour alléger la barre d'état : **Paramètres → Notifications → Barre d'état**,
+   désactiver l'affichage des icônes de notification (le libellé varie selon la
+   marque). Les cartes restent dans le volet, les icônes disparaissent du haut.
+3. Pour les sons : ils viennent de l'application d'origine au moment de la
+   publication. Les couper application par application
+   (Paramètres → Applications → WhatsApp → Notifications → catégories → Son) laisse
+   le centre afficher les cartes en silence.
+
+**Ce qu'Android interdit sans root** : supprimer le volet de notifications lui-même,
+ou le remplacer par un volet maison. Ni une application normale ni un service
+d'écoute n'ont ce droit ; seuls un appareil rooté ou un appareil en mode kiosque
+(« device owner », configuré par ADB sur un appareil dédié) le permettent. Le centre
+s'approche du résultat : le volet du téléphone ne contient plus que ses cartes.
+
 ## Si Play Protect bloque l'installation
 
 L'application n'est pas signée par un développeur enregistré auprès de Google :
