@@ -2,8 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulateur iOS — Centre de notifications avancé</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Centre de notifications</title>
 <style>
   :root {
     --phone-w: 390px;
@@ -973,6 +977,101 @@
     opacity: 1;
     transform: translate(-50%, 0);
   }
+
+  /* ------------------------------------------------------------------ *
+   *  Mode application mobile : le telephone occupe tout l'ecran
+   * ------------------------------------------------------------------ */
+  .app-fab, .sheet-backdrop { display: none; }
+
+  body.is-app {
+    display: block;
+    height: 100vh;
+    height: 100dvh;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+    overscroll-behavior: none;
+  }
+
+  body.is-app .iphone-frame {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    padding: 0;
+    border-radius: 0;
+    background: #000;
+    box-shadow: none;
+  }
+
+  body.is-app .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  body.is-app .app-fab {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 50%;
+    z-index: 120;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 300;
+    line-height: 1;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  body.is-app .controls-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 140;
+    width: 100%;
+    max-height: 86vh;
+    margin: 0;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    padding: 20px 20px calc(22px + env(safe-area-inset-bottom));
+    transform: translateY(105%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.6);
+  }
+
+  body.is-app .controls-panel.open { transform: translateY(0); }
+
+  body.is-app .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  body.is-app .sheet-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.is-app .swipe-zone {
+    height: calc(34px + env(safe-area-inset-bottom));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
 </style>
 </head>
 <body>
@@ -1137,6 +1236,10 @@
     </div>
   </div>
 
+  <!-- Mode application : ajout de notification -->
+  <button id="sheetToggle" class="app-fab" type="button" aria-label="Ajouter une notification">+</button>
+  <div id="sheetBackdrop" class="sheet-backdrop"></div>
+
 <script>
   /* ------------------------------------------------------------------ *
    *  Icônes SVG (aucun emoji dans l'interface)
@@ -1274,6 +1377,80 @@
   const toastEl = $("toast");
 
   /* ------------------------------------------------------------------ *
+   *  Mode application mobile (WebView) et persistance locale
+   * ------------------------------------------------------------------ */
+  const STORAGE_KEY = "centre-notifications-v1";
+  let storageAvailable = true;
+
+  const appMode = (() => {
+    try {
+      if (new URLSearchParams(window.location.search).get("app") === "1") return true;
+    } catch (err) { /* ignore */ }
+    return !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  })();
+
+  if (appMode) document.body.classList.add("is-app");
+
+  function setSheet(open) {
+    const panel = document.querySelector(".controls-panel");
+    const backdrop = $("sheetBackdrop");
+    if (!panel) return;
+    panel.classList.toggle("open", open);
+    if (backdrop) backdrop.classList.toggle("open", open);
+  }
+
+  function persist() {
+    if (!storageAvailable) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        initialized: true,
+        threads: state.threads,
+        snoozed: state.snoozed.map((entry) => ({ thread: entry.thread, dueAt: entry.dueAt, title: entry.title }))
+      }));
+    } catch (err) {
+      storageAvailable = false;
+    }
+  }
+
+  function restore() {
+    let raw = null;
+    try {
+      raw = localStorage.getItem(STORAGE_KEY);
+    } catch (err) {
+      storageAvailable = false;
+      return false;
+    }
+    if (!raw) return false;
+
+    let data = null;
+    try { data = JSON.parse(raw); } catch (err) { return false; }
+    if (!data || !data.initialized || !Array.isArray(data.threads)) return false;
+
+    const threads = data.threads
+      .filter((t) => t && t.id && t.sender && Array.isArray(t.messages) && t.messages.length)
+      .map((t) => ({
+        id: t.id,
+        app: t.app,
+        sender: t.sender,
+        messages: t.messages,
+        unread: t.unread || 0,
+        pinned: !!t.pinned,
+        expanded: false,
+        replyOpen: false,
+        sentNote: false,
+        isNew: false,
+        lastAt: t.lastAt || Date.now()
+      }));
+
+    state.threads = threads;
+    state.seq = threads.reduce((max, t) => Math.max(max, t.id), 0);
+    state.snoozed = (data.snoozed || []).filter((entry) => entry && entry.thread && entry.dueAt > Date.now() - 1000);
+    threads.forEach((thread) => refreshAnalysis(thread));
+    resort();
+    return true;
+  }
+
+  /* ------------------------------------------------------------------ *
    *  Utilitaires
    * ------------------------------------------------------------------ */
   function escapeHtml(str) {
@@ -1386,6 +1563,7 @@
       if (recentIn >= 3) updateLivePill(thread);
       else showIsland(thread);
     }
+    persist();
     return thread;
   }
 
@@ -2007,6 +2185,7 @@
 
     updateBadges();
     rebuildCards();
+    persist();
     logAction("Réponse envoyée à " + thread.sender);
 
     const targetId = thread.id;
@@ -2036,6 +2215,7 @@
     resort();
     rebuildCards();
     updateBadges();
+    persist();
     if (message) logAction(message);
   }
 
@@ -2064,6 +2244,7 @@
       state.targetOffset = 0;
     });
 
+    persist();
     logAction("Rappel dans 10 min : " + thread.sender);
     toast("Rappel dans 10 min");
     renderSnoozeRow();
@@ -2082,6 +2263,7 @@
     rebuildCards();
     updateBadges();
     renderSnoozeRow();
+    persist();
     logAction("Rappel restauré : " + thread.sender);
     toast("Rappel affiché");
   }
@@ -2129,6 +2311,7 @@
         state.scrollOffset = clamp(state.scrollOffset, 0, maxOffset);
       });
       updateBadges();
+      persist();
       logAction("Notification effacée (" + origin + ") : " + thread.sender);
       toast("Notification effacée");
     };
@@ -2455,6 +2638,7 @@
     updateBadges();
     rebuildCards();
     renderSnoozeRow();
+    persist();
     logAction("Centre de notifications vide");
   });
 
@@ -2510,6 +2694,28 @@
       });
     }
 
+    const restored = restore();
+    if (!restored) seedDemo();
+
+    rebuildCards();
+    updateBadges();
+    renderSnoozeRow();
+    if (state.snoozed.length) startSnoozeTicker();
+
+    // Volet de controle en mode application
+    const sheetToggle = $("sheetToggle");
+    const sheetBackdrop = $("sheetBackdrop");
+    if (sheetToggle) sheetToggle.addEventListener("click", () => {
+      const panel = document.querySelector(".controls-panel");
+      setSheet(!(panel && panel.classList.contains("open")));
+    });
+    if (sheetBackdrop) sheetBackdrop.addEventListener("click", () => setSheet(false));
+
+    renderFrame();
+    logAction(restored ? "Centre restauré" : "Application prête");
+  }
+
+  function seedDemo() {
     receive("WhatsApp", "Équipe Logistique", "Le dossier d'expédition a été mis à jour.", { forceNew: true });
     receive("WhatsApp", "Équipe Logistique", "Le bordereau est prêt, livraison confirmée à 16h.");
     receive("WhatsApp", "Équipe Logistique", "Confirme la présence du chef d'équipe sur le site.");
@@ -2518,9 +2724,6 @@
     receive("Telegram", "Bot Trading XAU", "Alerte structure H1 : cassure haussière confirmée sur l'or.");
     receive("Mail", "Herlo Global", "Nouvelle commande validée sur la boutique.");
     receive("Messages", "Karim", "Tu passes cet après-midi ?");
-
-    renderFrame();
-    logAction("Simulateur prêt");
   }
 
   boot();

@@ -1,0 +1,53 @@
+plugins {
+    id "com.android.application"
+}
+
+// Le coeur de l'application est la page HTML du depot : elle est copiee dans les assets
+// a chaque build, ce qui evite d'en maintenir une deuxieme version.
+def webSource = rootProject.file("../gemini-code-1795117363618.html")
+def assetsDir = file("$projectDir/src/main/assets")
+
+tasks.register("syncWebAssets", Copy) {
+    from(webSource)
+    into(assetsDir)
+    rename { "index.html" }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == "preBuild") {
+        task.dependsOn "syncWebAssets"
+    }
+}
+
+android {
+    namespace "com.yanntchinda.centrenotifications"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.yanntchinda.centrenotifications"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ""
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+    }
+}

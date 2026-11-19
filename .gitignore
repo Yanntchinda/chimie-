@@ -1,0 +1,13 @@
+# Android
+android/.gradle/
+android/local.properties
+android/build/
+android/app/build/
+android/app/src/main/assets/index.html
+android/.idea/
+*.iml
+
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
