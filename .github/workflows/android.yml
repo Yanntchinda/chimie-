@@ -3,6 +3,7 @@ name: Android APK
 on:
   push:
     branches: ["**"]
+    tags: ["v*"]
     paths:
       - "android/**"
       - "gemini-code-1795117363618.html"
