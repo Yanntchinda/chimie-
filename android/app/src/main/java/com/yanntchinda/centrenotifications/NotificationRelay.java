@@ -90,12 +90,13 @@ public class NotificationRelay extends NotificationListenerService {
             LAST_TEXT.put(key, message);
 
             CenterPrefs.noteReceived(getApplicationContext());
-            boolean posted = StyledNotifier.post(getApplicationContext(), sbn, sender, message);
-            if (posted) {
+            String status = StyledNotifier.post(getApplicationContext(), sbn, sender, message);
+            CenterPrefs.notePosted(getApplicationContext(), status);
+            if ("ok".equals(status)) {
                 IslandOverlay.show(getApplicationContext(), sender, message,
                         StyledNotifier.dotFor(sbn.getPackageName()));
             }
-            if (posted && CenterPrefs.replaceOriginals(this)) {
+            if ("ok".equals(status) && CenterPrefs.replaceOriginals(this)) {
                 // Une seule carte reste dans les notifications : celle du centre.
                 try {
                     cancelNotification(key);

@@ -10,6 +10,8 @@ final class CenterPrefs {
     private static final String KEY_REPLACE = "replace-originals";
     private static final String KEY_COUNT = "received-count";
     private static final String KEY_LAST = "received-last";
+    private static final String KEY_POSTED = "posted-count";
+    private static final String KEY_STATUS = "last-status";
 
     private CenterPrefs() {
     }
@@ -41,5 +43,23 @@ final class CenterPrefs {
 
     static long receivedLast(Context context) {
         return prefs(context).getLong(KEY_LAST, 0L);
+    }
+
+    /** Enregistre le resultat de la publication d'une carte. */
+    static void notePosted(Context context, String status) {
+        SharedPreferences store = prefs(context);
+        SharedPreferences.Editor editor = store.edit().putString(KEY_STATUS, status);
+        if ("ok".equals(status)) {
+            editor.putInt(KEY_POSTED, store.getInt(KEY_POSTED, 0) + 1);
+        }
+        editor.apply();
+    }
+
+    static int postedCount(Context context) {
+        return prefs(context).getInt(KEY_POSTED, 0);
+    }
+
+    static String lastStatus(Context context) {
+        return prefs(context).getString(KEY_STATUS, "");
     }
 }

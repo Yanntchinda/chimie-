@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
     private TextView postState;
     private TextView islandState;
     private TextView receiveState;
+    private TextView diagnosticState;
     private Switch replaceSwitch;
 
     @Override
@@ -38,6 +39,7 @@ public class MainActivity extends Activity {
         postState = findViewById(R.id.postState);
         islandState = findViewById(R.id.islandState);
         receiveState = findViewById(R.id.receiveState);
+        diagnosticState = findViewById(R.id.diagnosticState);
         replaceSwitch = findViewById(R.id.replaceSwitch);
         Button accessButton = findViewById(R.id.accessButton);
         Button postButton = findViewById(R.id.postButton);
@@ -46,10 +48,25 @@ public class MainActivity extends Activity {
         accessButton.setOnClickListener(view -> openListenerSettings());
         postButton.setOnClickListener(view -> requestPosting());
         islandButton.setOnClickListener(view -> openOverlaySettings());
+
+        Button testButton = findViewById(R.id.testButton);
+        testButton.setOnClickListener(view -> {
+            String status = StyledNotifier.postTest(this);
+            CenterPrefs.notePosted(this, status);
+            if ("ok".equals(status)) {
+                IslandOverlay.show(this, "Carte de test", "Le centre affiche correctement.", R.drawable.dot_blue);
+            }
+            refresh();
+        });
         replaceSwitch.setOnCheckedChangeListener((button, checked) ->
                 CenterPrefs.setReplaceOriginals(this, checked));
 
         StyledNotifier.ensureChannel(getApplicationContext());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, POST_NOTIFICATIONS_REQUEST);
+        }
     }
 
     @Override
@@ -79,6 +96,21 @@ public class MainActivity extends Activity {
         islandState.setText(island
                 ? "Accordé. Une pastille descend du haut de l'écran à chaque message, par-dessus l'application en cours."
                 : "Non accordé. Sans cet accès, les cartes restent dans les notifications, sans îlot par-dessus les applications.");
+
+        int read = CenterPrefs.receivedCount(this);
+        int posted = CenterPrefs.postedCount(this);
+        String status = CenterPrefs.lastStatus(this);
+        String meaning;
+        if (read == 0) {
+            meaning = "aucun message n'est encore arrivé jusqu'au centre : l'accès aux notifications n'est pas actif.";
+        } else if (posted == 0) {
+            meaning = "des messages sont lus, mais aucune carte n'a pu être publiée : Android refuse l'affichage.";
+        } else if ("ok".equals(status)) {
+            meaning = "tout fonctionne : les messages sont lus et réécrits.";
+        } else {
+            meaning = "la dernière tentative a échoué (" + status + ").";
+        }
+        diagnosticState.setText("Messages lus : " + read + " · cartes publiées : " + posted + "\n" + meaning);
 
         int count = CenterPrefs.receivedCount(this);
         long last = CenterPrefs.receivedLast(this);

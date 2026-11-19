@@ -53,16 +53,16 @@ final class StyledNotifier {
      * Affiche la carte du centre pour une notification d'origine.
      * Renvoie false si rien n'a pu être affiché : l'originale ne doit alors pas être retirée.
      */
-    static boolean post(Context context, StatusBarNotification sbn, String sender, String message) {
-        if (sbn == null || message == null || message.isEmpty()) return false;
-        if (!canPost(context)) return false;
+    static String post(Context context, StatusBarNotification sbn, String sender, String message) {
+        if (sbn == null || message == null || message.isEmpty()) return "vide";
+        if (!canPost(context)) return "affichage-refuse";
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager == null) return false;
+        if (manager == null) return "echec";
         ensureChannel(context);
 
         String key = sbn.getKey();
-        if (key == null) return false;
+        if (key == null) return "echec";
 
         Notification original = sbn.getNotification();
         long when = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
@@ -108,9 +108,53 @@ final class StyledNotifier {
 
         try {
             manager.notify(key, 1, builder.build());
-            return true;
+            return "ok";
         } catch (Exception err) {
-            return false;
+            return "echec";
+        }
+    }
+
+    /** Carte de démonstration, sans message réel : sert à vérifier l'affichage et l'îlot. */
+    static String postTest(Context context) {
+        if (!canPost(context)) return "affichage-refuse";
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) return "echec";
+        ensureChannel(context);
+
+        long now = System.currentTimeMillis();
+        RemoteViews card = new RemoteViews(context.getPackageName(), R.layout.notification_card);
+        card.setTextViewText(R.id.cardSender, "Carte de test");
+        card.setTextViewText(R.id.cardMessage, "Si vous voyez cette carte dans vos notifications, le centre affiche correctement.");
+        card.setTextViewText(R.id.cardTime, DateFormat.getTimeFormat(context).format(new Date(now)));
+        card.setImageViewResource(R.id.cardDot, R.drawable.dot_blue);
+
+        Intent clear = new Intent(context, ActionReceiver.class)
+                .setAction(ActionReceiver.ACTION_CLEAR)
+                .putExtra(ActionReceiver.EXTRA_KEY, "centre-test");
+        PendingIntent clearIntent = PendingIntent.getBroadcast(
+                context, "centre-test".hashCode(), clear,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification notification = new Notification.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notif_small)
+                .setWhen(now)
+                .setShowWhen(true)
+                .setContentTitle("Carte de test")
+                .setContentText("Le centre affiche correctement.")
+                .setCustomContentView(card)
+                .setCustomBigContentView(card)
+                .setAutoCancel(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setColor(0xFF1B1E2B)
+                .addAction(new Notification.Action.Builder(
+                        null, context.getString(R.string.notif_action_clear), clearIntent).build())
+                .build();
+
+        try {
+            manager.notify("centre-test", 1, notification);
+            return "ok";
+        } catch (Exception err) {
+            return "echec";
         }
     }
 
