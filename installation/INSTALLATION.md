@@ -21,6 +21,10 @@ directement sur le fichier. Le lien écrit, si besoin :
    Chrome ou Fichiers : **Autoriser**, revenir en arrière, puis **Installer**.
 5. Play Protect peut prévenir qu'il ne connaît pas l'application : toucher
    **Installer quand même**. Puis **Ouvrir**.
+6. Toucher le bouton **+** en bas à droite, puis **Autoriser l'accès aux
+   notifications** : Android ouvre la liste des services d'accès. Activer
+   **Centre de notifications**, revenir en arrière. Le volet affiche alors
+   « accès accordé ».
 
 L'application apparaît ensuite dans le tiroir d'applications sous le nom
 **Centre de notifications**, avec l'icône cloche.
@@ -44,7 +48,19 @@ perdre des fonctions du centre :
 3. Lancer l'icône créée : la page s'ouvre en plein écran, sans barre d'adresse, et
    conserve les notifications entre deux ouvertures.
 
-## Ce que l'application installe
+## Après l'activation
 
-Aucune permission : ni accès réseau, ni notifications système. Une fois installée,
-le centre intégré est le seul canal par lequel une notification peut arriver.
+Les notifications des autres applications apparaissent dans le centre, avec le nom de
+l'application, l'expéditeur et le texte. Elles restent groupées en fils, et :
+
+- **répondre** dans une carte envoie la réponse à l'application d'origine ;
+- **effacer** une carte retire la notification du téléphone ;
+- un message reçu pendant que l'application est fermée est conservé et s'affiche à
+  la réouverture.
+
+## Ce que l'application demande
+
+Un seul accès : lire les notifications. Pas d'accès réseau (aucune permission
+`INTERNET`), donc rien ne peut partir de l'appareil, et pas de publication dans la
+barre d'état : le centre intégré reste le seul endroit où l'on lit et traite ces
+notifications.

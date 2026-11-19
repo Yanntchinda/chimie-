@@ -1072,6 +1072,23 @@
     height: calc(34px + env(safe-area-inset-bottom));
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
   }
+
+  /* Bloc d'acces aux notifications du telephone (volet de controle uniquement) */
+  .native-status {
+    display: grid;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .native-status[hidden] { display: none; }
+  .native-status-text {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.78);
+  }
 </style>
 </head>
 <body>
@@ -1086,6 +1103,11 @@
     <div id="statusPill" class="status-pill">
       <span class="dot"></span>
       <span id="statusText">Téléphone verrouillé</span>
+    </div>
+
+    <div id="nativeStatus" class="native-status" hidden>
+      <div id="nativeStatusText" class="native-status-text">Notifications du téléphone : état inconnu.</div>
+      <button id="nativeAccessBtn" class="btn-secondary" type="button">Autoriser l'accès aux notifications</button>
     </div>
 
     <div class="section-title">Gestes sur une carte</div>
@@ -1391,6 +1413,84 @@
 
   if (appMode) document.body.classList.add("is-app");
 
+  // Passerelle native : dans l'application Android, les notifications reelles du
+  // telephone arrivent par ici. Dans un navigateur, elle est simplement absente.
+  const nativeBridge = (typeof window.Centre !== "undefined") ? window.Centre : null;
+  const seenNative = new Set();
+
+  const APP_ALIASES = {
+    "whatsapp": "WhatsApp",
+    "whatsapp business": "WhatsApp",
+    "messages": "Messages",
+    "messagerie": "Messages",
+    "sms": "Messages",
+    "telegram": "Telegram",
+    "gmail": "Mail",
+    "e-mail": "Mail",
+    "email": "Mail",
+    "outlook": "Mail"
+  };
+
+  function normalizeApp(label, pkg) {
+    const named = String(label || "").trim();
+    const byLabel = APP_ALIASES[named.toLowerCase()];
+    if (byLabel) return byLabel;
+    const byPackage = APP_ALIASES[String(pkg || "").split(".").pop().toLowerCase()];
+    if (byPackage) return byPackage;
+    return named || "Application";
+  }
+
+  function updateNativeStatus() {
+    const text = $("nativeStatusText");
+    const button = $("nativeAccessBtn");
+    if (!text || !nativeBridge) return;
+    let granted = false;
+    try { granted = !!nativeBridge.listening(); } catch (err) { granted = false; }
+    text.textContent = granted
+      ? "Notifications du téléphone : accès accordé. Chaque notification reçue s'affiche ici."
+      : "Notifications du téléphone : accès non accordé. Sans cet accès, le centre ne reçoit rien.";
+    if (button) button.hidden = granted;
+    return granted;
+  }
+
+  function ingestNative(event) {
+    if (!event || !event.text) return null;
+    const stamp = String(event.key || "") + "|" + String(event.text);
+    if (seenNative.has(stamp)) return null;
+    seenNative.add(stamp);
+    if (seenNative.size > 400) seenNative.delete(seenNative.values().next().value);
+
+    const app = normalizeApp(event.app, event.pkg);
+    return receive(app, String(event.title || app), String(event.text), {
+      key: event.key || null,
+      canReply: !!event.canReply,
+      at: Number(event.at) || Date.now()
+    });
+  }
+
+  function pullNative() {
+    if (!nativeBridge || typeof nativeBridge.pull !== "function") return 0;
+    let raw = "[]";
+    try { raw = nativeBridge.pull(); } catch (err) { return 0; }
+    let list = [];
+    try { list = JSON.parse(raw || "[]"); } catch (err) { return 0; }
+    if (!Array.isArray(list)) return 0;
+    list.forEach(ingestNative);
+    return list.length;
+  }
+
+  // Appelees par l'application Android
+  window.__centreRecoit = function (raw) {
+    let list = [];
+    try { list = JSON.parse(raw || "[]"); } catch (err) { return; }
+    if (Array.isArray(list)) list.forEach(ingestNative);
+  };
+
+  window.__centreRelance = function () {
+    pullNative();
+    updateNativeStatus();
+  };
+
   function setSheet(open) {
     const panel = document.querySelector(".controls-panel");
     const backdrop = $("sheetBackdrop");
@@ -1520,7 +1620,7 @@
    * ------------------------------------------------------------------ */
   function receive(app, sender, text, options) {
     const opts = options || {};
-    const now = Date.now();
+    const now = Number(opts.at) || Date.now();
     const time = fmtTime(now);
     let thread = opts.forceNew ? null : state.threads.find(
       (t) => t.app === app && t.sender === sender && now - t.lastAt < MERGE_WINDOW
@@ -1546,6 +1646,11 @@
         lastAt: now
       };
       state.threads.push(thread);
+    }
+
+    if (opts.key) {
+      thread.nativeKey = opts.key;
+      thread.canReply = !!opts.canReply;
     }
 
     refreshAnalysis(thread);
@@ -2178,6 +2283,14 @@
     const text = input ? input.value.trim() : "";
     if (!text) { if (input) input.focus(); return; }
 
+    if (thread.nativeKey && nativeBridge) {
+      let result = "echec";
+      try { result = String(nativeBridge.reply(thread.nativeKey, text)); } catch (err) { result = "echec"; }
+      if (result !== "ok") {
+        toast("Cette notification n'accepte pas de réponse directe");
+      }
+    }
+
     thread.messages.push({ dir: "out", text, time: fmtTime(Date.now()), at: Date.now() });
     thread.replyOpen = false;
     thread.sentNote = true;
@@ -2305,6 +2418,9 @@
     state.openSwipe = null;
 
     const finish = () => {
+      if (thread.nativeKey && nativeBridge) {
+        try { nativeBridge.cancel(thread.nativeKey); } catch (err) { /* deja retiree */ }
+      }
       rebuildWithFlip(() => {
         state.threads = state.threads.filter((t) => t.id !== id);
         const { maxOffset } = getMetrics();
@@ -2627,6 +2743,12 @@
   });
 
   $("clearNotifsBtn").addEventListener("click", () => {
+    if (nativeBridge) {
+      state.threads.forEach((thread) => {
+        if (!thread.nativeKey) return;
+        try { nativeBridge.cancel(thread.nativeKey); } catch (err) { /* deja retiree */ }
+      });
+    }
     state.threads = [];
     state.swipeX.clear();
     state.openSwipe = null;
@@ -2696,7 +2818,12 @@
     }
 
     const restored = restore();
-    if (!restored) seedDemo();
+    if (nativeBridge) {
+      // Application installee : le centre se remplit avec les notifications du telephone.
+      pullNative();
+    } else if (!restored) {
+      seedDemo();
+    }
 
     rebuildCards();
     updateBadges();
@@ -2711,6 +2838,16 @@
       setSheet(!(panel && panel.classList.contains("open")));
     });
     if (sheetBackdrop) sheetBackdrop.addEventListener("click", () => setSheet(false));
+
+    if (nativeBridge) {
+      const nativeStatus = $("nativeStatus");
+      if (nativeStatus) nativeStatus.hidden = false;
+      const accessButton = $("nativeAccessBtn");
+      if (accessButton) accessButton.addEventListener("click", () => {
+        try { nativeBridge.openSettings(); } catch (err) { /* rien a ouvrir */ }
+      });
+      updateNativeStatus();
+    }
 
     renderFrame();
     logAction(restored ? "Centre restauré" : "Application prête");

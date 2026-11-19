@@ -2,9 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
-      Aucune permission reseau ni notification : une fois installee, l'application
-      ne recoit rien de l'exterieur. Son centre de notifications est le seul canal.
+      Aucune permission reseau : l'application ne peut rien recevoir d'Internet.
+      Les notifications affichees viennent du telephone lui-meme, par le service
+      d'ecoute ci-dessous, et restent sur l'appareil.
     -->
+
+    <!-- Permet de retrouver le nom des applications qui emettent les notifications -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="false"
@@ -14,6 +23,16 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <service
+            android:name=".NotificationRelay"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <activity
             android:name=".MainActivity"

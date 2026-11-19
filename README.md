@@ -4,9 +4,10 @@ Un centre de notifications façon iOS, avec trois blocs : réponse express, bala
 (supprimer / épingler) et aperçu par appui long, des fils regroupés par application
 avec priorité, et un fil continu dans la Dynamic Island.
 
-Depuis la version Android, le même écran est empaqueté dans une application native :
-une fois installée, **c'est le seul canal par lequel une notification arrive**. Aucun
-réseau, aucune notification système.
+Depuis la version Android, le même écran est empaqueté dans une application native qui
+lit les **notifications réelles du téléphone** : WhatsApp, Messages, Telegram, Gmail et
+les autres apparaissent dans le centre, où l'on peut y répondre, les épingler ou les
+effacer — la réponse part dans l'application d'origine. Aucun accès réseau n'est demandé.
 
 ## Installer l'application
 
@@ -16,27 +17,39 @@ Guide détaillé, avec code à scanner : [installation/INSTALLATION.md](installa
 2. Télécharger `app-release.apk` sur le téléphone.
 3. Ouvrir le fichier téléchargé et autoriser l'installation depuis cette source
    (Android demande cette confirmation pour toute application hors Play Store).
-4. Lancer **Centre de notifications**.
+4. Lancer **Centre de notifications**, puis, dans le volet ouvert par le bouton **+**,
+   toucher **Autoriser l'accès aux notifications** et activer **Centre de notifications**
+   dans la liste Android. Sans cette étape, le centre reste vide : il ne reçoit que ce
+   que ce service lui transmet.
 
 L'application se présente en plein écran, sans barre d'adresse ni de navigation.
 Fermée puis rouverte, elle retrouve les fils, les épingles et les rappels tels quels.
 
-## Pourquoi aucun canal externe
+## D'où viennent les notifications
 
-Le manifeste Android ne déclare **ni `INTERNET` ni `POST_NOTIFICATIONS`** : le système
-d'exploitation refuse par construction l'accès au réseau et l'envoi de notifications
-système. Tout ce qui arrive dans le centre y arrive parce que l'application le reçoit
-elle-même, et les données restent sur l'appareil (`localStorage` de la page embarquée).
+Le service d'écoute Android (`NotificationListenerService`) transmet au centre les
+notifications émises par les autres applications, avec le nom de l'application, le
+titre et le texte. Elles sont ensuite affichées, regroupées en fils, exactement comme
+les notifications de démonstration de la version web.
 
-L'application peut donc être installée hors Play Store sans risque de captation :
-rien ne peut s'afficher dans la barre d'état à sa place.
+Le manifeste ne déclare **ni `INTERNET` ni `POST_NOTIFICATIONS`** : l'application ne
+peut ni joindre un serveur, ni publier dans la barre d'état. Ce qui est affiché vient
+du téléphone et ne sort pas de l'appareil (état conservé dans le `localStorage` de la
+page embarquée).
+
+Actions réelles, dans les deux sens :
+
+- **Répondre** dans une carte envoie le texte à la notification d'origine, quand elle
+  propose une réponse directe ; sinon le centre le signale au lieu de faire semblant.
+- **Effacer** une carte retire aussi la notification correspondante du téléphone.
 
 ## Utilisation
 
 - **Double toucher** sur une carte : ouvrir la réponse et répondre sans quitter l'écran.
 - **Glisser vers la gauche** : supprimer. **Vers la droite** : épingler en tête.
 - **Appui long** (460 ms) : aperçu de l'application concernée.
-- **Bouton +** : volet de contrôle, envoi de messages de démonstration, effacement.
+- **Bouton +** : volet de contrôle, accès aux notifications, envoi de messages de
+  démonstration, effacement.
 
 Les explications d'usage restent dans ce volet, jamais dans le téléphone lui-même.
 
@@ -72,6 +85,8 @@ android/settings.gradle               modules et dépôts
 android/app/build.gradle              compilation, tâche syncWebAssets
 android/app/src/main/AndroidManifest.xml   aucune permission
 android/app/src/main/java/.../MainActivity.java   WebView plein écran, fichier local
+android/app/src/main/java/.../NotificationRelay.java   écoute des notifications réelles
+android/app/src/main/java/.../CenterBridge.java   passerelle entre Android et la page
 android/app/src/main/res/             thème sombre, icône adaptative
 .github/workflows/android.yml         compilation et publication des APK
 ```
