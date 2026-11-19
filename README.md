@@ -10,6 +10,8 @@ réseau, aucune notification système.
 
 ## Installer l'application
 
+Guide détaillé, avec code à scanner : [installation/INSTALLATION.md](installation/INSTALLATION.md).
+
 1. Ouvrir les [Releases](../../releases) du dépôt.
 2. Télécharger `app-release.apk` sur le téléphone.
 3. Ouvrir le fichier téléchargé et autoriser l'installation depuis cette source
