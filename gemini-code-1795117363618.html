@@ -507,11 +507,7 @@
     transform-origin: center bottom;
   }
 
-  /* Pile empilee : seul le champ de reponse reste reserve a la carte de tete */
-  .card-slot:not(.is-head) .quick-reply {
-    display: none;
-  }
-
+  /* L'apercu agrandi n'a pas besoin de ses boutons quand toute la pile est ouverte */
   .cards-expanded .card-slot .peek-actions { display: none; }
 
   .swipe-actions-bg {
@@ -574,10 +570,6 @@
     pointer-events: auto;
     touch-action: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  }
-
-  .prog-card.priority {
-    border-left: 3px solid rgba(255, 255, 255, 0.65);
   }
 
   .prog-card.peeking {
@@ -1335,10 +1327,13 @@
   }
 
   function resort() {
+    // L'epinglage passe devant ; sinon la notification la plus recente reste en tete
+    // pour etre immediatement actionnable, la priorite ne servant qu'a departager.
     state.threads.sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (b.lastAt !== a.lastAt) return b.lastAt - a.lastAt;
       if (a.priority !== b.priority) return a.priority ? -1 : 1;
-      return b.lastAt - a.lastAt;
+      return 0;
     });
   }
 
@@ -1484,7 +1479,6 @@
 
       const card = document.createElement("article");
       card.className = "prog-card" +
-        (thread.priority ? " priority" : "") +
         (thread.replyOpen ? " reply-open" : "") +
         (state.peekId === thread.id ? " peeking" : "") +
         (thread.isNew ? " entering" : "");
@@ -1952,13 +1946,23 @@
   /* ------------------------------------------------------------------ *
    *  Réponse rapide intégrée
    * ------------------------------------------------------------------ */
+  /* Amene la carte dans la zone de lecture quand elle est enfouie dans la pile */
+  function revealThread(id) {
+    const index = state.threads.findIndex((t) => String(t.id) === String(id));
+    if (index <= 0) return;
+    const { offsets, maxOffset } = getMetrics();
+    animateTo(clamp((offsets[index] || 0) + 96, 0, maxOffset));
+  }
+
   function openQuickReply(id) {
     const thread = getThread(id);
     if (!thread) return;
     if (thread.replyOpen) {
       const current = findCardEl(id);
       const field = current && current.card.querySelector(".quick-input");
-      if (field) field.focus();
+      if (field) {
+        try { field.focus({ preventScroll: true }); } catch (err) { field.focus(); }
+      }
       return;
     }
     closePeek();
@@ -1966,10 +1970,15 @@
     state.threads.forEach((t) => { if (t.id !== thread.id) t.replyOpen = false; });
     thread.replyOpen = true;
     rebuildCards();
+    revealThread(thread.id);
     requestAnimationFrame(() => {
       const el = findCardEl(id);
       const input = el && el.card.querySelector(".quick-input");
-      if (input) { input.focus(); input.select(); }
+      if (input) {
+        // preventScroll : ouvrir le champ ne fait pas glisser la page de la maquette
+        try { input.focus({ preventScroll: true }); } catch (err) { input.focus(); }
+        input.select();
+      }
     });
     logAction("Réponse rapide ouverte pour " + thread.sender);
   }
