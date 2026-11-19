@@ -10,10 +10,12 @@ apparaît dans le volet de notifications du téléphone avec ce style.
 1. Elle écoute les notifications du téléphone (service d'écoute Android).
 2. Elle retire la notification d'origine et affiche la sienne, dans le style du
    centre : pastille de l'application, expéditeur, texte, heure.
-3. Elle conserve l'action de réponse de l'application d'origine : répondre depuis
+3. Une pastille noire descend du haut de l'écran par-dessus l'application en cours,
+   puis se referme (autorisation « Afficher par-dessus » facultative).
+4. Elle conserve l'action de réponse de l'application d'origine : répondre depuis
    la carte écrit directement dans WhatsApp, Messages, Telegram, Gmail…
-4. Toucher la carte ouvre l'application qui a envoyé le message.
-5. Le bouton **Effacer** retire la carte et la notification d'origine.
+5. Toucher la carte ouvre l'application qui a envoyé le message.
+6. Le bouton **Effacer** retire la carte et la notification d'origine.
 
 Rien ne quitte l'appareil : aucune permission `INTERNET` n'est déclarée, donc
 l'application ne peut joindre aucun serveur.
@@ -26,10 +28,11 @@ Guide détaillé, avec code à scanner et dépannage Play Protect :
 1. Télécharger `app-release.apk` depuis les [versions](../../releases).
 2. Ouvrir le fichier, autoriser l'installation depuis cette source.
 3. Lancer **Centre de notifications** une seule fois : l'écran de réglage indique
-   deux accès à accorder.
+   trois accès à accorder.
    - **Autoriser l'accès aux notifications** → activer **Centre de notifications**
      dans la liste Android.
    - **Autoriser l'affichage** → accepter les notifications (Android 13 et plus).
+   - **Autoriser l'affichage par-dessus** → activer la superposition (îlot).
 4. Refermer l'application : elle n'a plus besoin d'être ouverte.
 
 L'écran de réglage reste accessible depuis l'icône, uniquement pour vérifier l'état
@@ -77,6 +80,7 @@ gemini-code-1795117363618.html          maquette web (référence de design)
 android/app/src/main/AndroidManifest.xml   aucune permission réseau
 android/.../NotificationRelay.java         écoute et réécriture des notifications
 android/.../StyledNotifier.java            carte du centre dans le volet Android
+android/.../IslandOverlay.java             pastille au-dessus des applications
 android/.../ActionReceiver.java            action « Effacer »
 android/.../CenterPrefs.java               option de remplacement
 android/.../MainActivity.java              écran de réglage (aucun écran de consultation)

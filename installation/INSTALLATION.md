@@ -29,8 +29,15 @@ c'est le volet de notifications du téléphone qui devient le centre.
    **Centre de notifications**, revenir en arrière.
 2. Bloc **Affichage des notifications** → **Autoriser l'affichage**, puis accepter
    la demande d'Android (Android 13 et plus).
-3. Les deux blocs affichent alors « Accordé » et « Autorisé ». L'application peut
-   être refermée définitivement.
+3. Bloc **Îlot par-dessus les applications** → **Autoriser l'affichage par-dessus**,
+   puis activer **Centre de notifications** dans la liste. C'est ce qui permet à la
+   pastille de descendre du haut de l'écran pendant que vous utilisez une autre
+   application. Facultatif : sans lui, les cartes restent dans les notifications.
+4. Les trois blocs affichent alors leur état accordé. L'application peut être
+   refermée définitivement.
+
+Sous les blocs, une ligne indique combien de messages ont été reçus et à quelle
+heure : c'est le moyen le plus rapide de savoir si l'écoute fonctionne réellement.
 
 À partir de là, chaque message reçu — WhatsApp, Messages, Telegram, Gmail, autre —
 apparaît sous forme de carte sombre dans les notifications du téléphone.
@@ -76,12 +83,15 @@ Dernier recours, avec un ordinateur et le câble USB : installer l'APK par ADB
    Ensuite, chaque nouveau message suit le même chemin :
 3. Le téléphone sonne ou vibre **une fois**, comme d'habitude (le son vient de
    l'application d'origine au moment où elle publie son message).
-4. La notification d'origine est retirée et remplacée par la carte du centre :
+4. Une pastille noire descend du haut de l'écran, par-dessus l'application en cours :
+   pastille de couleur, expéditeur, texte. Elle se referme au bout de quelques
+   secondes ; la toucher la referme tout de suite.
+5. La notification d'origine est retirée et remplacée par la carte du centre :
    pastille, expéditeur, texte, heure. Elle apparaît en bannière en haut de l'écran
    et sur l'écran verrouillé.
-5. Un nouveau message dans la même conversation **met à jour la même carte** au lieu
+6. Un nouveau message dans la même conversation **met à jour la même carte** au lieu
    d'en empiler une deuxième.
-6. Les notifications sans contenu (lecteur de musique, téléchargement en cours,
+7. Les notifications sans contenu (lecteur de musique, téléchargement en cours,
    appels en cours) ne sont pas touchées.
 
 ### Dans la carte
@@ -95,8 +105,8 @@ Dernier recours, avec un ordinateur et le câble USB : installer l'APK par ADB
 
 ### Si plus rien n'apparaît
 
-- Vérifier les deux états dans l'application : accès aux notifications accordé, et
-  affichage autorisé.
+- Vérifier les états dans l'application : accès aux notifications accordé, affichage
+  autorisé, et la ligne « messages reçus » qui doit augmenter quand un message arrive.
 - Sur Xiaomi, Tecno, Infinix, Oppo : désactiver l'optimisation de la batterie pour
   **Centre de notifications** (Paramètres → Applications → Centre de notifications →
   Batterie → **Sans restriction**). Ces surcouches arrêtent sinon les services
@@ -151,6 +161,8 @@ et confidentialité → autres paramètres de sécurité).
   style du centre et leur ajouter l'action de réponse.
 - **Affichage des notifications** : nécessaire pour que ces cartes apparaissent
   dans le volet.
+- **Affichage par-dessus les autres applications** : dessine la pastille du haut de
+  l'écran quand un message arrive. Facultatif.
 - **Aucun accès réseau** : la permission `INTERNET` n'est pas déclarée, rien ne peut
   sortir de l'appareil.
 
