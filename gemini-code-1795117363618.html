@@ -9,7 +9,7 @@
     --phone-w: 390px;
     --phone-h: 844px;
     --radius: 50px;
-    --card-bg: rgba(38, 42, 58, 0.97);
+    --card-bg: rgba(28, 31, 45, 0.88);
   }
 
   * {
@@ -133,23 +133,24 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 6px 10px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    padding: 5px 10px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd2e3;
     width: fit-content;
   }
 
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: #ff9f0a;
+    background: #8e96ab;
   }
 
   .status-pill.unlocked .dot {
-    background: #30d158;
+    background: #64d2ff;
   }
 
   .legend {
@@ -231,10 +232,10 @@
     border-radius: calc(var(--radius) - 10px);
     overflow: hidden;
     background:
-      radial-gradient(circle at 22% 24%, #5e5ce6 0%, transparent 46%),
-      radial-gradient(circle at 82% 32%, #ff375f 0%, transparent 46%),
-      radial-gradient(circle at 50% 84%, #0a84ff 0%, transparent 56%),
-      #141526;
+      radial-gradient(circle at 22% 24%, #3c4166 0%, transparent 48%),
+      radial-gradient(circle at 82% 32%, #4a3552 0%, transparent 48%),
+      radial-gradient(circle at 50% 84%, #1e3a5f 0%, transparent 56%),
+      #121420;
   }
 
   .wallpaper-overlay {
@@ -295,17 +296,17 @@
   }
 
   .dynamic-island.expanded {
-    width: 356px;
-    height: 76px;
-    border-radius: 28px;
-    padding: 12px 14px;
+    width: 360px;
+    height: 82px;
+    border-radius: 26px;
+    padding: 11px 14px;
     pointer-events: auto;
     cursor: grab;
   }
 
   .dynamic-island.live {
-    height: 82px;
-    border-radius: 30px;
+    height: 86px;
+    border-radius: 28px;
   }
 
   .di-compact { display: flex; align-items: center; width: 100%; }
@@ -328,54 +329,62 @@
   .dynamic-island.expanded .di-compact { display: none; }
   .dynamic-island.expanded .di-expanded { display: flex; }
 
-  .di-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
+  .di-app-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
     display: grid;
     place-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     flex-shrink: 0;
   }
 
-  .di-icon svg { width: 21px; height: 21px; }
-
   .di-text { flex: 1; min-width: 0; }
-  .di-sender { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .di-sender-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .di-sender {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .di-meta-note {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.62);
+    flex-shrink: 0;
+  }
+
   .di-body {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: rgba(255,255,255,0.82);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 1px;
+    margin-top: 2px;
     min-height: 1.1em;
   }
 
   .di-typing {
     display: none;
-    align-items: center;
-    gap: 3px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.58);
+    margin-top: 2px;
   }
 
-  .dynamic-island.typing .di-body { display: none; }
-  .dynamic-island.typing .di-typing { display: flex; }
-
-  .di-typing i {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.75);
-    animation: typingDot 1s infinite ease-in-out;
-  }
-
-  .di-typing i:nth-child(2) { animation-delay: 0.15s; }
-  .di-typing i:nth-child(3) { animation-delay: 0.3s; }
-
-  @keyframes typingDot {
-    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
-    30% { opacity: 1; transform: translateY(-2px); }
-  }
+  .dynamic-island.typing .di-typing { display: block; }
 
   /* Écran verrouillé */
   .lock-screen {
@@ -438,31 +447,34 @@
 
   .center-title-bar {
     position: absolute;
-    top: 6px;
-    left: 4px;
-    right: 4px;
+    top: 2px;
+    left: 2px;
+    right: 2px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    z-index: 30;
+    z-index: 40;
     opacity: 0;
     pointer-events: none;
+    background: linear-gradient(to bottom, rgba(18, 20, 32, 0.85) 60%, transparent);
+    padding: 4px 4px 10px;
   }
 
   .center-title-bar span {
-    font-size: 1.02rem;
+    font-size: 0.92rem;
     font-weight: 600;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .collapse-btn {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(12px);
-    color: #fff;
+    color: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 999px;
-    padding: 5px 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 4px 11px;
+    font-size: 0.72rem;
+    font-weight: 500;
   }
 
   /* Voile d'aperçu (Peek) */
@@ -495,87 +507,83 @@
     transform-origin: center bottom;
   }
 
-  /* Pile empilee : seules la carte de tete et la pile ouverte montrent le detail */
-  .card-slot:not(.is-head) .thread-toggle,
+  /* Pile empilee : seul le champ de reponse reste reserve a la carte de tete */
   .card-slot:not(.is-head) .quick-reply {
     display: none;
   }
 
-  .cards-expanded .card-slot .thread-toggle { display: inline-flex; }
   .cards-expanded .card-slot .peek-actions { display: none; }
 
-  .swipe-actions {
+  .swipe-actions-bg {
     position: absolute;
     inset: 0;
-    border-radius: 22px;
+    border-radius: 20px;
     display: flex;
-    align-items: stretch;
-    overflow: hidden;
-    opacity: 0;
-    transition: opacity 0.16s ease;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    pointer-events: none;
     z-index: 1;
   }
 
-  .swipe-actions.visible { opacity: 1; }
-
-  .swipe-actions.left {
-    justify-content: flex-end;
-    background: linear-gradient(90deg, rgba(255, 69, 58, 0.25), rgba(255, 69, 58, 0.9));
-  }
-
-  .swipe-actions.right {
-    justify-content: flex-start;
-    background: linear-gradient(270deg, rgba(10, 132, 255, 0.2), rgba(10, 132, 255, 0.85));
-  }
-
-  .swipe-btn {
-    width: 92px;
+  .action-pill-left,
+  .action-pill-right {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border-radius: 0;
-    background: transparent;
-    color: #fff;
-    font-size: 0.66rem;
-    font-weight: 700;
-    line-height: 1.1;
-    text-align: center;
-    padding: 0 6px;
+    gap: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
   }
 
-  .swipe-btn svg { width: 19px; height: 19px; }
+  .action-pill-left.active,
+  .action-pill-right.active {
+    pointer-events: auto;
+  }
 
-  .swipe-actions.left .swipe-btn { background: rgba(255, 45, 35, 0.55); }
-  .swipe-actions.right .swipe-btn.pin { background: rgba(10, 100, 220, 0.5); }
-  .swipe-actions.right .swipe-btn.snooze { background: rgba(255, 159, 10, 0.42); }
+  .action-pill-right { margin-left: auto; }
+
+  .act-btn {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 0.71rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+  }
+
+  .act-btn.act-delete {
+    background: rgba(255, 69, 58, 0.28);
+    border-color: rgba(255, 69, 58, 0.4);
+    color: #ffb3ae;
+  }
 
   .prog-card {
     position: relative;
     z-index: 2;
     background: var(--card-bg);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 22px;
-    padding: 13px 15px;
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 20px;
+    padding: 12px 14px;
     color: #fff;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
     will-change: transform;
     pointer-events: auto;
     touch-action: none;
-    transition: border-color 0.2s ease, box-shadow 0.25s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
-  .prog-card.urgent {
-    border-color: rgba(255, 176, 64, 0.34);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 176, 64, 0.08);
+  .prog-card.priority {
+    border-left: 3px solid rgba(255, 255, 255, 0.65);
   }
 
   .prog-card.peeking {
-    border-color: rgba(255, 255, 255, 0.34);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    background: rgba(36, 40, 58, 0.96);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
   }
 
   .prog-card.peeking .notif-message {
@@ -608,9 +616,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 5px;
-    font-size: 0.73rem;
-    color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 4px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.62);
   }
 
   .notif-app {
@@ -619,161 +627,110 @@
     gap: 6px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.78);
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  .notif-app-icon {
-    width: 17px;
-    height: 17px;
-    border-radius: 5px;
-    display: grid;
-    place-items: center;
-    color: #fff;
+  .app-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     flex-shrink: 0;
   }
 
-  .notif-app-icon svg { width: 11px; height: 11px; }
-
-  .notif-meta {
+  .notif-subtle-meta {
     display: flex;
     align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-  }
-
-  /* Étiquettes discrètes : pas de fond, pas de contour, pas de capitales */
-  .meta-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0;
-    border: 0;
-    background: none;
-    font-size: 0.63rem;
+    gap: 7px;
+    color: rgba(255, 255, 255, 0.56);
     font-weight: 500;
-    letter-spacing: 0.01em;
-    color: rgba(255, 255, 255, 0.55);
     white-space: nowrap;
-  }
-
-  .meta-tag svg {
-    width: 9px;
-    height: 9px;
-    opacity: 0.85;
-  }
-
-  .meta-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #ffb340;
     flex-shrink: 0;
-  }
-
-  .meta-tag.priority { color: rgba(255, 199, 122, 0.9); }
-
-  .meta-tag.pin {
-    color: rgba(158, 199, 255, 0.9);
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-  }
-
-  .meta-tag.pin:active { opacity: 0.55; }
-
-  .meta-sep {
-    width: 1px;
-    height: 9px;
-    background: rgba(255, 255, 255, 0.16);
-  }
-
-  .notif-time {
-    color: rgba(255, 255, 255, 0.5);
-    font-variant-numeric: tabular-nums;
   }
 
   .notif-title {
-    font-size: 0.88rem;
-    font-weight: 700;
+    font-size: 0.86rem;
+    font-weight: 600;
     line-height: 1.25;
+    color: #fff;
   }
 
   .notif-message {
-    font-size: 0.84rem;
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.32;
-    margin-top: 3px;
+    font-size: 0.81rem;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.35;
+    margin-top: 2px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  .thread-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 8px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.7rem;
-    font-weight: 500;
-    transition: color 0.15s ease;
-  }
-
-  .thread-toggle:hover { color: rgba(255, 255, 255, 0.8); }
-
-  .thread-toggle svg {
-    width: 9px;
-    height: 9px;
-    opacity: 0.8;
-  }
-
   .thread-list {
-    margin-top: 9px;
-    padding-top: 8px;
+    margin-top: 7px;
+    padding-top: 6px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    max-height: 148px;
+    gap: 4px;
+    max-height: 92px;
     overflow-y: auto;
   }
 
   .thread-msg {
     display: flex;
+    justify-content: space-between;
     gap: 8px;
-    align-items: baseline;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     line-height: 1.3;
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.76);
   }
 
   .thread-msg .thread-time {
-    font-size: 0.62rem;
-    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.64rem;
+    color: rgba(255, 255, 255, 0.4);
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
   }
 
-  .thread-msg.out .thread-text { color: #9fd0ff; }
+  .thread-msg.out .thread-text { color: rgba(255, 255, 255, 0.95); }
 
   .thread-msg.out .thread-text::before {
     content: "Vous : ";
-    color: rgba(159, 208, 255, 0.65);
-    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .card-quick-bar {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-action-link {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.76);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 9px;
+    border-radius: 8px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .card-action-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.14);
   }
 
   .quick-reply {
     display: none;
     align-items: center;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 8px;
   }
 
   .prog-card.reply-open .quick-reply { display: flex; }
@@ -781,37 +738,32 @@
   .quick-input {
     flex: 1;
     min-width: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
-    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+    padding: 6px 9px;
     color: #fff;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     outline: none;
     user-select: text;
   }
 
-  .quick-input::placeholder { color: rgba(255, 255, 255, 0.45); }
+  .quick-input::placeholder { color: rgba(255, 255, 255, 0.42); }
 
   .quick-send {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: #0a84ff;
+    padding: 6px 10px;
+    border-radius: 9px;
+    font-size: 0.72rem;
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
     flex-shrink: 0;
-    padding: 0;
   }
 
-  .quick-send svg { width: 15px; height: 15px; }
-
   .sent-note {
-    margin-top: 8px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #6ee7a8;
+    margin-top: 6px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.62);
     display: flex;
     align-items: center;
     gap: 5px;
@@ -835,7 +787,8 @@
   }
 
   .peek-actions .peek-reply {
-    background: #0a84ff;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -1050,7 +1003,7 @@
       <div class="legend-row"><span class="legend-key"></span><span><b>Appui long</b> : aperçu agrandi du message</span></div>
       <div class="legend-row"><span class="legend-key"></span><span><b>Glisser à gauche</b> : effacer</span></div>
       <div class="legend-row"><span class="legend-key"></span><span><b>Glisser à droite</b> : épingler ou rappel 10 min</span></div>
-      <div class="legend-row"><span class="legend-key"></span><span><b>Compteur du fil</b> : ouvre la conversation en accordéon</span></div>
+      <div class="legend-row"><span class="legend-key"></span><span><b>Voir l'historique</b> : déplie la conversation dans la carte</span></div>
     </div>
 
     <div class="btn-group">
@@ -1102,11 +1055,14 @@
       <div id="dynamicIsland" class="dynamic-island">
         <div class="di-compact"><div class="di-camera"></div></div>
         <div class="di-expanded">
-          <div id="diIcon" class="di-icon"></div>
+          <div id="diAppMark" class="di-app-mark">MSG</div>
           <div class="di-text">
-            <div id="diSender" class="di-sender">Expéditeur</div>
+            <div class="di-sender-row">
+              <span id="diSender" class="di-sender">Expéditeur</span>
+              <span id="diCountNote" class="di-meta-note"></span>
+            </div>
             <div id="diBody" class="di-body">Nouveau message</div>
-            <div class="di-typing"><i></i><i></i><i></i></div>
+            <div id="diTyping" class="di-typing">En cours de saisie...</div>
           </div>
         </div>
       </div>
@@ -1227,10 +1183,10 @@
    *  Données
    * ------------------------------------------------------------------ */
   const APP_META = {
-    Messages: { icon: ICONS.bubble, color: "#28cd41" },
-    WhatsApp: { icon: ICONS.phone, color: "#1fa845" },
-    Telegram: { icon: ICONS.plane, color: "#0284c7" },
-    Mail:     { icon: ICONS.mail, color: "#2563eb" }
+    Messages: { code: "MSG", color: "#34c759" },
+    WhatsApp: { code: "WA", color: "#30d158" },
+    Telegram: { code: "TG", color: "#32ade6" },
+    Mail:     { code: "MAIL", color: "#409cff" }
   };
 
   const PRIORITY_WORDS = ["urgent", "urgence", "virement", "alerte", "appel manque", "appel manqué", "critique", "immediat", "immédiat", "sos", "panne"];
@@ -1266,11 +1222,11 @@
   ];
 
   const CARD_SLOT_HEIGHT = 96;   // hauteur de secours si la mesure echoue
-  const CARD_GAP = 8;            // respiration entre deux cartes depliees
+  const CARD_GAP = 12;           // ecart net entre deux cartes depliees
   const MERGE_WINDOW = 120000;
   const BURST_WINDOW = 15000;
-  const SWIPE_OPEN_LEFT = 96;
-  const SWIPE_OPEN_RIGHT = 184;
+  const SWIPE_OPEN_LEFT = 138;   // largeur des deux pastilles Reporter / Effacer
+  const SWIPE_OPEN_RIGHT = 88;   // largeur de la pastille Epingler
 
   /* ------------------------------------------------------------------ *
    *  État
@@ -1300,6 +1256,8 @@
   let urgentIdx = 0;
   let islandTimer = null;
   let liveTimer = null;
+  let islandSender = null;
+  let islandCount = 0;
   let toastTimer = null;
   let snoozeTicker = null;
 
@@ -1451,37 +1409,25 @@
   /* ------------------------------------------------------------------ *
    *  Rendu des cartes
    * ------------------------------------------------------------------ */
-  function threadLabel(count) {
-    return count > 1 ? count + " autres messages" : "1 autre message";
-  }
-
   function cardTemplate(thread) {
-    const meta = APP_META[thread.app] || { icon: ICONS.bubble, color: "#0a84ff" };
+    const meta = APP_META[thread.app] || { code: "APP", color: "#0a84ff" };
     const last = thread.messages[thread.messages.length - 1];
     const others = thread.messages.length - 1;
     let html = "";
 
+    // Metadonnees discretes : epingle, nombre de messages, heure
+    const notes = [];
+    if (thread.pinned) notes.push("Épinglé");
+    if (thread.messages.length > 1) notes.push(thread.messages.length + " messages");
+    notes.push(last.time);
+
     html += '<div class="notif-header">' +
-      '<span class="notif-app"><span class="notif-app-icon" style="background:' + meta.color + '">' + meta.icon + "</span>" + escapeHtml(thread.app) + "</span>" +
-      '<span class="notif-meta">' +
-        (thread.priority ? '<span class="meta-tag priority" title="Message prioritaire"><span class="meta-dot"></span>Prioritaire</span>' : "") +
-        (thread.priority && thread.pinned ? '<span class="meta-sep"></span>' : "") +
-        (thread.pinned ? '<button type="button" class="meta-tag pin" data-role="unpin" title="Désépingler">' + ICONS.pin + "Épinglé</button>" : "") +
-        ((thread.priority || thread.pinned) ? '<span class="meta-sep"></span>' : "") +
-        '<span class="notif-time">' + last.time + "</span>" +
-      "</span>" +
+      '<span class="notif-app"><span class="app-dot" style="background:' + meta.color + '"></span>' + escapeHtml(thread.app) + "</span>" +
+      '<span class="notif-subtle-meta">' + notes.join(" · ") + "</span>" +
     "</div>";
 
     html += '<div class="notif-title">' + escapeHtml(thread.sender) + "</div>";
-
-    html += '<div class="notif-message">' + escapeHtml(last.text) + "</div>";
-
-    if (others > 0) {
-      html += '<button type="button" class="thread-toggle" data-role="thread">' +
-        (thread.expanded ? "Réduire le fil" : threadLabel(others)) +
-        (thread.expanded ? ICONS.chevronUp : ICONS.chevronDown) +
-      "</button>";
-    }
+    html += '<div class="notif-message">' + (last.dir === "out" ? "Vous : " : "") + escapeHtml(last.text) + "</div>";
 
     if (thread.expanded && thread.messages.length > 1) {
       html += '<div class="thread-list">' + thread.messages.map((m) =>
@@ -1492,13 +1438,20 @@
       ).join("") + "</div>";
     }
 
+    html += '<div class="card-quick-bar">' +
+      '<button type="button" class="card-action-link" data-role="reply">Répondre</button>' +
+      (others > 0
+        ? '<button type="button" class="card-action-link" data-role="thread">' + (thread.expanded ? "Masquer l'historique" : "Voir l'historique") + "</button>"
+        : "") +
+    "</div>";
+
     html += '<form class="quick-reply" data-role="reply-form">' +
-      '<input class="quick-input" type="text" placeholder="Réponse rapide" autocomplete="off" maxlength="140">' +
-      '<button type="submit" class="quick-send" title="Envoyer">' + ICONS.send + "</button>" +
+      '<input class="quick-input" type="text" placeholder="Répondre à ' + escapeHtml(thread.sender) + '..." autocomplete="off" maxlength="140">' +
+      '<button type="submit" class="quick-send">Envoyer</button>' +
     "</form>";
 
     if (thread.sentNote) {
-      html += '<div class="sent-note">' + ICONS.check + "Réponse envoyée dans la conversation</div>";
+      html += '<div class="sent-note">' + ICONS.check + "Réponse envoyée</div>";
     }
 
     html += '<div class="peek-actions">' +
@@ -1518,19 +1471,20 @@
       slot.className = "card-slot" + (state.threads.indexOf(thread) === 0 ? " is-head" : "");
       slot.dataset.id = String(thread.id);
 
-      const left = document.createElement("div");
-      left.className = "swipe-actions left";
-      left.innerHTML = '<button type="button" class="swipe-btn" data-action="delete">' + ICONS.trash + "<span>Effacer</span></button>";
-
-      const right = document.createElement("div");
-      right.className = "swipe-actions right";
-      right.innerHTML =
-        '<button type="button" class="swipe-btn pin" data-action="pin">' + ICONS.pin + "<span>Épingler</span></button>" +
-        '<button type="button" class="swipe-btn snooze" data-action="snooze">' + ICONS.clock + "<span>Rappel 10 min</span></button>";
+      const bg = document.createElement("div");
+      bg.className = "swipe-actions-bg";
+      bg.innerHTML =
+        '<div class="action-pill-left">' +
+          '<button type="button" class="act-btn" data-action="pin">' + (thread.pinned ? "Désépingler" : "Épingler") + "</button>" +
+        "</div>" +
+        '<div class="action-pill-right">' +
+          '<button type="button" class="act-btn" data-action="snooze">Reporter</button>' +
+          '<button type="button" class="act-btn act-delete" data-action="delete">Effacer</button>' +
+        "</div>";
 
       const card = document.createElement("article");
       card.className = "prog-card" +
-        (thread.priority ? " urgent" : "") +
+        (thread.priority ? " priority" : "") +
         (thread.replyOpen ? " reply-open" : "") +
         (state.peekId === thread.id ? " peeking" : "") +
         (thread.isNew ? " entering" : "");
@@ -1538,8 +1492,7 @@
       card.innerHTML = cardTemplate(thread);
       thread.isNew = false;
 
-      slot.appendChild(left);
-      slot.appendChild(right);
+      slot.appendChild(bg);
       slot.appendChild(card);
       cardsLayer.appendChild(slot);
 
@@ -1583,9 +1536,7 @@
   /* Secours quand la mesure n'est pas disponible (rendu hors navigateur) */
   function estimateCardHeight(card) {
     let height = CARD_SLOT_HEIGHT;
-    if (card.querySelector(".thread-toggle")) height += 27;
     if (card.querySelector(".thread-list")) height += 64;
-    if (card.querySelector(".quick-reply")) height += 44;
     if (card.querySelector(".sent-note")) height += 20;
     return height;
   }
@@ -1626,7 +1577,6 @@
       if (role === "thread") toggleThread(thread.id);
       if (role === "reply") openQuickReply(thread.id);
       if (role === "unpeek") closePeek();
-      if (role === "unpin") { thread.pinned = false; afterMutation(thread, "Désépinglée"); }
       return;
     }
 
@@ -1654,10 +1604,16 @@
       const x = state.swipeX.get(el.id) || 0;
       el.card.style.transform = "translateX(" + x.toFixed(2) + "px)";
       const slot = el.slot;
-      const left = slot.querySelector(".swipe-actions.left");
-      const right = slot.querySelector(".swipe-actions.right");
-      if (left) left.classList.toggle("visible", x < -6);
-      if (right) right.classList.toggle("visible", x > 6);
+      const left = slot.querySelector(".action-pill-left");
+      const right = slot.querySelector(".action-pill-right");
+      if (left) {
+        left.classList.toggle("active", x > 6);
+        left.style.opacity = x > 6 ? String(clamp((x - 6) / 40, 0, 1)) : "0";
+      }
+      if (right) {
+        right.classList.toggle("active", x < -6);
+        right.style.opacity = x < -6 ? String(clamp((-x - 6) / 40, 0, 1)) : "0";
+      }
     });
   }
 
@@ -1762,7 +1718,7 @@
       }
 
       const peeking = state.peekId === thread.id;
-      const scale = currentScale * (peeking ? 1.03 : 1);
+      const scale = currentScale * (peeking ? 1.025 : 1);
 
       el.slot.style.zIndex = peeking ? "999" : String(total - idx);
       el.slot.style.transform = "translate3d(0, " + currentY.toFixed(2) + "px, 0) scale(" + scale.toFixed(4) + ")";
@@ -1889,8 +1845,8 @@
 
     if (g.mode === "swipe") {
       const width = cardsLayer.clientWidth || 330;
-      if (g.x <= -width * 0.52) { deleteThread(g.id, "balayage"); return; }
-      if (g.x >= width * 0.52) { togglePin(g.id); return; }
+      if (g.x <= -width * 0.55) { deleteThread(g.id, "balayage"); return; }
+      if (g.x >= width * 0.55) { togglePin(g.id); return; }
 
       if (g.x <= -44) {
         state.openSwipe = { id: g.id, dir: "left" };
@@ -2211,18 +2167,21 @@
    *  Dynamic Island : bannière, fil continu, glissement vers le haut
    * ------------------------------------------------------------------ */
   function setIslandContent(thread) {
-    const meta = APP_META[thread.app] || { icon: ICONS.bubble, color: "#0a84ff" };
+    const meta = APP_META[thread.app] || { code: "APP", color: "#0a84ff" };
     const last = thread.messages[thread.messages.length - 1];
-    const iconEl = $("diIcon");
-    iconEl.innerHTML = meta.icon;
-    iconEl.style.background = meta.color;
-    $("diSender").textContent = thread.sender + " - " + thread.app;
+    const mark = $("diAppMark");
+    mark.textContent = meta.code;
+    mark.style.borderColor = meta.color;
+    $("diSender").textContent = thread.sender + " · " + thread.app;
     $("diBody").textContent = last.text;
     dynamicIsland.dataset.thread = String(thread.id);
   }
 
   function showIsland(thread) {
+    islandSender = thread.sender;
+    islandCount = 1;
     setIslandContent(thread);
+    $("diCountNote").textContent = "";
     dynamicIsland.classList.remove("typing");
     dynamicIsland.classList.remove("live");
     dynamicIsland.classList.add("expanded");
@@ -2234,7 +2193,10 @@
   }
 
   function updateLivePill(thread) {
+    if (islandSender === thread.sender && dynamicIsland.classList.contains("expanded")) islandCount += 1;
+    else { islandSender = thread.sender; islandCount = 1; }
     setIslandContent(thread);
+    $("diCountNote").textContent = islandCount > 1 ? islandCount + " reçus" : "";
     dynamicIsland.classList.remove("typing");
     dynamicIsland.classList.add("expanded", "live");
     dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
@@ -2251,6 +2213,8 @@
   function closeIsland() {
     clearTimeout(islandTimer);
     clearTimeout(liveTimer);
+    islandSender = null;
+    islandCount = 0;
     dynamicIsland.classList.remove("expanded", "live", "typing");
     dynamicIsland.style.transform = "translateX(-50%) translateY(0) scale(1)";
     dynamicIsland.style.opacity = "1";
@@ -2352,7 +2316,7 @@
   notifStage.addEventListener("pointerdown", (event) => {
     if (state.isUnlocked || state.threads.length <= 1) return;
     if (state.peekId) return;
-    if (event.target.closest("#collapseBtn, .prog-card, .swipe-actions, .peek-backdrop")) return;
+    if (event.target.closest("#collapseBtn, .prog-card, .swipe-actions-bg, .peek-backdrop")) return;
 
     stageGesture = {
       startY: event.clientY,
@@ -2498,7 +2462,7 @@
       if (state.isUnlocked) {
         showTyping(true);
         dynamicIsland.classList.add("expanded", "live");
-        $("diSender").textContent = sender + " - " + app;
+        $("diSender").textContent = sender + " · " + app;
       }
       setTimeout(() => {
         showTyping(false);
