@@ -68,6 +68,10 @@ jobs:
               echo "Activité de lancement absente de $f" >&2
               exit 1
             fi
+            if ! "$AAPT2" dump xmltree --file AndroidManifest.xml "$f" | grep -q "NotificationRelay"; then
+              echo "Service d'écoute des notifications absent de $f" >&2
+              exit 1
+            fi
             if ! "$APKSIGNER" verify --print-certs "$f" > /tmp/sign.txt 2>&1; then
               echo "Signature absente ou invalide dans $f" >&2
               cat /tmp/sign.txt >&2
@@ -86,6 +90,7 @@ jobs:
             SIGNER=$(grep -m1 -i "Signer #1 certificate DN:" /tmp/sign.txt | sed 's/^[[:space:]]*.*DN:[[:space:]]*//' || true)
             echo "signature : vérifiée${SIGNER:+ ($SIGNER)}" >> /tmp/verification.txt
             echo "activité de lancement : présente" >> /tmp/verification.txt
+            echo "service d'écoute des notifications : présent" >> /tmp/verification.txt
             echo >> /tmp/verification.txt
           done
           cat /tmp/verification.txt
@@ -116,7 +121,9 @@ jobs:
             echo
             echo "Installation : télécharger \`app-release.apk\` sur le téléphone, l'ouvrir, autoriser l'installation depuis cette source."
             echo
-            echo "L'application ne déclare ni \`INTERNET\` ni \`POST_NOTIFICATIONS\` : le centre intégré est le seul canal de réception."
+            echo "Après l'installation : bouton **+** → **Autoriser l'accès aux notifications**, puis activer **Centre de notifications** dans la liste Android. Sans cet accès, le centre reste vide."
+            echo
+            echo "L'application ne déclare ni \`INTERNET\` ni \`POST_NOTIFICATIONS\` : elle lit les notifications du téléphone et ne peut rien envoyer au réseau."
             echo
             echo '```'
             cat /tmp/verification.txt
