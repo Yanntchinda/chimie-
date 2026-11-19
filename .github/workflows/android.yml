@@ -7,6 +7,7 @@ on:
     paths:
       - "android/**"
       - "gemini-code-1795117363618.html"
+      - "README.md"
       - ".github/workflows/android.yml"
   workflow_dispatch:
 
@@ -37,10 +38,40 @@ jobs:
         run: |
           mkdir -p android/app/src/main/assets
           cp gemini-code-1795117363618.html android/app/src/main/assets/index.html
+          test -s android/app/src/main/assets/index.html
 
       - name: Compiler l'APK
         working-directory: android
         run: gradle assembleDebug assembleRelease --no-daemon --stacktrace
+
+      - name: Vérifier l'APK
+        working-directory: android
+        run: |
+          set -euo pipefail
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          echo "aapt2 : $AAPT2"
+          : > /tmp/verification.txt
+          for f in app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk; do
+            test -f "$f"
+            if ! unzip -l "$f" | grep -q "assets/index.html"; then
+              echo "La page web est absente de $f" >&2
+              exit 1
+            fi
+            PERMS=$("$AAPT2" dump permissions "$f" || true)
+            if echo "$PERMS" | grep -q "android.permission.INTERNET"; then
+              echo "Permission réseau détectée dans $f" >&2
+              exit 1
+            fi
+            echo "== $(basename "$f") ==" >> /tmp/verification.txt
+            ls -l "$f" | awk '{print "taille : " $5 " octets"}' >> /tmp/verification.txt
+            sha256sum "$f" | awk '{print "sha256 : " $1}' >> /tmp/verification.txt
+            unzip -l "$f" | grep -E "assets/index.html|classes.dex|resources.arsc" | awk '{print $1 " octets  " $4}' >> /tmp/verification.txt
+            echo "permissions déclarées :" >> /tmp/verification.txt
+            echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | sed 's/^/  - /' >> /tmp/verification.txt
+            echo >> /tmp/verification.txt
+          done
+          cat /tmp/verification.txt
+          cat /tmp/verification.txt >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publier l'APK en artefact
         uses: actions/upload-artifact@v4
@@ -56,8 +87,27 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes
+          set -e
+          APK_DIR=android/app/build/outputs/apk
+          cd "$APK_DIR"
+          sha256sum debug/app-debug.apk release/app-release.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          cd "$GITHUB_WORKSPACE"
+          {
+            echo "Application Android du centre de notifications."
+            echo
+            echo "Installation : télécharger \`app-release.apk\` sur le téléphone, l'ouvrir, autoriser l'installation depuis cette source."
+            echo
+            echo "L'application ne déclare ni \`INTERNET\` ni \`POST_NOTIFICATIONS\` : le centre intégré est le seul canal de réception."
+            echo
+            echo '```'
+            cat /tmp/verification.txt
+            echo '```'
+          } > /tmp/notes.md
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Centre de notifications $GITHUB_REF_NAME" --notes-file /tmp/notes.md
+          gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/notes.md
           gh release upload "$GITHUB_REF_NAME" \
-            android/app/build/outputs/apk/debug/app-debug.apk \
-            android/app/build/outputs/apk/release/app-release.apk \
+            "$APK_DIR/debug/app-debug.apk" \
+            "$APK_DIR/release/app-release.apk" \
+            "$APK_DIR/SHA256SUMS.txt" \
             --clobber
