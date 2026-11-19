@@ -49,7 +49,9 @@ jobs:
         run: |
           set -euo pipefail
           AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           echo "aapt2 : $AAPT2"
+          echo "apksigner : $APKSIGNER"
           : > /tmp/verification.txt
           for f in app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk; do
             test -f "$f"
@@ -62,12 +64,27 @@ jobs:
               echo "Permission réseau détectée dans $f" >&2
               exit 1
             fi
+            if ! "$AAPT2" dump badging "$f" | grep -q "launchable-activity: name='com.yanntchinda.centrenotifications.MainActivity'"; then
+              echo "Activité de lancement absente de $f" >&2
+              exit 1
+            fi
+            if ! "$APKSIGNER" verify --print-certs "$f" > /tmp/sign.txt 2>&1; then
+              echo "Signature absente ou invalide dans $f" >&2
+              cat /tmp/sign.txt >&2
+              exit 1
+            fi
             echo "== $(basename "$f") ==" >> /tmp/verification.txt
             ls -l "$f" | awk '{print "taille : " $5 " octets"}' >> /tmp/verification.txt
             sha256sum "$f" | awk '{print "sha256 : " $1}' >> /tmp/verification.txt
             unzip -l "$f" | grep -E "assets/index.html|classes.dex|resources.arsc" | awk '{print $1 " octets  " $4}' >> /tmp/verification.txt
             echo "permissions déclarées :" >> /tmp/verification.txt
-            echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | sed 's/^/  - /' >> /tmp/verification.txt
+            if echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | grep -q .; then
+              echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | sed 's/^/  - /' >> /tmp/verification.txt
+            else
+              echo "  aucune" >> /tmp/verification.txt
+            fi
+            echo "signature : $(sed -n 's/^Signer #1 certificate DN: //p' /tmp/sign.txt | head -1)" >> /tmp/verification.txt
+            echo "activité de lancement : présente" >> /tmp/verification.txt
             echo >> /tmp/verification.txt
           done
           cat /tmp/verification.txt
