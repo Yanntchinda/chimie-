@@ -1378,6 +1378,7 @@
   let burstIdx = 0;
   let urgentIdx = 0;
   let islandTimer = null;
+  let seeding = false;
   let liveTimer = null;
   let islandSender = null;
   let islandCount = 0;
@@ -1696,7 +1697,9 @@
     rebuildCards();
     updateBadges();
 
-    if (state.isUnlocked) {
+    // L'ilot s'ouvre a chaque message, verrouille comme deverrouille :
+    // c'est la que le message sort avant de rejoindre la pile.
+    if (!opts.quiet && !seeding) {
       const recentIn = thread.messages.filter((m) => m.dir === "in" && Date.now() - m.at <= BURST_WINDOW).length;
       if (recentIn >= 3) updateLivePill(thread);
       else showIsland(thread);
@@ -1947,9 +1950,37 @@
     return offsets;
   }
 
+  // La hauteur de la scene est lue une seule fois : la relire a chaque image
+  // force un recalcul de mise en page et casse la fluidite du defilement.
+  let stageHeightCache = 0;
+  function stageHeight() {
+    if (!stageHeightCache) stageHeightCache = notifStage.clientHeight || 540;
+    return stageHeightCache;
+  }
+  window.addEventListener("resize", () => {
+    stageHeightCache = 0;
+    renderFrame();
+  });
+
+  // Ecriture d'un style seulement si la valeur change : moins de travail par image.
+  const styleCache = new WeakMap();
+  function writeStyle(el, prop, value) {
+    if (!el) return;
+    let map = styleCache.get(el);
+    if (!map) { map = {}; styleCache.set(el, map); }
+    if (map[prop] === value) return;
+    map[prop] = value;
+    el.style[prop] = value;
+  }
+  function writeText(el, value) {
+    if (!el) return;
+    if (el.textContent === value) return;
+    el.textContent = value;
+  }
+
   function getMetrics() {
     const total = state.threads.length;
-    const stageH = notifStage.clientHeight || 540;
+    const stageH = stageHeight();
     const headAscentDistance = Math.max(96, stageH - 135);
     const offsets = columnOffsets();
     // On peut faire defiler jusqu'a ce que la derniere carte touche le bas
@@ -1960,37 +1991,41 @@
 
   function renderFrame() {
     const { total, stageH, headAscentDistance, offsets } = getMetrics();
-    emptyState.style.display = total === 0 ? "block" : "none";
+    writeStyle(emptyState, "display", total === 0 ? "block" : "none");
 
     if (total === 0) {
-      stackCounterPill.style.display = "none";
-      centerTitleBar.style.opacity = "0";
-      centerTitleBar.style.pointerEvents = "none";
-      lockTopHeader.style.opacity = "1";
-      lockTopHeader.style.transform = "translateY(0) scale(1)";
-      wallpaperOverlay.style.backdropFilter = "blur(0px) brightness(1)";
+      writeStyle(stackCounterPill, "display", "none");
+      writeStyle(centerTitleBar, "opacity", "0");
+      writeStyle(centerTitleBar, "pointerEvents", "none");
+      writeStyle(lockTopHeader, "opacity", "1");
+      writeStyle(lockTopHeader, "transform", "translateY(0) scale(1)");
+      writeStyle(wallpaperOverlay, "backdropFilter", "blur(0px) brightness(1)");
       return;
     }
 
     const headProgress = total <= 1 ? 0 : clamp(state.scrollOffset / headAscentDistance, 0, 1);
     cardsLayer.classList.toggle("cards-expanded", headProgress > 0.38);
 
-    wallpaperOverlay.style.backdropFilter = "blur(" + (headProgress * 18).toFixed(1) + "px) brightness(" + (1 - headProgress * 0.32).toFixed(2) + ")";
-    lockTopHeader.style.opacity = String((1 - headProgress * 0.82).toFixed(2));
-    lockTopHeader.style.transform = "translateY(" + (-headProgress * 12).toFixed(1) + "px) scale(" + (1 - headProgress * 0.08).toFixed(3) + ")";
+    // Flou par demi-pixel : le navigateur ne recalcule pas le fond a chaque image.
+    const blurStep = Math.round(headProgress * 36) / 2;
+    writeStyle(wallpaperOverlay, "backdropFilter",
+      "blur(" + blurStep.toFixed(1) + "px) brightness(" + (1 - headProgress * 0.32).toFixed(2) + ")");
+    writeStyle(lockTopHeader, "opacity", String((1 - headProgress * 0.82).toFixed(2)));
+    writeStyle(lockTopHeader, "transform",
+      "translateY(" + (-headProgress * 12).toFixed(1) + "px) scale(" + (1 - headProgress * 0.08).toFixed(3) + ")");
 
     const headerAlpha = clamp((headProgress - 0.55) / 0.45, 0, 1);
-    centerTitleBar.style.opacity = String(headerAlpha.toFixed(2));
-    centerTitleBar.style.pointerEvents = headerAlpha > 0.5 ? "auto" : "none";
+    writeStyle(centerTitleBar, "opacity", String(headerAlpha.toFixed(2)));
+    writeStyle(centerTitleBar, "pointerEvents", headerAlpha > 0.5 ? "auto" : "none");
 
     if (total > 1) {
-      stackCounterPill.style.display = "block";
+      writeStyle(stackCounterPill, "display", "block");
       const messageCount = state.threads.reduce((sum, thread) => sum + thread.messages.length, 0);
-      stackCounterPill.textContent = messageCount + (messageCount > 1 ? " messages" : " message");
-      stackCounterPill.style.opacity = String(clamp(1 - headProgress * 2.5, 0, 1).toFixed(2));
-      stackCounterPill.style.transform = "translate(-50%, " + (-headProgress * 18).toFixed(1) + "px)";
+      writeText(stackCounterPill, messageCount + (messageCount > 1 ? " messages" : " message"));
+      writeStyle(stackCounterPill, "opacity", String(clamp(1 - headProgress * 2.5, 0, 1).toFixed(2)));
+      writeStyle(stackCounterPill, "transform", "translate(-50%, " + (-headProgress * 18).toFixed(1) + "px)");
     } else {
-      stackCounterPill.style.display = "none";
+      writeStyle(stackCounterPill, "display", "none");
     }
 
     const headY = -state.scrollOffset;
@@ -2030,25 +2065,35 @@
       const peeking = state.peekId === thread.id;
       const scale = currentScale * (peeking ? 1.025 : 1);
 
-      el.slot.style.zIndex = peeking ? "999" : String(total - idx);
-      el.slot.style.transform = "translate3d(0, " + currentY.toFixed(2) + "px, 0) scale(" + scale.toFixed(4) + ")";
-      el.slot.style.opacity = String(clamp(currentOpacity, 0, 1).toFixed(3));
-      el.card.style.pointerEvents = currentOpacity > 0.25 ? "auto" : "none";
+      writeStyle(el.slot, "zIndex", peeking ? "999" : String(total - idx));
+      writeStyle(el.slot, "transform",
+        "translate3d(0, " + currentY.toFixed(2) + "px, 0) scale(" + scale.toFixed(4) + ")");
+      writeStyle(el.slot, "opacity", String(clamp(currentOpacity, 0, 1).toFixed(3)));
+      writeStyle(el.slot, "visibility", currentOpacity <= 0.01 ? "hidden" : "visible");
+      writeStyle(el.card, "pointerEvents", currentOpacity > 0.25 ? "auto" : "none");
     });
   }
 
   function startPhysicsLoop() {
     if (state.animFrameId) return;
-    function tick() {
+    let lastStamp = 0;
+    function tick(stamp) {
+      const now = typeof stamp === "number" ? stamp : performance.now();
+      // Pas de temps reel : sur un ecran a 120 Hz l'animation avance a la meme
+      // vitesse que sur un ecran a 60 Hz, sans a-coup ni acceleration.
+      const dt = lastStamp ? Math.min(48, Math.max(1, now - lastStamp)) : 16.7;
+      lastStamp = now;
+
       if (!state.isDragging) {
         const diff = state.targetOffset - state.scrollOffset;
-        if (Math.abs(diff) < 0.25) {
+        if (Math.abs(diff) < 0.15) {
           state.scrollOffset = state.targetOffset;
           renderFrame();
           state.animFrameId = null;
           return;
         }
-        state.scrollOffset += diff * 0.16;
+        const k = 1 - Math.pow(1 - 0.16, dt / 16.7);
+        state.scrollOffset += diff * k;
       }
       renderFrame();
       state.animFrameId = requestAnimationFrame(tick);
@@ -2886,6 +2931,7 @@
   }
 
   function seedDemo() {
+    seeding = true;
     receive("WhatsApp", "Équipe Logistique", "Le dossier d'expédition a été mis à jour.", { forceNew: true });
     receive("WhatsApp", "Équipe Logistique", "Le bordereau est prêt, livraison confirmée à 16h.");
     receive("WhatsApp", "Équipe Logistique", "Confirme la présence du chef d'équipe sur le site.");
@@ -2894,6 +2940,8 @@
     receive("Telegram", "Bot Trading XAU", "Alerte structure H1 : cassure haussière confirmée sur l'or.");
     receive("Mail", "Herlo Global", "Nouvelle commande validée sur la boutique.");
     receive("Messages", "Karim", "Tu passes cet après-midi ?");
+    seeding = false;
+    closeIsland();
   }
 
   boot();

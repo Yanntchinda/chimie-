@@ -88,6 +88,17 @@
                 android:textSize="11sp"
                 android:lineSpacingExtra="2dp"
                 android:textColor="#99FFFFFF" />
+
+            <Button
+                android:id="@+id/listenerFixButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="@string/setup_fix_service_button"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
         </LinearLayout>
 
         <LinearLayout

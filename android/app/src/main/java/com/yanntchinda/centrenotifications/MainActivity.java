@@ -57,8 +57,9 @@ public class MainActivity extends Activity {
         Button islandButton = findViewById(R.id.islandButton);
         Button homeButton = findViewById(R.id.homeButton);
 
-        accessButton.setOnClickListener(view -> openListenerSettings());
+        accessButton.setOnClickListener(view -> openListenerDetail());
         findViewById(R.id.appInfoButton).setOnClickListener(view -> openAppInfo());
+        findViewById(R.id.listenerFixButton).setOnClickListener(view -> reactivateListener());
         postButton.setOnClickListener(view -> requestPosting());
         islandButton.setOnClickListener(view -> openOverlaySettings());
         homeButton.setOnClickListener(view -> openHomeSettings());
@@ -255,7 +256,7 @@ public class MainActivity extends Activity {
                 : "service connecté à " + android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(connected));
         diagnosticState.setText("Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n"
                 + "Messages lus : " + read + " · cartes publiées : " + posted
-                + "\n" + service + "\n" + meaning);
+                + "\n" + service + " · " + listenerStateText() + "\n" + meaning);
 
         int count = CenterPrefs.receivedCount(this);
         long last = CenterPrefs.receivedLast(this);
@@ -306,6 +307,61 @@ public class MainActivity extends Activity {
                     Uri.parse("package:" + getPackageName())));
         } catch (Exception ignored) {
             // Certains appareils renvoient vers une liste d'applications.
+        }
+    }
+
+    /** Page de l'acces aux notifications, ouverte directement sur cette application. */
+    private void openListenerDetail() {
+        try {
+            ComponentName component = new ComponentName(this, NotificationRelay.class);
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS);
+            intent.putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, component.flattenToString());
+            startActivity(intent);
+            return;
+        } catch (Exception ignored) {
+            // Ecran absent (Android 10 et avant) : on retombe sur la liste complete.
+        }
+        openListenerSettings();
+    }
+
+    /**
+     * Remet le service d'ecoute en etat actif. Quand Android a desactive le composant
+     * (application arretee de force, parametre restreint), l'interrupteur de l'acces
+     * reste gris : ce bouton le rend de nouveau manipulable.
+     */
+    private void reactivateListener() {
+        try {
+            ComponentName component = new ComponentName(this, NotificationRelay.class);
+            getPackageManager().setComponentEnabledSetting(component,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+            Toast.makeText(this, "Service réactivé. Ouvrez l'accès aux notifications pour l'autoriser.",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception err) {
+            Toast.makeText(this, "Réactivation impossible sur ce téléphone.", Toast.LENGTH_LONG).show();
+        }
+        refresh();
+    }
+
+    /** Etat du service d'ecoute tel que le systeme le voit. */
+    private String listenerStateText() {
+        int state;
+        try {
+            state = getPackageManager().getComponentEnabledSetting(
+                    new ComponentName(this, NotificationRelay.class));
+        } catch (Exception err) {
+            return "etat du service inconnu";
+        }
+        switch (state) {
+            case PackageManager.COMPONENT_ENABLED_STATE_ENABLED:
+                return "service active";
+            case PackageManager.COMPONENT_ENABLED_STATE_DISABLED:
+                return "service desactive par le systeme";
+            case PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER:
+                return "service desactive a la main";
+            case PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED:
+                return "service en attente d'activation";
+            default:
+                return "service pret";
         }
     }
 
