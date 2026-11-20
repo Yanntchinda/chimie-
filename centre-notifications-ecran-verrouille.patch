@@ -1,0 +1,1785 @@
+diff --git a/android/app/build.gradle b/android/app/build.gradle
+index 1bc43af..e02965c 100644
+--- a/android/app/build.gradle
++++ b/android/app/build.gradle
+@@ -10,8 +10,8 @@ android {
+         applicationId "com.yanntchinda.centrenotifications"
+         minSdk 26
+         targetSdk 34
+-        versionCode 7
+-        versionName "2.3.0"
++        versionCode 8
++        versionName "2.4.0"
+     }
+ 
+     buildTypes {
+diff --git a/android/app/src/main/AndroidManifest.xml b/android/app/src/main/AndroidManifest.xml
+index cddaf23..84fedd9 100644
+--- a/android/app/src/main/AndroidManifest.xml
++++ b/android/app/src/main/AndroidManifest.xml
+@@ -12,6 +12,12 @@
+     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+ 
++    <!-- Écran verrouillé : allumer l'écran et s'afficher par-dessus le verrouillage -->
++    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
++    <!-- Garder l'écoute active écran éteint -->
++    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
++    <uses-permission android:name="android.permission.VIBRATE" />
++
+     <!-- Permet de retrouver le nom des applications qui emettent les notifications -->
+     <queries>
+         <intent>
+@@ -43,6 +49,17 @@
+             android:name=".ActionReceiver"
+             android:exported="false" />
+ 
++        <activity
++            android:name=".LockScreenActivity"
++            android:exported="false"
++            android:excludeFromRecents="true"
++            android:launchMode="singleTask"
++            android:showWhenLocked="true"
++            android:turnScreenOn="true"
++            android:screenOrientation="portrait"
++            android:taskAffinity=""
++            android:theme="@style/LockTheme" />
++
+         <activity
+             android:name=".MainActivity"
+             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/ActionReceiver.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/ActionReceiver.java
+index 55c7eea..0c4db66 100644
+--- a/android/app/src/main/java/com/yanntchinda/centrenotifications/ActionReceiver.java
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/ActionReceiver.java
+@@ -16,6 +16,7 @@ public class ActionReceiver extends BroadcastReceiver {
+         if (intent == null || !ACTION_CLEAR.equals(intent.getAction())) return;
+         String key = intent.getStringExtra(EXTRA_KEY);
+         if (key == null) return;
++        RecentStore.remove(key);
+ 
+         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+         if (manager != null) {
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/IslandOverlay.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/IslandOverlay.java
+index 0e8437a..cdde04f 100644
+--- a/android/app/src/main/java/com/yanntchinda/centrenotifications/IslandOverlay.java
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/IslandOverlay.java
+@@ -1,5 +1,6 @@
+ package com.yanntchinda.centrenotifications;
+ 
++import android.app.PendingIntent;
+ import android.content.Context;
+ import android.graphics.PixelFormat;
+ import android.os.Handler;
+@@ -42,7 +43,7 @@ final class IslandOverlay {
+         }
+     }
+ 
+-    static void show(Context context, String sender, String message, int dotRes) {
++    static void show(Context context, String sender, String message, int dotRes, PendingIntent open) {
+         if (context == null) return;
+         if (!allowed(context)) return;
+         if (Looper.myLooper() != Looper.getMainLooper()) return;
+@@ -65,13 +66,21 @@ final class IslandOverlay {
+                         PixelFormat.TRANSLUCENT);
+                 params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+                 params.y = dp(context, 44);
+-                pill.setOnClickListener(view -> hide());
+                 windowManager.addView(pill, params);
+             }
+ 
+             senderView.setText(sender);
+             messageView.setText(message);
+             dotView.setImageResource(dotRes);
++            // Toucher l'îlot ouvre la conversation d'origine, comme sur iPhone.
++            pill.setOnClickListener(view -> {
++                hide();
++                try {
++                    if (open != null) open.send();
++                } catch (PendingIntent.CanceledException ignored) {
++                    // L'application d'origine a retiré son action.
++                }
++            });
+ 
+             pill.animate().cancel();
+             pill.setScaleX(0.92f);
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/LockScreenActivity.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/LockScreenActivity.java
+new file mode 100644
+index 0000000..2d1b63c
+--- /dev/null
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/LockScreenActivity.java
+@@ -0,0 +1,220 @@
++package com.yanntchinda.centrenotifications;
++
++import android.app.Activity;
++import android.app.KeyguardManager;
++import android.app.PendingIntent;
++import android.content.Context;
++import android.content.Intent;
++import android.os.Build;
++import android.os.Bundle;
++import android.os.Handler;
++import android.os.Looper;
++import android.text.format.DateFormat;
++import android.view.LayoutInflater;
++import android.view.MotionEvent;
++import android.view.View;
++import android.view.Window;
++import android.view.WindowManager;
++import android.widget.ImageView;
++import android.widget.LinearLayout;
++import android.widget.TextView;
++
++import java.util.Date;
++import java.util.List;
++
++/**
++ * Écran verrouillé du centre : s'allume et s'affiche par-dessus le verrouillage d'Android
++ * à chaque message, avec la pile des derniers messages, puis se referme tout seul.
++ *
++ * L'appareil reste verrouillé : toucher une carte demande le déverrouillage avant d'ouvrir
++ * l'application d'origine.
++ */
++public class LockScreenActivity extends Activity {
++
++    private static final long VISIBLE_MS = 9000;
++
++    private final Handler handler = new Handler(Looper.getMainLooper());
++    private final Runnable close = this::finish;
++
++    private LinearLayout list;
++    private TextView empty;
++
++    /** Allume l'écran et affiche la pile de messages. Peut être appelé depuis le service. */
++    static boolean launch(Context context) {
++        try {
++            Intent intent = new Intent(context, LockScreenActivity.class)
++                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
++                            | Intent.FLAG_ACTIVITY_SINGLE_TOP
++                            | Intent.FLAG_ACTIVITY_NO_ANIMATION);
++            context.startActivity(intent);
++            return true;
++        } catch (Exception err) {
++            // Démarrage refusé par Android : la notification plein écran prend le relais.
++            return false;
++        }
++    }
++
++    static PendingIntent launchIntent(Context context) {
++        Intent intent = new Intent(context, LockScreenActivity.class)
++                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
++        return PendingIntent.getActivity(context, 7001, intent,
++                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
++    }
++
++    /** Vrai quand l'écran est éteint ou verrouillé : l'îlot ne serait pas visible. */
++    static boolean deviceIsLockedOrOff(Context context) {
++        android.os.PowerManager power = (android.os.PowerManager) context.getSystemService(Context.POWER_SERVICE);
++        KeyguardManager keyguard = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
++        boolean off = power != null && !power.isInteractive();
++        boolean locked = keyguard != null && keyguard.isKeyguardLocked();
++        return off || locked;
++    }
++
++    @Override
++    protected void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        showOverLockScreen();
++        requestWindowFeature(Window.FEATURE_NO_TITLE);
++        setContentView(R.layout.activity_lockscreen);
++
++        list = findViewById(R.id.lockList);
++        empty = findViewById(R.id.lockEmpty);
++        findViewById(R.id.lockRoot).setOnClickListener(view -> finish());
++        render();
++        scheduleClose();
++    }
++
++    @Override
++    protected void onNewIntent(Intent intent) {
++        super.onNewIntent(intent);
++        setIntent(intent);
++        showOverLockScreen();
++        render();
++        scheduleClose();
++    }
++
++    @Override
++    protected void onDestroy() {
++        handler.removeCallbacks(close);
++        super.onDestroy();
++    }
++
++    @Override
++    public boolean dispatchTouchEvent(MotionEvent event) {
++        // Une interaction repousse la fermeture : l'écran ne se referme pas pendant la lecture.
++        if (event.getAction() == MotionEvent.ACTION_DOWN) scheduleClose();
++        return super.dispatchTouchEvent(event);
++    }
++
++    private void showOverLockScreen() {
++        if (Build.VERSION.SDK_INT >= 27) {
++            setShowWhenLocked(true);
++            setTurnScreenOn(true);
++        } else {
++            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
++                    | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
++        }
++    }
++
++    private void scheduleClose() {
++        handler.removeCallbacks(close);
++        handler.postDelayed(close, VISIBLE_MS);
++    }
++
++    private void render() {
++        TextView clockHint = findViewById(R.id.lockDate);
++        clockHint.setText(DateFormat.format("EEEE d MMMM", new Date()));
++
++        list.removeAllViews();
++        List<RecentStore.Item> items = RecentStore.snapshot();
++        empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
++        LayoutInflater inflater = LayoutInflater.from(this);
++        for (RecentStore.Item item : items) {
++            View card = inflater.inflate(R.layout.lock_item, list, false);
++            ((TextView) card.findViewById(R.id.lockSender)).setText(item.sender);
++            ((TextView) card.findViewById(R.id.lockMessage)).setText(item.message);
++            ((TextView) card.findViewById(R.id.lockSource)).setText(item.appLabel);
++            ((TextView) card.findViewById(R.id.lockTime)).setText(
++                    DateFormat.getTimeFormat(this).format(new Date(item.when)));
++            ((ImageView) card.findViewById(R.id.lockDot)).setImageResource(item.dotRes);
++            attach(card, item);
++            list.addView(card);
++        }
++    }
++
++    /** Toucher ouvre le message ; glisser vers la gauche ou la droite l'efface. */
++    private void attach(View card, RecentStore.Item item) {
++        final float[] downX = new float[1];
++        final boolean[] moved = new boolean[1];
++        card.setOnTouchListener((view, event) -> {
++            switch (event.getActionMasked()) {
++                case MotionEvent.ACTION_DOWN:
++                    downX[0] = event.getRawX();
++                    moved[0] = false;
++                    view.getParent().requestDisallowInterceptTouchEvent(false);
++                    return true;
++                case MotionEvent.ACTION_MOVE: {
++                    float dx = event.getRawX() - downX[0];
++                    if (Math.abs(dx) > 12) moved[0] = true;
++                    view.setTranslationX(dx);
++                    view.setAlpha(1f - Math.min(1f, Math.abs(dx) / (view.getWidth() * 0.8f)));
++                    return true;
++                }
++                case MotionEvent.ACTION_UP: {
++                    float dx = event.getRawX() - downX[0];
++                    if (Math.abs(dx) > view.getWidth() * 0.35f) {
++                        dismiss(view, item, dx > 0 ? view.getWidth() : -view.getWidth());
++                    } else if (!moved[0]) {
++                        open(item);
++                    } else {
++                        view.animate().translationX(0f).alpha(1f).setDuration(140).start();
++                    }
++                    return true;
++                }
++                case MotionEvent.ACTION_CANCEL:
++                    view.animate().translationX(0f).alpha(1f).setDuration(140).start();
++                    return true;
++                default:
++                    return false;
++            }
++        });
++    }
++
++    private void dismiss(View card, RecentStore.Item item, float toX) {
++        RecentStore.remove(item.key);
++        android.app.NotificationManager manager =
++                (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
++        if (manager != null) manager.cancel(item.key, 1);
++        NotificationRelay.cancelOriginal(item.key);
++        card.animate().translationX(toX).alpha(0f).setDuration(160)
++                .withEndAction(() -> {
++                    list.removeView(card);
++                    if (list.getChildCount() == 0) finish();
++                }).start();
++    }
++
++    private void open(RecentStore.Item item) {
++        final PendingIntent target = item.open;
++        KeyguardManager keyguard = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
++        Runnable go = () -> {
++            try {
++                if (target != null) target.send();
++            } catch (PendingIntent.CanceledException ignored) {
++                // L'application d'origine a retiré son action.
++            }
++            RecentStore.remove(item.key);
++            finish();
++        };
++        if (keyguard != null && keyguard.isKeyguardLocked()) {
++            // Le téléphone reste verrouillé : on demande le code avant d'ouvrir le message.
++            keyguard.requestDismissKeyguard(this, new KeyguardManager.KeyguardDismissCallback() {
++                @Override
++                public void onDismissSucceeded() {
++                    go.run();
++                }
++            });
++        } else {
++            go.run();
++        }
++    }
++}
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/MainActivity.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/MainActivity.java
+index f0a698e..7b33aa8 100644
+--- a/android/app/src/main/java/com/yanntchinda/centrenotifications/MainActivity.java
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/MainActivity.java
+@@ -2,11 +2,15 @@ package com.yanntchinda.centrenotifications;
+ 
+ import android.Manifest;
+ import android.app.Activity;
++import android.content.ComponentName;
+ import android.content.Intent;
+ import android.content.pm.PackageManager;
+ import android.os.Build;
+ import android.net.Uri;
+ import android.os.Bundle;
++import android.os.Handler;
++import android.os.Looper;
++import android.os.PowerManager;
+ import android.provider.Settings;
+ import android.widget.Button;
+ import android.widget.Switch;
+@@ -28,6 +32,8 @@ public class MainActivity extends Activity {
+     private TextView islandState;
+     private TextView receiveState;
+     private TextView diagnosticState;
++    private TextView lockState;
++    private TextView batteryState;
+     private Switch replaceSwitch;
+ 
+     @Override
+@@ -40,6 +46,8 @@ public class MainActivity extends Activity {
+         islandState = findViewById(R.id.islandState);
+         receiveState = findViewById(R.id.receiveState);
+         diagnosticState = findViewById(R.id.diagnosticState);
++        lockState = findViewById(R.id.lockState);
++        batteryState = findViewById(R.id.batteryState);
+         replaceSwitch = findViewById(R.id.replaceSwitch);
+         Button accessButton = findViewById(R.id.accessButton);
+         Button postButton = findViewById(R.id.postButton);
+@@ -54,10 +62,27 @@ public class MainActivity extends Activity {
+             String status = StyledNotifier.postTest(this);
+             CenterPrefs.notePosted(this, status);
+             if ("ok".equals(status)) {
+-                IslandOverlay.show(this, "Carte de test", "Le centre affiche correctement.", R.drawable.dot_blue);
++                NotificationRelay.present(getApplicationContext(), testItem(), false);
+             }
+             refresh();
+         });
++
++        findViewById(R.id.lockButton).setOnClickListener(view -> openFullScreenSettings());
++        findViewById(R.id.lockTestButton).setOnClickListener(view -> {
++            // Laisse le temps d'éteindre l'écran, puis simule un message écran éteint.
++            android.widget.Toast.makeText(this,
++                    "Éteignez l'écran maintenant : le test arrive dans 8 secondes.",
++                    android.widget.Toast.LENGTH_LONG).show();
++            final android.content.Context app = getApplicationContext();
++            new Handler(Looper.getMainLooper()).postDelayed(() -> {
++                String status = StyledNotifier.postTest(app);
++                CenterPrefs.notePosted(app, status);
++                if ("ok".equals(status)) {
++                    NotificationRelay.present(app, testItem(), LockScreenActivity.deviceIsLockedOrOff(app));
++                }
++            }, 8000);
++        });
++        findViewById(R.id.batteryButton).setOnClickListener(view -> openBatterySettings());
+         replaceSwitch.setOnCheckedChangeListener((button, checked) ->
+                 CenterPrefs.setReplaceOriginals(this, checked));
+ 
+@@ -72,9 +97,65 @@ public class MainActivity extends Activity {
+     @Override
+     protected void onResume() {
+         super.onResume();
++        // Accès accordé mais service non connecté (arrêté par le téléphone) : on force la reconnexion.
++        if (isAccessGranted() && !NotificationRelay.isConnected()) rebindListener();
+         refresh();
+     }
+ 
++    private RecentStore.Item testItem() {
++        return new RecentStore.Item("centre-test", getPackageName(), "Centre de notifications",
++                "Carte de test", "Le centre affiche correctement.", System.currentTimeMillis(),
++                R.drawable.dot_blue, null);
++    }
++
++    /** Coupe puis rétablit le service d'écoute : méthode connue pour relancer un service que le téléphone a arrêté. */
++    private void rebindListener() {
++        try {
++            ComponentName name = new ComponentName(this, NotificationRelay.class);
++            android.content.pm.PackageManager pm = getPackageManager();
++            pm.setComponentEnabledSetting(name,
++                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
++                    android.content.pm.PackageManager.DONT_KILL_APP);
++            pm.setComponentEnabledSetting(name,
++                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
++                    android.content.pm.PackageManager.DONT_KILL_APP);
++        } catch (Exception ignored) {
++            // Le téléphone refuse : l'utilisateur peut réactiver l'accès à la main.
++        }
++    }
++
++    private boolean batteryUnrestricted() {
++        PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
++        return power != null && power.isIgnoringBatteryOptimizations(getPackageName());
++    }
++
++    private void openBatterySettings() {
++        try {
++            startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
++                    Uri.parse("package:" + getPackageName())));
++        } catch (Exception err) {
++            try {
++                startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
++            } catch (Exception ignored) {
++                // Rien à ouvrir sur cet appareil.
++            }
++        }
++    }
++
++    private void openFullScreenSettings() {
++        try {
++            if (Build.VERSION.SDK_INT >= 34) {
++                startActivity(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
++                        Uri.parse("package:" + getPackageName())));
++            } else {
++                startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
++                        .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName()));
++            }
++        } catch (Exception ignored) {
++            // Rien à ouvrir sur cet appareil.
++        }
++    }
++
+     @Override
+     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+@@ -97,6 +178,14 @@ public class MainActivity extends Activity {
+                 ? "Accordé. Une pastille descend du haut de l'écran à chaque message, par-dessus l'application en cours."
+                 : "Non accordé. Sans cet accès, les cartes restent dans les notifications, sans îlot par-dessus les applications.");
+ 
++        boolean fullScreen = StyledNotifier.canFullScreen(this);
++        lockState.setText(fullScreen
++                ? "Accordé. Écran éteint ou verrouillé, le centre allume l'écran et affiche les messages par-dessus le verrouillage."
++                : "Non accordé. Sans cet accès, l'écran ne s'allume pas à l'arrivée d'un message et l'écran verrouillé du centre ne s'affiche pas.");
++        batteryState.setText(batteryUnrestricted()
++                ? "Accordé. Le téléphone ne coupe plus l'écoute en arrière-plan."
++                : "Non accordé. Le téléphone peut arrêter l'écoute écran éteint : les messages n'arrivent plus au centre.");
++
+         int read = CenterPrefs.receivedCount(this);
+         int posted = CenterPrefs.postedCount(this);
+         String status = CenterPrefs.lastStatus(this);
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/NotificationRelay.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/NotificationRelay.java
+index e5ecbce..bd95982 100644
+--- a/android/app/src/main/java/com/yanntchinda/centrenotifications/NotificationRelay.java
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/NotificationRelay.java
+@@ -1,6 +1,8 @@
+ package com.yanntchinda.centrenotifications;
+ 
+ import android.app.Notification;
++import android.content.ComponentName;
++import android.content.Context;
+ import android.content.pm.ApplicationInfo;
+ import android.content.pm.PackageManager;
+ import android.os.Bundle;
+@@ -57,6 +59,16 @@ public class NotificationRelay extends NotificationListenerService {
+     public void onListenerDisconnected() {
+         instance = null;
+         super.onListenerDisconnected();
++        // Android ou le constructeur a coupé l'écoute : on demande tout de suite à être reconnecté.
++        try {
++            requestRebind(new ComponentName(this, NotificationRelay.class));
++        } catch (Exception ignored) {
++            // Accès retiré par l'utilisateur : rien à reconnecter.
++        }
++    }
++
++    static boolean isConnected() {
++        return instance != null;
+     }
+ 
+     @Override
+@@ -73,6 +85,7 @@ public class NotificationRelay extends NotificationListenerService {
+             if (getPackageName().equals(sbn.getPackageName())) return;
+             if ((notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0) return;
+             if ((notification.flags & Notification.FLAG_ONGOING_EVENT) != 0) return;
++            if (isUntouchable(sbn.getPackageName(), notification)) return;
+ 
+             Bundle extras = notification.extras;
+             if (extras == null) return;
+@@ -91,12 +104,15 @@ public class NotificationRelay extends NotificationListenerService {
+             if (LAST_TEXT.size() > LAST_TEXT_LIMIT) LAST_TEXT.clear();
+             LAST_TEXT.put(key, message);
+ 
+-            CenterPrefs.noteReceived(getApplicationContext());
+-            String status = StyledNotifier.post(getApplicationContext(), sbn, sender, message, appLabel);
+-            CenterPrefs.notePosted(getApplicationContext(), status);
++            Context app = getApplicationContext();
++            CenterPrefs.noteReceived(app);
++            boolean wake = LockScreenActivity.deviceIsLockedOrOff(app);
++            String status = StyledNotifier.post(app, sbn, sender, message, appLabel, wake);
++            CenterPrefs.notePosted(app, status);
+             if ("ok".equals(status)) {
+-                IslandOverlay.show(getApplicationContext(), sender, message,
+-                        StyledNotifier.dotFor(sbn.getPackageName()));
++                long when = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
++                present(app, new RecentStore.Item(key, sbn.getPackageName(), appLabel, sender, message, when,
++                        StyledNotifier.dotFor(sbn.getPackageName()), notification.contentIntent), wake);
+             }
+             if ("ok".equals(status) && CenterPrefs.replaceOriginals(this)) {
+                 // Une seule carte reste dans les notifications : celle du centre.
+@@ -111,6 +127,43 @@ public class NotificationRelay extends NotificationListenerService {
+         }
+     }
+ 
++    /**
++     * Écran verrouillé ou éteint : l'écran verrouillé du centre s'allume et se superpose.
++     * Écran allumé et déverrouillé : l'îlot descend du haut de l'écran.
++     */
++    static void present(Context context, RecentStore.Item item, boolean wake) {
++        RecentStore.put(item);
++        if (wake) {
++            LockScreenActivity.launch(context);
++        } else {
++            IslandOverlay.show(context, item.sender, item.message, item.dotRes, item.open);
++        }
++    }
++
++    /**
++     * Notifications qu'on ne doit jamais retirer ni réécrire : un appel entrant perdrait ses boutons
++     * Répondre/Refuser, une alarme ne sonnerait plus, un téléchargement ou un trajet GPS disparaîtrait.
++     */
++    private static boolean isUntouchable(String pkg, Notification notification) {
++        if ("android".equals(pkg) || "com.android.systemui".equals(pkg)) return true;
++        String category = notification.category;
++        if (category == null) return false;
++        switch (category) {
++            case Notification.CATEGORY_CALL:
++            case Notification.CATEGORY_ALARM:
++            case Notification.CATEGORY_NAVIGATION:
++            case Notification.CATEGORY_PROGRESS:
++            case Notification.CATEGORY_SERVICE:
++            case Notification.CATEGORY_STATUS:
++            case Notification.CATEGORY_SYSTEM:
++            case Notification.CATEGORY_TRANSPORT:
++            case Notification.CATEGORY_STOPWATCH:
++                return true;
++            default:
++                return false;
++        }
++    }
++
+     private static String textOf(CharSequence value) {
+         if (value == null) return "";
+         return value.toString().trim();
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/RecentStore.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/RecentStore.java
+new file mode 100644
+index 0000000..ea138fe
+--- /dev/null
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/RecentStore.java
+@@ -0,0 +1,69 @@
++package com.yanntchinda.centrenotifications;
++
++import android.app.PendingIntent;
++
++import java.util.ArrayList;
++import java.util.Iterator;
++import java.util.List;
++
++/**
++ * Derniers messages reçus, gardés en mémoire pour l'écran verrouillé.
++ * Le plus récent est en tête. La liste est partagée entre le service d'écoute
++ * (qui l'alimente) et l'écran verrouillé (qui l'affiche).
++ */
++final class RecentStore {
++
++    static final class Item {
++        final String key;
++        final String pkg;
++        final String appLabel;
++        final String sender;
++        final String message;
++        final long when;
++        final int dotRes;
++        final PendingIntent open;
++
++        Item(String key, String pkg, String appLabel, String sender, String message,
++             long when, int dotRes, PendingIntent open) {
++            this.key = key;
++            this.pkg = pkg;
++            this.appLabel = appLabel;
++            this.sender = sender;
++            this.message = message;
++            this.when = when;
++            this.dotRes = dotRes;
++            this.open = open;
++        }
++    }
++
++    private static final int LIMIT = 12;
++    private static final List<Item> ITEMS = new ArrayList<>();
++
++    private RecentStore() {
++    }
++
++    static synchronized void put(Item item) {
++        Iterator<Item> it = ITEMS.iterator();
++        while (it.hasNext()) {
++            if (it.next().key.equals(item.key)) it.remove();
++        }
++        ITEMS.add(0, item);
++        while (ITEMS.size() > LIMIT) ITEMS.remove(ITEMS.size() - 1);
++    }
++
++    static synchronized void remove(String key) {
++        if (key == null) return;
++        Iterator<Item> it = ITEMS.iterator();
++        while (it.hasNext()) {
++            if (it.next().key.equals(key)) it.remove();
++        }
++    }
++
++    static synchronized void clear() {
++        ITEMS.clear();
++    }
++
++    static synchronized List<Item> snapshot() {
++        return new ArrayList<>(ITEMS);
++    }
++}
+diff --git a/android/app/src/main/java/com/yanntchinda/centrenotifications/StyledNotifier.java b/android/app/src/main/java/com/yanntchinda/centrenotifications/StyledNotifier.java
+index 9906f61..aa58712 100644
+--- a/android/app/src/main/java/com/yanntchinda/centrenotifications/StyledNotifier.java
++++ b/android/app/src/main/java/com/yanntchinda/centrenotifications/StyledNotifier.java
+@@ -5,8 +5,11 @@ import android.app.NotificationChannel;
+ import android.app.NotificationManager;
+ import android.app.PendingIntent;
+ import android.app.RemoteInput;
++import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.Intent;
++import android.media.AudioAttributes;
++import android.net.Uri;
+ import android.os.Build;
+ import android.service.notification.StatusBarNotification;
+ import android.text.format.DateFormat;
+@@ -20,7 +23,13 @@ import java.util.Date;
+  */
+ final class StyledNotifier {
+ 
+-    static final String CHANNEL_ID = "centre-messages";
++    /**
++     * Android fige le son et la vibration d'un canal à sa création : l'ancien canal
++     * « centre-messages » était muet. On en crée un nouveau, avec son et vibration.
++     */
++    static final String CHANNEL_ID = "centre-messages-v2";
++    private static final String LEGACY_CHANNEL_ID = "centre-messages";
++    private static final long[] VIBRATION = {0, 40, 70, 40, 70, 90};
+ 
+     private StyledNotifier() {
+     }
+@@ -29,6 +38,9 @@ final class StyledNotifier {
+         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+         if (manager == null) return;
++        if (manager.getNotificationChannel(LEGACY_CHANNEL_ID) != null) {
++            manager.deleteNotificationChannel(LEGACY_CHANNEL_ID);
++        }
+         if (manager.getNotificationChannel(CHANNEL_ID) != null) return;
+ 
+         NotificationChannel channel = new NotificationChannel(
+@@ -36,13 +48,29 @@ final class StyledNotifier {
+                 context.getString(R.string.notif_channel_name),
+                 NotificationManager.IMPORTANCE_HIGH);
+         channel.setDescription(context.getString(R.string.notif_channel_description));
+-        channel.setSound(null, null);
+-        channel.enableVibration(false);
++        Uri sound = new Uri.Builder()
++                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
++                .authority(context.getPackageName())
++                .appendPath(String.valueOf(R.raw.centre_tri))
++                .build();
++        channel.setSound(sound, new AudioAttributes.Builder()
++                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
++                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
++                .build());
++        channel.enableVibration(true);
++        channel.setVibrationPattern(VIBRATION);
+         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+         channel.setShowBadge(true);
+         manager.createNotificationChannel(channel);
+     }
+ 
++    /** Vrai si Android autorise l'affichage plein écran sur l'écran verrouillé (Android 14 : réglage à part). */
++    static boolean canFullScreen(Context context) {
++        if (Build.VERSION.SDK_INT < 34) return true;
++        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
++        return manager != null && manager.canUseFullScreenIntent();
++    }
++
+     static boolean canPost(Context context) {
+         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+         if (manager == null) return false;
+@@ -53,7 +81,8 @@ final class StyledNotifier {
+      * Affiche la carte du centre pour une notification d'origine.
+      * Renvoie false si rien n'a pu être affiché : l'originale ne doit alors pas être retirée.
+      */
+-    static String post(Context context, StatusBarNotification sbn, String sender, String message, String appLabel) {
++    static String post(Context context, StatusBarNotification sbn, String sender, String message,
++                       String appLabel, boolean wakeScreen) {
+         if (sbn == null || message == null || message.isEmpty()) return "vide";
+         if (!canPost(context)) return "affichage-refuse";
+ 
+@@ -95,7 +124,8 @@ final class StyledNotifier {
+                 .setCustomContentView(card)
+                 .setCustomBigContentView(card)
+                 .setAutoCancel(true)
+-                .setOnlyAlertOnce(true)
++                // Faux : chaque nouveau message d'une même conversation doit sonner et s'afficher.
++                .setOnlyAlertOnce(false)
+                 .setVisibility(Notification.VISIBILITY_PUBLIC)
+                 .setColor(0xFF1B1E2B)
+                 .addAction(new Notification.Action.Builder(
+@@ -103,6 +133,11 @@ final class StyledNotifier {
+ 
+         if (appLabel != null && !appLabel.isEmpty()) builder.setSubText(appLabel);
+ 
++        // Écran éteint ou verrouillé : Android allume l'écran et ouvre l'écran verrouillé du centre.
++        if (wakeScreen && canFullScreen(context)) {
++            builder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
++        }
++
+         if (original != null) {
+             if (original.category != null) builder.setCategory(original.category);
+             if (original.getLargeIcon() != null) builder.setLargeIcon(original.getLargeIcon());
+@@ -141,7 +176,7 @@ final class StyledNotifier {
+                 context, "centre-test".hashCode(), clear,
+                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+ 
+-        Notification notification = new Notification.Builder(context, CHANNEL_ID)
++        Notification.Builder testBuilder = new Notification.Builder(context, CHANNEL_ID)
+                 .setSmallIcon(R.drawable.ic_notif_small)
+                 .setWhen(now)
+                 .setShowWhen(true)
+@@ -154,7 +189,11 @@ final class StyledNotifier {
+                 .setColor(0xFF1B1E2B)
+                 .addAction(new Notification.Action.Builder(
+                         null, context.getString(R.string.notif_action_clear), clearIntent).build())
+-                .build();
++                ;
++        if (LockScreenActivity.deviceIsLockedOrOff(context) && canFullScreen(context)) {
++            testBuilder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
++        }
++        Notification notification = testBuilder.build();
+ 
+         try {
+             manager.notify("centre-test", 1, notification);
+diff --git a/android/app/src/main/res/drawable/lock_bg.xml b/android/app/src/main/res/drawable/lock_bg.xml
+new file mode 100644
+index 0000000..ba902d8
+--- /dev/null
++++ b/android/app/src/main/res/drawable/lock_bg.xml
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
++    <gradient
++        android:angle="270"
++        android:startColor="#FF05060A"
++        android:centerColor="#FF14172A"
++        android:endColor="#FF2A1F4A" />
++</shape>
+diff --git a/android/app/src/main/res/drawable/lock_item_bg.xml b/android/app/src/main/res/drawable/lock_item_bg.xml
+new file mode 100644
+index 0000000..80c0fb0
+--- /dev/null
++++ b/android/app/src/main/res/drawable/lock_item_bg.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
++    <solid android:color="#4D2A2E40" />
++    <corners android:radius="22dp" />
++    <stroke android:width="1dp" android:color="#24FFFFFF" />
++</shape>
+diff --git a/android/app/src/main/res/layout/activity_lockscreen.xml b/android/app/src/main/res/layout/activity_lockscreen.xml
+new file mode 100644
+index 0000000..8ffbd91
+--- /dev/null
++++ b/android/app/src/main/res/layout/activity_lockscreen.xml
+@@ -0,0 +1,62 @@
++<?xml version="1.0" encoding="utf-8"?>
++<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/lockRoot"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    android:background="@drawable/lock_bg">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:orientation="vertical"
++        android:paddingStart="14dp"
++        android:paddingEnd="14dp"
++        android:paddingTop="56dp"
++        android:paddingBottom="28dp">
++
++        <TextView
++            android:id="@+id/lockDate"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:gravity="center_horizontal"
++            android:textSize="17sp"
++            android:textStyle="bold"
++            android:textColor="#D9FFFFFF"
++            android:text="" />
++
++        <TextClock
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:gravity="center_horizontal"
++            android:format12Hour="h:mm"
++            android:format24Hour="HH:mm"
++            android:textSize="84sp"
++            android:fontFamily="sans-serif-light"
++            android:textColor="#FFFFFFFF" />
++
++        <ScrollView
++            android:layout_width="match_parent"
++            android:layout_height="0dp"
++            android:layout_weight="1"
++            android:layout_marginTop="24dp"
++            android:overScrollMode="never"
++            android:scrollbars="none">
++
++            <LinearLayout
++                android:id="@+id/lockList"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:orientation="vertical" />
++        </ScrollView>
++
++        <TextView
++            android:id="@+id/lockEmpty"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:gravity="center_horizontal"
++            android:text="Aucune notification"
++            android:textSize="13sp"
++            android:textColor="#99FFFFFF"
++            android:visibility="gone" />
++    </LinearLayout>
++</FrameLayout>
+diff --git a/android/app/src/main/res/layout/activity_setup.xml b/android/app/src/main/res/layout/activity_setup.xml
+index 80bf26b..8b194c6 100644
+--- a/android/app/src/main/res/layout/activity_setup.xml
++++ b/android/app/src/main/res/layout/activity_setup.xml
+@@ -145,6 +145,93 @@
+                 android:textColor="#FFFFFFFF" />
+         </LinearLayout>
+ 
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:orientation="vertical"
++            android:background="@drawable/setup_block_bg"
++            android:padding="16dp">
++
++            <TextView
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:text="Écran verrouillé et écran éteint"
++                android:textSize="14sp"
++                android:textStyle="bold"
++                android:textColor="#FFFFFFFF" />
++
++            <TextView
++                android:id="@+id/lockState"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="6dp"
++                android:textSize="12sp"
++                android:lineSpacingExtra="2dp"
++                android:textColor="#A6FFFFFF"
++                android:text="@string/setup_unknown" />
++
++            <Button
++                android:id="@+id/lockButton"
++                android:layout_width="match_parent"
++                android:layout_height="46dp"
++                android:layout_marginTop="12dp"
++                android:background="@drawable/setup_button_bg"
++                android:text="Autoriser l'affichage plein écran"
++                android:textAllCaps="false"
++                android:textSize="13sp"
++                android:textColor="#FFFFFFFF" />
++
++            <Button
++                android:id="@+id/lockTestButton"
++                android:layout_width="match_parent"
++                android:layout_height="46dp"
++                android:layout_marginTop="8dp"
++                android:background="@drawable/setup_button_bg"
++                android:text="Tester l'écran verrouillé (écran éteint)"
++                android:textAllCaps="false"
++                android:textSize="13sp"
++                android:textColor="#FFFFFFFF" />
++        </LinearLayout>
++
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="12dp"
++            android:orientation="vertical"
++            android:background="@drawable/setup_block_bg"
++            android:padding="16dp">
++
++            <TextView
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:text="Écoute en arrière-plan"
++                android:textSize="14sp"
++                android:textStyle="bold"
++                android:textColor="#FFFFFFFF" />
++
++            <TextView
++                android:id="@+id/batteryState"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="6dp"
++                android:textSize="12sp"
++                android:lineSpacingExtra="2dp"
++                android:textColor="#A6FFFFFF"
++                android:text="@string/setup_unknown" />
++
++            <Button
++                android:id="@+id/batteryButton"
++                android:layout_width="match_parent"
++                android:layout_height="46dp"
++                android:layout_marginTop="12dp"
++                android:background="@drawable/setup_button_bg"
++                android:text="Ne pas limiter la batterie"
++                android:textAllCaps="false"
++                android:textSize="13sp"
++                android:textColor="#FFFFFFFF" />
++        </LinearLayout>
++
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+diff --git a/android/app/src/main/res/layout/lock_item.xml b/android/app/src/main/res/layout/lock_item.xml
+new file mode 100644
+index 0000000..7e1a8d0
+--- /dev/null
++++ b/android/app/src/main/res/layout/lock_item.xml
+@@ -0,0 +1,73 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:layout_marginBottom="8dp"
++    android:orientation="vertical"
++    android:background="@drawable/lock_item_bg"
++    android:paddingStart="16dp"
++    android:paddingEnd="16dp"
++    android:paddingTop="12dp"
++    android:paddingBottom="12dp">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:orientation="horizontal"
++        android:gravity="center_vertical">
++
++        <ImageView
++            android:id="@+id/lockDot"
++            android:layout_width="8dp"
++            android:layout_height="8dp"
++            android:layout_marginEnd="8dp"
++            android:src="@drawable/dot_grey"
++            android:contentDescription="@null" />
++
++        <TextView
++            android:id="@+id/lockSource"
++            android:layout_width="0dp"
++            android:layout_height="wrap_content"
++            android:layout_weight="1"
++            android:textSize="11sp"
++            android:textAllCaps="true"
++            android:letterSpacing="0.04"
++            android:textColor="#B3FFFFFF"
++            android:maxLines="1"
++            android:ellipsize="end"
++            android:text="" />
++
++        <TextView
++            android:id="@+id/lockTime"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="8dp"
++            android:textSize="11sp"
++            android:textColor="#99FFFFFF"
++            android:text="" />
++    </LinearLayout>
++
++    <TextView
++        android:id="@+id/lockSender"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_marginTop="4dp"
++        android:textSize="15sp"
++        android:textStyle="bold"
++        android:textColor="#FFFFFFFF"
++        android:maxLines="1"
++        android:ellipsize="end"
++        android:text="" />
++
++    <TextView
++        android:id="@+id/lockMessage"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_marginTop="2dp"
++        android:textSize="14sp"
++        android:lineSpacingExtra="2dp"
++        android:textColor="#E6FFFFFF"
++        android:maxLines="3"
++        android:ellipsize="end"
++        android:text="" />
++</LinearLayout>
+diff --git a/android/app/src/main/res/raw/centre_tri.wav b/android/app/src/main/res/raw/centre_tri.wav
+new file mode 100644
+index 0000000000000000000000000000000000000000..6786691f54d1859ad11c7ee060ef0df0741ca525
+GIT binary patch
+literal 44144
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/android/app/src/main/res/values/lock_theme.xml b/android/app/src/main/res/values/lock_theme.xml
+new file mode 100644
+index 0000000..4a24b7a
+--- /dev/null
++++ b/android/app/src/main/res/values/lock_theme.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <style name="LockTheme" parent="@android:style/Theme.Material.NoActionBar">
++        <item name="android:windowBackground">@drawable/lock_bg</item>
++        <item name="android:windowFullscreen">true</item>
++        <item name="android:statusBarColor">@android:color/transparent</item>
++        <item name="android:navigationBarColor">@android:color/transparent</item>
++        <item name="android:windowAnimationStyle">@null</item>
++    </style>
++</resources>
