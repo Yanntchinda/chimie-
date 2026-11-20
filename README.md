@@ -63,11 +63,16 @@ fenêtres superposées, exactement ce que fait le centre.
 - L'importance, le son et l'affichage sur l'écran verrouillé se règlent dans
   Android : Paramètres → Applications → Centre de notifications → Notifications.
 
-## Maquette web
+## Interface
 
-`gemini-code-1795117363618.html` contient la maquette interactive d'origine
-(écran verrouillé simulé, îlot dynamique, fils, gestes). Elle sert de référence de
-design et d'aperçu dans un navigateur ; l'APK ne l'embarque pas.
+`gemini-code-1795117363618.html` n'est pas une maquette à part : c'est **l'interface
+de l'application**. La page est copiée dans les assets à chaque compilation et
+affichée en plein écran par `BoardActivity`, avec les notifications réelles du
+téléphone injectées par `CenterBridge`. Ce que vous voyez dans le navigateur est
+donc exactement ce que vous voyez sur l'écran verrouillé, îlot et gestes compris.
+
+Réglages → **Simuler 30 messages sur l'écran verrouillé** ouvre cette page avec
+30 messages de démonstration.
 
 ## Construire soi-même
 
@@ -100,6 +105,8 @@ android/.../StyledNotifier.java            carte du centre dans le volet Android
 android/.../IslandOverlay.java             pastille au-dessus des applications
 android/.../LockScreenActivity.java        écran verrouillé du centre
 android/.../RecentStore.java               derniers messages affichés sur l'écran verrouillé
+android/.../BoardActivity.java             page du centre en plein écran (écran verrouillé)
+android/.../CenterBridge.java              passerelle notifications réelles vers la page
 android/.../HomeActivity.java              écran d'accueil (mode lanceur)
 android/.../ActionReceiver.java            action « Effacer »
 android/.../CenterPrefs.java               option de remplacement
