@@ -8,6 +8,9 @@
     <string name="setup_access_title">Accès aux notifications</string>
     <string name="setup_access_button">Autoriser l\'accès aux notifications</string>
 
+    <string name="setup_appinfo_button">Ouvrir la fiche de l\'application (⋮)</string>
+    <string name="setup_restricted_hint">Android 13 et plus : si l\'accès est refusé avec « paramètre restreint », ouvrir la fiche ci-dessus, toucher les trois points en haut à droite, puis « Autoriser les paramètres restreints ». Ce menu appartient à Android, aucune application ne peut l\'ajouter elle-même.</string>
+
     <string name="setup_post_title">Affichage des notifications</string>
     <string name="setup_post_button">Autoriser l\'affichage</string>
 

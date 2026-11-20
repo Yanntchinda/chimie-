@@ -67,6 +67,27 @@
                 android:textAllCaps="false"
                 android:textSize="13sp"
                 android:textColor="#FFFFFFFF" />
+
+            <Button
+                android:id="@+id/appInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="@string/setup_appinfo_button"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
+
+            <TextView
+                android:id="@+id/restrictedHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/setup_restricted_hint"
+                android:textSize="11sp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#99FFFFFF" />
         </LinearLayout>
 
         <LinearLayout

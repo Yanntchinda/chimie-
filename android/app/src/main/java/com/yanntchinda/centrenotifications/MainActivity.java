@@ -58,6 +58,7 @@ public class MainActivity extends Activity {
         Button homeButton = findViewById(R.id.homeButton);
 
         accessButton.setOnClickListener(view -> openListenerSettings());
+        findViewById(R.id.appInfoButton).setOnClickListener(view -> openAppInfo());
         postButton.setOnClickListener(view -> requestPosting());
         islandButton.setOnClickListener(view -> openOverlaySettings());
         homeButton.setOnClickListener(view -> openHomeSettings());
@@ -252,7 +253,8 @@ public class MainActivity extends Activity {
         String service = connected == 0
                 ? "service jamais connecté"
                 : "service connecté à " + android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(connected));
-        diagnosticState.setText("Messages lus : " + read + " · cartes publiées : " + posted
+        diagnosticState.setText("Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n"
+                + "Messages lus : " + read + " · cartes publiées : " + posted
                 + "\n" + service + "\n" + meaning);
 
         int count = CenterPrefs.receivedCount(this);
@@ -294,6 +296,16 @@ public class MainActivity extends Activity {
             return enabled != null && enabled.contains(getPackageName());
         } catch (Exception err) {
             return false;
+        }
+    }
+
+    /** Fiche de l'application dans les reglages Android : c'est la que se trouve le menu ⋮. */
+    private void openAppInfo() {
+        try {
+            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:" + getPackageName())));
+        } catch (Exception ignored) {
+            // Certains appareils renvoient vers une liste d'applications.
         }
     }
 
