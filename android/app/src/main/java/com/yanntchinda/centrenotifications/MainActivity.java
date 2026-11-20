@@ -52,10 +52,12 @@ public class MainActivity extends Activity {
         Button accessButton = findViewById(R.id.accessButton);
         Button postButton = findViewById(R.id.postButton);
         Button islandButton = findViewById(R.id.islandButton);
+        Button homeButton = findViewById(R.id.homeButton);
 
         accessButton.setOnClickListener(view -> openListenerSettings());
         postButton.setOnClickListener(view -> requestPosting());
         islandButton.setOnClickListener(view -> openOverlaySettings());
+        homeButton.setOnClickListener(view -> openHomeSettings());
 
         Button testButton = findViewById(R.id.testButton);
         testButton.setOnClickListener(view -> {
@@ -217,6 +219,14 @@ public class MainActivity extends Activity {
         }
 
         replaceSwitch.setChecked(CenterPrefs.replaceOriginals(this));
+    }
+
+    private void openHomeSettings() {
+        try {
+            startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));
+        } catch (Exception ignored) {
+            // Certains appareils n'exposent pas cet ecran.
+        }
     }
 
     private void openOverlaySettings() {

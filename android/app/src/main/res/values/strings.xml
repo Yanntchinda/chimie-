@@ -14,6 +14,10 @@
     <string name="setup_island_title">Îlot par-dessus les applications</string>
     <string name="setup_island_button">Autoriser l\'affichage par-dessus</string>
 
+    <string name="setup_home_title">Écran d\'accueil du centre</string>
+    <string name="setup_home_body">Le centre peut remplacer l\'écran d\'accueil Android : même procédé que les thèmes iPhone du Play Store, qui sont des lanceurs. Choisissez « Centre de notifications » dans la liste des applications d\'accueil.</string>
+    <string name="setup_home_button">Choisir l\'application d\'accueil</string>
+
     <string name="setup_diag_title">Diagnostic</string>
     <string name="setup_test_button">Afficher une carte de test</string>
 
