@@ -135,7 +135,7 @@ final class StyledNotifier {
 
         // Écran éteint ou verrouillé : Android allume l'écran et ouvre l'écran verrouillé du centre.
         if (wakeScreen && canFullScreen(context)) {
-            builder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
+            builder.setFullScreenIntent(BoardActivity.launchIntent(context), true);
         }
 
         if (original != null) {
@@ -190,8 +190,8 @@ final class StyledNotifier {
                 .addAction(new Notification.Action.Builder(
                         null, context.getString(R.string.notif_action_clear), clearIntent).build())
                 ;
-        if (LockScreenActivity.deviceIsLockedOrOff(context) && canFullScreen(context)) {
-            testBuilder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
+        if (DeviceState.lockedOrOff(context) && canFullScreen(context)) {
+            testBuilder.setFullScreenIntent(BoardActivity.launchIntent(context), true);
         }
         Notification notification = testBuilder.build();
 

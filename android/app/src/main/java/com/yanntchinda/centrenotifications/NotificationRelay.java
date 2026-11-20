@@ -11,6 +11,10 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.app.RemoteInput;
+import android.content.Intent;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +31,7 @@ public class NotificationRelay extends NotificationListenerService {
     private static final Map<String, String> LAST_TEXT = new HashMap<>();
     private static final int LAST_TEXT_LIMIT = 200;
 
+    private static final Map<String, Notification> ORIGINALS = new HashMap<>();
     private static NotificationRelay instance;
 
     /** Allumage de l'écran : le centre prend la place de l'écran verrouillé. */
@@ -35,8 +40,8 @@ public class NotificationRelay extends NotificationListenerService {
         public void onReceive(Context context, Intent intent) {
             if (intent == null || !Intent.ACTION_SCREEN_ON.equals(intent.getAction())) return;
             if (!CenterPrefs.showOnWake(context)) return;
-            if (!LockScreenActivity.deviceIsLockedOrOff(context)) return;
-            LockScreenActivity.launchWake(context);
+            if (!DeviceState.lockedOrOff(context)) return;
+            BoardActivity.launchWake(context);
         }
     };
     private boolean receiverRegistered = false;
@@ -49,6 +54,7 @@ public class NotificationRelay extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
         rememberInstance();
+        CenterBridge.setContext(getApplicationContext());
         StyledNotifier.ensureChannel(getApplicationContext());
         registerScreenReceiver();
     }
@@ -144,13 +150,25 @@ public class NotificationRelay extends NotificationListenerService {
 
             String key = sbn.getKey();
             if (key == null) return;
+            if (ORIGINALS.size() > 120) ORIGINALS.clear();
+            ORIGINALS.put(key, notification);
             if (message.equals(LAST_TEXT.get(key))) return;
             if (LAST_TEXT.size() > LAST_TEXT_LIMIT) LAST_TEXT.clear();
             LAST_TEXT.put(key, message);
 
             Context app = getApplicationContext();
             CenterPrefs.noteReceived(app);
-            boolean wake = LockScreenActivity.deviceIsLockedOrOff(app);
+
+            JSONObject event = new JSONObject();
+            event.put("key", key);
+            event.put("pkg", sbn.getPackageName());
+            event.put("app", appLabel);
+            event.put("title", sender);
+            event.put("text", message);
+            event.put("at", sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis());
+            event.put("canReply", notification.actions != null);
+            CenterBridge.publish(event);
+            boolean wake = DeviceState.lockedOrOff(app);
             String status = StyledNotifier.post(app, sbn, sender, message, appLabel, wake);
             CenterPrefs.notePosted(app, status);
             if ("ok".equals(status)) {
@@ -178,7 +196,7 @@ public class NotificationRelay extends NotificationListenerService {
     static void present(Context context, RecentStore.Item item, boolean wake) {
         RecentStore.put(item);
         if (wake) {
-            LockScreenActivity.launch(context);
+            BoardActivity.launchLock(context);
         } else {
             IslandOverlay.show(context, item.sender, item.message, item.dotRes, item.open);
         }
@@ -223,6 +241,50 @@ public class NotificationRelay extends NotificationListenerService {
             // Application inconnue : on garde le nom technique.
         }
         return pkg;
+    }
+
+    /** Retire la notification d'origine, demande de la page. */
+    static void cancel(String key) {
+        cancelOriginal(key);
+    }
+
+    /** Répond dans l'application d'origine à partir du texte saisi dans la page. */
+    static String reply(String key, String text) {
+        if (key == null || text == null || text.trim().isEmpty()) return "indisponible";
+        Notification original = ORIGINALS.get(key);
+        if (original == null) return "indisponible";
+
+        Notification.Action action = null;
+        RemoteInput input = null;
+        Notification.Action[] actions = original.actions;
+        if (actions != null) {
+            for (Notification.Action candidate : actions) {
+                RemoteInput[] inputs = candidate.getRemoteInputs();
+                if (inputs == null) continue;
+                for (RemoteInput remote : inputs) {
+                    if (remote.getAllowFreeFormInput()) {
+                        action = candidate;
+                        input = remote;
+                        break;
+                    }
+                }
+                if (action != null) break;
+            }
+        }
+        if (action == null || input == null) return "indisponible";
+
+        Context context = CenterBridge.context();
+        if (context == null) return "echec";
+        try {
+            Intent fillIn = new Intent();
+            Bundle results = new Bundle();
+            results.putCharSequence(input.getResultKey(), text.trim());
+            RemoteInput.addResultsToIntent(new RemoteInput[]{ input }, fillIn, results);
+            action.actionIntent.send(context, 0, fillIn);
+            return "ok";
+        } catch (Exception err) {
+            return "echec";
+        }
     }
 
     /** Retire la notification d'origine, si le service est encore connecté. */

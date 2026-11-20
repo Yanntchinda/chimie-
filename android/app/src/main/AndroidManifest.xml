@@ -49,13 +49,15 @@
             android:name=".ActionReceiver"
             android:exported="false" />
 
+        <!-- Page du centre : même rendu que la maquette, sert d'écran verrouillé -->
         <activity
-            android:name=".LockScreenActivity"
+            android:name=".BoardActivity"
             android:exported="false"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:showWhenLocked="true"
             android:turnScreenOn="true"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:screenOrientation="portrait"
             android:taskAffinity=""
             android:theme="@style/LockTheme" />

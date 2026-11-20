@@ -73,6 +73,10 @@ jobs:
           : > /tmp/verification.txt
           for f in app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk; do
             test -f "$f"
+            if ! unzip -l "$f" | grep -q "assets/index.html"; then
+              echo "La page du centre est absente de $f" >&2
+              exit 1
+            fi
             PERMS=$("$AAPT2" dump permissions "$f" || true)
             if echo "$PERMS" | grep -q "android.permission.INTERNET"; then
               echo "Permission réseau détectée dans $f" >&2
@@ -102,7 +106,7 @@ jobs:
             echo "== $(basename "$f") ==" >> /tmp/verification.txt
             ls -l "$f" | awk '{print "taille : " $5 " octets"}' >> /tmp/verification.txt
             sha256sum "$f" | awk '{print "sha256 : " $1}' >> /tmp/verification.txt
-            unzip -l "$f" | grep -E "classes.dex|resources.arsc" | awk '{print $1 " octets  " $4}' >> /tmp/verification.txt
+            unzip -l "$f" | grep -E "classes.dex|resources.arsc|assets/index.html" | awk '{print $1 " octets  " $4}' >> /tmp/verification.txt
             echo "permissions déclarées :" >> /tmp/verification.txt
             if echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | grep -q .; then
               echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | sed 's/^/  - /' >> /tmp/verification.txt

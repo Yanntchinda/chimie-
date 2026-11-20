@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
                 String status = StyledNotifier.postTest(app);
                 CenterPrefs.notePosted(app, status);
                 if ("ok".equals(status)) {
-                    NotificationRelay.present(app, testItem(), LockScreenActivity.deviceIsLockedOrOff(app));
+                    NotificationRelay.present(app, testItem(), DeviceState.lockedOrOff(app));
                 }
             }, 8000);
         });
@@ -149,7 +149,7 @@ public class MainActivity extends Activity {
         }
 
         Toast.makeText(this, "30 messages simulés : écran verrouillé ouvert.", Toast.LENGTH_SHORT).show();
-        LockScreenActivity.launchWake(this);
+        BoardActivity.launchDemo(this, 30);
     }
 
     private RecentStore.Item testItem() {
