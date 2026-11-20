@@ -9,19 +9,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
-        android:paddingTop="56dp"
-        android:paddingBottom="28dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="52dp"
+        android:paddingBottom="24dp">
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="6dp"
+            android:src="@drawable/ic_lock_small"
+            android:alpha="0.92"
+            android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/lockDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:textSize="17sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#D9FFFFFF"
+            android:letterSpacing="0.01"
+            android:textColor="#F0FFFFFF"
             android:text="" />
 
         <TextClock
@@ -30,8 +40,14 @@
             android:gravity="center_horizontal"
             android:format12Hour="h:mm"
             android:format24Hour="HH:mm"
-            android:textSize="84sp"
-            android:fontFamily="sans-serif-light"
+            android:textSize="72sp"
+            android:fontFamily="sans-serif-black"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.03"
+            android:shadowColor="#33000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="9"
             android:textColor="#FFFFFFFF" />
 
         <ScrollView
@@ -39,8 +55,10 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="18dp"
             android:overScrollMode="never"
+            android:clipToPadding="false"
+            android:paddingBottom="6dp"
             android:scrollbars="none">
 
             <LinearLayout

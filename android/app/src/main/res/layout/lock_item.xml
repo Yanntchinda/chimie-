@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="10dp"
     android:orientation="vertical"
     android:background="@drawable/lock_item_bg"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
     android:paddingTop="12dp"
-    android:paddingBottom="12dp">
+    android:paddingBottom="12dp"
+    android:elevation="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,9 +19,9 @@
 
         <ImageView
             android:id="@+id/lockDot"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginEnd="7dp"
             android:src="@drawable/dot_grey"
             android:contentDescription="@null" />
 
@@ -30,7 +31,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="11sp"
-            android:textColor="#B3FFFFFF"
+            android:textStyle="bold"
+            android:textColor="#C7FFFFFF"
             android:maxLines="1"
             android:ellipsize="end"
             android:text="" />
@@ -41,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textSize="11sp"
-            android:textColor="#99FFFFFF"
+            android:textColor="#8FFFFFFF"
             android:text="" />
     </LinearLayout>
 
@@ -49,9 +51,10 @@
         android:id="@+id/lockSender"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="15sp"
+        android:layout_marginTop="6dp"
+        android:textSize="14sp"
         android:textStyle="bold"
+        android:lineSpacingExtra="1dp"
         android:textColor="#FFFFFFFF"
         android:maxLines="1"
         android:ellipsize="end"
@@ -62,10 +65,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:lineSpacingExtra="2dp"
-        android:textColor="#E6FFFFFF"
-        android:maxLines="3"
+        android:textColor="#D6FFFFFF"
+        android:maxLines="2"
         android:ellipsize="end"
         android:text="" />
 </LinearLayout>
