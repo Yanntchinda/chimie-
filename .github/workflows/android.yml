@@ -38,10 +38,19 @@ jobs:
         working-directory: android
         run: |
           set +e
-          gradle assembleDebug assembleRelease --no-daemon --stacktrace > /tmp/build.log 2>&1
-          code=$?
+          code=1
+          for attempt in 1 2 3; do
+            echo "== Tentative $attempt sur 3"
+            gradle assembleDebug assembleRelease --no-daemon --stacktrace \
+              -Dorg.gradle.internal.http.connectionTimeout=120000 \
+              -Dorg.gradle.internal.http.socketTimeout=120000 > /tmp/build.log 2>&1
+            code=$?
+            tail -40 /tmp/build.log
+            if [ $code -eq 0 ]; then break; fi
+            echo "Échec réseau ou de résolution, nouvelle tentative dans 30 s."
+            sleep 30
+          done
           echo "status=$code" >> "$GITHUB_ENV"
-          tail -60 /tmp/build.log
 
       - name: Publier le detail d'une compilation en echec
         if: env.status != '0'
