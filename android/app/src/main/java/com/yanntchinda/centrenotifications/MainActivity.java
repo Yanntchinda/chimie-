@@ -1,9 +1,12 @@
 package com.yanntchinda.centrenotifications;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.InstallSourceInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.net.Uri;
@@ -60,6 +63,7 @@ public class MainActivity extends Activity {
         accessButton.setOnClickListener(view -> openListenerDetail());
         findViewById(R.id.appInfoButton).setOnClickListener(view -> openAppInfo());
         findViewById(R.id.listenerFixButton).setOnClickListener(view -> reactivateListener());
+        findViewById(R.id.copyDiagnosticButton).setOnClickListener(view -> copyDiagnostic());
         postButton.setOnClickListener(view -> requestPosting());
         islandButton.setOnClickListener(view -> openOverlaySettings());
         homeButton.setOnClickListener(view -> openHomeSettings());
@@ -256,7 +260,9 @@ public class MainActivity extends Activity {
                 : "service connecté à " + android.text.format.DateFormat.getTimeFormat(this).format(new java.util.Date(connected));
         diagnosticState.setText("Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n"
                 + "Messages lus : " + read + " · cartes publiées : " + posted
-                + "\n" + service + " · " + listenerStateText() + "\n" + meaning);
+                + "\n" + service + " · " + listenerStateText()
+                + "\nAccès : " + (access ? "accordé" : "refusé") + " · " + installSourceText()
+                + "\n" + meaning);
 
         int count = CenterPrefs.receivedCount(this);
         long last = CenterPrefs.receivedLast(this);
@@ -340,6 +346,52 @@ public class MainActivity extends Activity {
             Toast.makeText(this, "Réactivation impossible sur ce téléphone.", Toast.LENGTH_LONG).show();
         }
         refresh();
+    }
+
+    /**
+     * Qui a installe l'application. C'est cette information qui decide si Android
+     * applique le « parametre restreint » a l'acces aux notifications.
+     */
+    private String installSourceText() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            String modern = installSourceModern();
+            if (modern != null) return modern;
+        }
+        try {
+            String legacy = getPackageManager().getInstallerPackageName(getPackageName());
+            return legacy == null || legacy.length() == 0
+                    ? "installée hors magasin (aucun installateur)"
+                    : "installée par " + legacy;
+        } catch (Exception err) {
+            return "source d'installation inconnue";
+        }
+    }
+
+    /** Methode separee : InstallSourceInfo n'existe qu'a partir d'Android 11. */
+    @android.annotation.TargetApi(30)
+    private String installSourceModern() {
+        try {
+            InstallSourceInfo info = getPackageManager().getInstallSourceInfo(getPackageName());
+            String installer = info.getInstallingPackageName();
+            String initiating = info.getInitiatingPackageName();
+            if (installer != null && installer.length() > 0) return "installée par " + installer;
+            if (initiating != null && initiating.length() > 0) return "installée depuis " + initiating;
+            return "installée hors magasin (aucun installateur)";
+        } catch (Exception err) {
+            return null;
+        }
+    }
+
+    /** Copie le diagnostic : plus besoin de le recopier a la main. */
+    private void copyDiagnostic() {
+        try {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (clipboard == null) return;
+            clipboard.setPrimaryClip(ClipData.newPlainText("Diagnostic", diagnosticState.getText()));
+            Toast.makeText(this, "Diagnostic copié.", Toast.LENGTH_SHORT).show();
+        } catch (Exception err) {
+            Toast.makeText(this, "Copie impossible sur ce téléphone.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /** Etat du service d'ecoute tel que le systeme le voit. */

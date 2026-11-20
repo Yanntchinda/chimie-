@@ -4,13 +4,14 @@
 
     <string name="setup_intro">Les notifications de votre téléphone s\'affichent avec le style du centre. Aucun écran à ouvrir : tout se passe dans vos notifications.</string>
     <string name="setup_fix_service_button">Réactiver le service d\'écoute</string>
+    <string name="setup_copy_diagnostic">Copier le diagnostic</string>
     <string name="setup_unknown">État inconnu.</string>
 
     <string name="setup_access_title">Accès aux notifications</string>
     <string name="setup_access_button">Autoriser l\'accès aux notifications</string>
 
     <string name="setup_appinfo_button">Ouvrir la fiche de l\'application (⋮)</string>
-    <string name="setup_restricted_hint">Android 13 et plus : si l\'accès est refusé avec « paramètre restreint », toucher « Ouvrir la fiche de l\'application », puis les trois points en haut à droite de la fiche, puis « Autoriser les paramètres restreints ». Ce menu appartient à Android : aucune application ne peut l\'ajouter elle-même. Si la fiche ne montre aucun trois points, cette version d\'Android ne restreint pas ce réglage : l\'étape est inutile, passer directement par « Autoriser l\'accès aux notifications ».</string>
+    <string name="setup_restricted_hint">Android 13 et plus, application installée hors magasin : 1) toucher « Autoriser l\'accès aux notifications » et essayer d\'activer l\'interrupteur, même s\'il paraît grisé ; 2) revenir ici, toucher « Ouvrir la fiche de l\'application » ; 3) les trois points en haut à droite de cette fiche proposent alors « Autoriser les paramètres restreints ». Les trois points n\'apparaissent que tant que la restriction est à lever : une fois accordée, l\'entrée disparaît, c\'est normal. Autre chemin si la fiche n\'a pas de trois points : rechercher « paramètres restreints » dans la recherche de l\'application Paramètres du téléphone.</string>
 
     <string name="setup_post_title">Affichage des notifications</string>
     <string name="setup_post_button">Autoriser l\'affichage</string>

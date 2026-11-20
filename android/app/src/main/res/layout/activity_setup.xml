@@ -374,6 +374,17 @@
                 android:text="@string/setup_unknown" />
 
             <Button
+                android:id="@+id/copyDiagnosticButton"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="@string/setup_copy_diagnostic"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="#FFFFFFFF" />
+
+            <Button
                 android:id="@+id/testButton"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
