@@ -8,6 +8,14 @@ Scannez ce code avec l'appareil photo du téléphone : le téléchargement déma
 directement sur le fichier. Le lien écrit, si besoin :
 `https://github.com/Yanntchinda/chimie-/releases/latest/download/app-release.apk`
 
+## Attention : trois fichiers différents
+
+| Ce que vous voyez | Ce que c'est | À faire |
+|---|---|---|
+| `app-release.apk` (page des versions) | l'application | **c'est celui-ci qu'il faut installer** |
+| `centre-notifications-apk.zip` (onglet Actions) | l'archive produite par la compilation, qui contient les deux APK | la décompresser, puis installer `app-release.apk` de l'intérieur |
+| le ZIP du code source (bouton vert **Code** → Download ZIP) | le projet, pas l'application | ne pas installer : Android le refuse |
+
 ## Android : installer
 
 1. **Télécharger** en scannant le code ci-dessus, ou depuis la page des versions.
