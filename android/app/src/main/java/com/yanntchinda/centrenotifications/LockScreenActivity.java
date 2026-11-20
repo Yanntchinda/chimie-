@@ -19,6 +19,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Date;
@@ -41,6 +42,8 @@ public class LockScreenActivity extends Activity {
 
     private LinearLayout list;
     private TextView empty;
+    private ScrollView scroll;
+    private int lastCount = 0;
 
     /** Allume l'écran et affiche la pile de messages. Peut être appelé depuis le service. */
     static boolean launch(Context context) {
@@ -102,6 +105,7 @@ public class LockScreenActivity extends Activity {
 
         list = findViewById(R.id.lockList);
         empty = findViewById(R.id.lockEmpty);
+        scroll = findViewById(R.id.lockScroll);
         findViewById(R.id.lockRoot).setOnClickListener(view -> finish());
 
         if (getIntent() != null && getIntent().getBooleanExtra(EXTRA_WAKE, false)) {
@@ -184,11 +188,19 @@ public class LockScreenActivity extends Activity {
         TextView clockHint = findViewById(R.id.lockDate);
         clockHint.setText(DateFormat.format("EEEE d MMMM", new Date()));
 
+        final boolean wasAtBottom = scroll == null
+                || scroll.getChildCount() == 0
+                || scroll.getScrollY() + scroll.getHeight() >= scroll.getChildAt(0).getHeight() - 12;
+
         list.removeAllViews();
         List<RecentStore.Item> items = RecentStore.snapshot();
         empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+
+        // Du plus ancien au plus récent : les nouveaux messages s'empilent en dessous,
+        // comme dans la maquette, et on remonte la liste pour relire les précédents.
         LayoutInflater inflater = LayoutInflater.from(this);
-        for (RecentStore.Item item : items) {
+        for (int index = items.size() - 1; index >= 0; index--) {
+            RecentStore.Item item = items.get(index);
             View card = inflater.inflate(R.layout.lock_item, list, false);
             ((TextView) card.findViewById(R.id.lockSender)).setText(item.sender);
             ((TextView) card.findViewById(R.id.lockMessage)).setText(item.message);
@@ -198,7 +210,22 @@ public class LockScreenActivity extends Activity {
             ((ImageView) card.findViewById(R.id.lockDot)).setImageResource(item.dotRes);
             attach(card, item);
             list.addView(card);
+            if (index == 0 && lastCount > 0) {
+                // Dernier arrivé : il apparaît en fondu depuis le bas.
+                card.setAlpha(0f);
+                card.setTranslationY(24f);
+                card.animate().alpha(1f).translationY(0f).setDuration(220).start();
+            }
         }
+
+        final int count = items.size();
+        final boolean firstShow = lastCount == 0;
+        if (scroll != null && (firstShow || wasAtBottom)) {
+            scroll.post(() -> {
+                if (scroll != null) scroll.fullScroll(View.FOCUS_DOWN);
+            });
+        }
+        lastCount = count;
     }
 
     /** Toucher ouvre le message ; glisser vers la gauche ou la droite l'efface. */

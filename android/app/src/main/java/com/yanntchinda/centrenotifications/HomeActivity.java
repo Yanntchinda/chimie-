@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Date;
@@ -35,6 +36,8 @@ public class HomeActivity extends Activity {
 
     private LinearLayout list;
     private TextView empty;
+    private ScrollView scroll;
+    private int lastCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,7 @@ public class HomeActivity extends Activity {
         setContentView(R.layout.activity_home);
         list = findViewById(R.id.homeList);
         empty = findViewById(R.id.homeEmpty);
+        scroll = findViewById(R.id.homeScroll);
         findViewById(R.id.homeSettings).setOnClickListener(view ->
                 startActivity(new Intent(this, MainActivity.class)));
         render();
@@ -65,12 +69,18 @@ public class HomeActivity extends Activity {
         TextView date = findViewById(R.id.homeDate);
         date.setText(DateFormat.format("EEEE d MMMM", new Date()));
 
+        final boolean wasAtBottom = scroll == null
+                || scroll.getChildCount() == 0
+                || scroll.getScrollY() + scroll.getHeight() >= scroll.getChildAt(0).getHeight() - 12;
+
         list.removeAllViews();
         List<RecentStore.Item> items = RecentStore.snapshot();
         empty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
 
+        // Du plus ancien au plus récent : les nouveaux arrivent en dessous.
         LayoutInflater inflater = LayoutInflater.from(this);
-        for (RecentStore.Item item : items) {
+        for (int index = items.size() - 1; index >= 0; index--) {
+            RecentStore.Item item = items.get(index);
             View card = inflater.inflate(R.layout.lock_item, list, false);
             ((TextView) card.findViewById(R.id.lockSender)).setText(item.sender);
             ((TextView) card.findViewById(R.id.lockMessage)).setText(item.message);
@@ -81,6 +91,15 @@ public class HomeActivity extends Activity {
             attach(card, item);
             list.addView(card);
         }
+
+        final int count = items.size();
+        final boolean firstShow = lastCount == 0 || count > lastCount;
+        if (scroll != null && (firstShow || wasAtBottom)) {
+            scroll.post(() -> {
+                if (scroll != null) scroll.fullScroll(View.FOCUS_DOWN);
+            });
+        }
+        lastCount = count;
     }
 
     /** Toucher ouvre le message ; glisser vers la gauche ou la droite l'efface. */
