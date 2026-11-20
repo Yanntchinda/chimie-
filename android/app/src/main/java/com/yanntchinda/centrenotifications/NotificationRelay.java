@@ -1,6 +1,8 @@
 package com.yanntchinda.centrenotifications;
 
 import android.app.Notification;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -57,6 +59,16 @@ public class NotificationRelay extends NotificationListenerService {
     public void onListenerDisconnected() {
         instance = null;
         super.onListenerDisconnected();
+        // Android ou le constructeur a coupé l'écoute : on demande tout de suite à être reconnecté.
+        try {
+            requestRebind(new ComponentName(this, NotificationRelay.class));
+        } catch (Exception ignored) {
+            // Accès retiré par l'utilisateur : rien à reconnecter.
+        }
+    }
+
+    static boolean isConnected() {
+        return instance != null;
     }
 
     @Override
@@ -73,6 +85,7 @@ public class NotificationRelay extends NotificationListenerService {
             if (getPackageName().equals(sbn.getPackageName())) return;
             if ((notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0) return;
             if ((notification.flags & Notification.FLAG_ONGOING_EVENT) != 0) return;
+            if (isUntouchable(sbn.getPackageName(), notification)) return;
 
             Bundle extras = notification.extras;
             if (extras == null) return;
@@ -91,12 +104,15 @@ public class NotificationRelay extends NotificationListenerService {
             if (LAST_TEXT.size() > LAST_TEXT_LIMIT) LAST_TEXT.clear();
             LAST_TEXT.put(key, message);
 
-            CenterPrefs.noteReceived(getApplicationContext());
-            String status = StyledNotifier.post(getApplicationContext(), sbn, sender, message, appLabel);
-            CenterPrefs.notePosted(getApplicationContext(), status);
+            Context app = getApplicationContext();
+            CenterPrefs.noteReceived(app);
+            boolean wake = LockScreenActivity.deviceIsLockedOrOff(app);
+            String status = StyledNotifier.post(app, sbn, sender, message, appLabel, wake);
+            CenterPrefs.notePosted(app, status);
             if ("ok".equals(status)) {
-                IslandOverlay.show(getApplicationContext(), sender, message,
-                        StyledNotifier.dotFor(sbn.getPackageName()));
+                long when = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
+                present(app, new RecentStore.Item(key, sbn.getPackageName(), appLabel, sender, message, when,
+                        StyledNotifier.dotFor(sbn.getPackageName()), notification.contentIntent), wake);
             }
             if ("ok".equals(status) && CenterPrefs.replaceOriginals(this)) {
                 // Une seule carte reste dans les notifications : celle du centre.
@@ -108,6 +124,43 @@ public class NotificationRelay extends NotificationListenerService {
             }
         } catch (Exception ignored) {
             // Une notification mal formée ne doit jamais interrompre l'écoute.
+        }
+    }
+
+    /**
+     * Écran verrouillé ou éteint : l'écran verrouillé du centre s'allume et se superpose.
+     * Écran allumé et déverrouillé : l'îlot descend du haut de l'écran.
+     */
+    static void present(Context context, RecentStore.Item item, boolean wake) {
+        RecentStore.put(item);
+        if (wake) {
+            LockScreenActivity.launch(context);
+        } else {
+            IslandOverlay.show(context, item.sender, item.message, item.dotRes, item.open);
+        }
+    }
+
+    /**
+     * Notifications qu'on ne doit jamais retirer ni réécrire : un appel entrant perdrait ses boutons
+     * Répondre/Refuser, une alarme ne sonnerait plus, un téléchargement ou un trajet GPS disparaîtrait.
+     */
+    private static boolean isUntouchable(String pkg, Notification notification) {
+        if ("android".equals(pkg) || "com.android.systemui".equals(pkg)) return true;
+        String category = notification.category;
+        if (category == null) return false;
+        switch (category) {
+            case Notification.CATEGORY_CALL:
+            case Notification.CATEGORY_ALARM:
+            case Notification.CATEGORY_NAVIGATION:
+            case Notification.CATEGORY_PROGRESS:
+            case Notification.CATEGORY_SERVICE:
+            case Notification.CATEGORY_STATUS:
+            case Notification.CATEGORY_SYSTEM:
+            case Notification.CATEGORY_TRANSPORT:
+            case Notification.CATEGORY_STOPWATCH:
+                return true;
+            default:
+                return false;
         }
     }
 

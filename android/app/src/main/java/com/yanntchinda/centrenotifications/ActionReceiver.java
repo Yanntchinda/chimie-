@@ -16,6 +16,7 @@ public class ActionReceiver extends BroadcastReceiver {
         if (intent == null || !ACTION_CLEAR.equals(intent.getAction())) return;
         String key = intent.getStringExtra(EXTRA_KEY);
         if (key == null) return;
+        RecentStore.remove(key);
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) {

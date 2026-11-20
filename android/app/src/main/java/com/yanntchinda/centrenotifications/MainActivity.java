@@ -2,11 +2,15 @@ package com.yanntchinda.centrenotifications;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.Switch;
@@ -28,6 +32,8 @@ public class MainActivity extends Activity {
     private TextView islandState;
     private TextView receiveState;
     private TextView diagnosticState;
+    private TextView lockState;
+    private TextView batteryState;
     private Switch replaceSwitch;
 
     @Override
@@ -40,6 +46,8 @@ public class MainActivity extends Activity {
         islandState = findViewById(R.id.islandState);
         receiveState = findViewById(R.id.receiveState);
         diagnosticState = findViewById(R.id.diagnosticState);
+        lockState = findViewById(R.id.lockState);
+        batteryState = findViewById(R.id.batteryState);
         replaceSwitch = findViewById(R.id.replaceSwitch);
         Button accessButton = findViewById(R.id.accessButton);
         Button postButton = findViewById(R.id.postButton);
@@ -54,10 +62,27 @@ public class MainActivity extends Activity {
             String status = StyledNotifier.postTest(this);
             CenterPrefs.notePosted(this, status);
             if ("ok".equals(status)) {
-                IslandOverlay.show(this, "Carte de test", "Le centre affiche correctement.", R.drawable.dot_blue);
+                NotificationRelay.present(getApplicationContext(), testItem(), false);
             }
             refresh();
         });
+
+        findViewById(R.id.lockButton).setOnClickListener(view -> openFullScreenSettings());
+        findViewById(R.id.lockTestButton).setOnClickListener(view -> {
+            // Laisse le temps d'éteindre l'écran, puis simule un message écran éteint.
+            android.widget.Toast.makeText(this,
+                    "Éteignez l'écran maintenant : le test arrive dans 8 secondes.",
+                    android.widget.Toast.LENGTH_LONG).show();
+            final android.content.Context app = getApplicationContext();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                String status = StyledNotifier.postTest(app);
+                CenterPrefs.notePosted(app, status);
+                if ("ok".equals(status)) {
+                    NotificationRelay.present(app, testItem(), LockScreenActivity.deviceIsLockedOrOff(app));
+                }
+            }, 8000);
+        });
+        findViewById(R.id.batteryButton).setOnClickListener(view -> openBatterySettings());
         replaceSwitch.setOnCheckedChangeListener((button, checked) ->
                 CenterPrefs.setReplaceOriginals(this, checked));
 
@@ -72,7 +97,63 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Accès accordé mais service non connecté (arrêté par le téléphone) : on force la reconnexion.
+        if (isAccessGranted() && !NotificationRelay.isConnected()) rebindListener();
         refresh();
+    }
+
+    private RecentStore.Item testItem() {
+        return new RecentStore.Item("centre-test", getPackageName(), "Centre de notifications",
+                "Carte de test", "Le centre affiche correctement.", System.currentTimeMillis(),
+                R.drawable.dot_blue, null);
+    }
+
+    /** Coupe puis rétablit le service d'écoute : méthode connue pour relancer un service que le téléphone a arrêté. */
+    private void rebindListener() {
+        try {
+            ComponentName name = new ComponentName(this, NotificationRelay.class);
+            android.content.pm.PackageManager pm = getPackageManager();
+            pm.setComponentEnabledSetting(name,
+                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    android.content.pm.PackageManager.DONT_KILL_APP);
+            pm.setComponentEnabledSetting(name,
+                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    android.content.pm.PackageManager.DONT_KILL_APP);
+        } catch (Exception ignored) {
+            // Le téléphone refuse : l'utilisateur peut réactiver l'accès à la main.
+        }
+    }
+
+    private boolean batteryUnrestricted() {
+        PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
+        return power != null && power.isIgnoringBatteryOptimizations(getPackageName());
+    }
+
+    private void openBatterySettings() {
+        try {
+            startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:" + getPackageName())));
+        } catch (Exception err) {
+            try {
+                startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            } catch (Exception ignored) {
+                // Rien à ouvrir sur cet appareil.
+            }
+        }
+    }
+
+    private void openFullScreenSettings() {
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startActivity(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                        Uri.parse("package:" + getPackageName())));
+            } else {
+                startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName()));
+            }
+        } catch (Exception ignored) {
+            // Rien à ouvrir sur cet appareil.
+        }
     }
 
     @Override
@@ -96,6 +177,14 @@ public class MainActivity extends Activity {
         islandState.setText(island
                 ? "Accordé. Une pastille descend du haut de l'écran à chaque message, par-dessus l'application en cours."
                 : "Non accordé. Sans cet accès, les cartes restent dans les notifications, sans îlot par-dessus les applications.");
+
+        boolean fullScreen = StyledNotifier.canFullScreen(this);
+        lockState.setText(fullScreen
+                ? "Accordé. Écran éteint ou verrouillé, le centre allume l'écran et affiche les messages par-dessus le verrouillage."
+                : "Non accordé. Sans cet accès, l'écran ne s'allume pas à l'arrivée d'un message et l'écran verrouillé du centre ne s'affiche pas.");
+        batteryState.setText(batteryUnrestricted()
+                ? "Accordé. Le téléphone ne coupe plus l'écoute en arrière-plan."
+                : "Non accordé. Le téléphone peut arrêter l'écoute écran éteint : les messages n'arrivent plus au centre.");
 
         int read = CenterPrefs.receivedCount(this);
         int posted = CenterPrefs.postedCount(this);

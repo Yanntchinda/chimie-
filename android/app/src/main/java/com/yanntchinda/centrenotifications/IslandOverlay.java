@@ -1,5 +1,6 @@
 package com.yanntchinda.centrenotifications;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Handler;
@@ -42,7 +43,7 @@ final class IslandOverlay {
         }
     }
 
-    static void show(Context context, String sender, String message, int dotRes) {
+    static void show(Context context, String sender, String message, int dotRes, PendingIntent open) {
         if (context == null) return;
         if (!allowed(context)) return;
         if (Looper.myLooper() != Looper.getMainLooper()) return;
@@ -65,13 +66,21 @@ final class IslandOverlay {
                         PixelFormat.TRANSLUCENT);
                 params.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
                 params.y = dp(context, 44);
-                pill.setOnClickListener(view -> hide());
                 windowManager.addView(pill, params);
             }
 
             senderView.setText(sender);
             messageView.setText(message);
             dotView.setImageResource(dotRes);
+            // Toucher l'îlot ouvre la conversation d'origine, comme sur iPhone.
+            pill.setOnClickListener(view -> {
+                hide();
+                try {
+                    if (open != null) open.send();
+                } catch (PendingIntent.CanceledException ignored) {
+                    // L'application d'origine a retiré son action.
+                }
+            });
 
             pill.animate().cancel();
             pill.setScaleX(0.92f);

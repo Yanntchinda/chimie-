@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lockRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/lock_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="56dp"
+        android:paddingBottom="28dp">
+
+        <TextView
+            android:id="@+id/lockDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#D9FFFFFF"
+            android:text="" />
+
+        <TextClock
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:format12Hour="h:mm"
+            android:format24Hour="HH:mm"
+            android:textSize="84sp"
+            android:fontFamily="sans-serif-light"
+            android:textColor="#FFFFFFFF" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="24dp"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/lockList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/lockEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Aucune notification"
+            android:textSize="13sp"
+            android:textColor="#99FFFFFF"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

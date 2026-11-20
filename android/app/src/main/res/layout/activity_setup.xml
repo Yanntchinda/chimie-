@@ -156,6 +156,93 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Écran verrouillé et écran éteint"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF" />
+
+            <TextView
+                android:id="@+id/lockState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="12sp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#A6FFFFFF"
+                android:text="@string/setup_unknown" />
+
+            <Button
+                android:id="@+id/lockButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="Autoriser l'affichage plein écran"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
+
+            <Button
+                android:id="@+id/lockTestButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="Tester l'écran verrouillé (écran éteint)"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            android:background="@drawable/setup_block_bg"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Écoute en arrière-plan"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF" />
+
+            <TextView
+                android:id="@+id/batteryState"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="12sp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#A6FFFFFF"
+                android:text="@string/setup_unknown" />
+
+            <Button
+                android:id="@+id/batteryButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="Ne pas limiter la batterie"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical"
+            android:background="@drawable/setup_block_bg"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="@string/setup_replace_title"
                 android:textSize="14sp"
                 android:textStyle="bold"

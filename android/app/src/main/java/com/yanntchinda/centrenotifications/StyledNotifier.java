@@ -5,8 +5,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.text.format.DateFormat;
@@ -20,7 +23,13 @@ import java.util.Date;
  */
 final class StyledNotifier {
 
-    static final String CHANNEL_ID = "centre-messages";
+    /**
+     * Android fige le son et la vibration d'un canal à sa création : l'ancien canal
+     * « centre-messages » était muet. On en crée un nouveau, avec son et vibration.
+     */
+    static final String CHANNEL_ID = "centre-messages-v2";
+    private static final String LEGACY_CHANNEL_ID = "centre-messages";
+    private static final long[] VIBRATION = {0, 40, 70, 40, 70, 90};
 
     private StyledNotifier() {
     }
@@ -29,6 +38,9 @@ final class StyledNotifier {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager == null) return;
+        if (manager.getNotificationChannel(LEGACY_CHANNEL_ID) != null) {
+            manager.deleteNotificationChannel(LEGACY_CHANNEL_ID);
+        }
         if (manager.getNotificationChannel(CHANNEL_ID) != null) return;
 
         NotificationChannel channel = new NotificationChannel(
@@ -36,11 +48,27 @@ final class StyledNotifier {
                 context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH);
         channel.setDescription(context.getString(R.string.notif_channel_description));
-        channel.setSound(null, null);
-        channel.enableVibration(false);
+        Uri sound = new Uri.Builder()
+                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                .authority(context.getPackageName())
+                .appendPath(String.valueOf(R.raw.centre_tri))
+                .build();
+        channel.setSound(sound, new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build());
+        channel.enableVibration(true);
+        channel.setVibrationPattern(VIBRATION);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         channel.setShowBadge(true);
         manager.createNotificationChannel(channel);
+    }
+
+    /** Vrai si Android autorise l'affichage plein écran sur l'écran verrouillé (Android 14 : réglage à part). */
+    static boolean canFullScreen(Context context) {
+        if (Build.VERSION.SDK_INT < 34) return true;
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        return manager != null && manager.canUseFullScreenIntent();
     }
 
     static boolean canPost(Context context) {
@@ -53,7 +81,8 @@ final class StyledNotifier {
      * Affiche la carte du centre pour une notification d'origine.
      * Renvoie false si rien n'a pu être affiché : l'originale ne doit alors pas être retirée.
      */
-    static String post(Context context, StatusBarNotification sbn, String sender, String message, String appLabel) {
+    static String post(Context context, StatusBarNotification sbn, String sender, String message,
+                       String appLabel, boolean wakeScreen) {
         if (sbn == null || message == null || message.isEmpty()) return "vide";
         if (!canPost(context)) return "affichage-refuse";
 
@@ -95,13 +124,19 @@ final class StyledNotifier {
                 .setCustomContentView(card)
                 .setCustomBigContentView(card)
                 .setAutoCancel(true)
-                .setOnlyAlertOnce(true)
+                // Faux : chaque nouveau message d'une même conversation doit sonner et s'afficher.
+                .setOnlyAlertOnce(false)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setColor(0xFF1B1E2B)
                 .addAction(new Notification.Action.Builder(
                         null, context.getString(R.string.notif_action_clear), clearIntent).build());
 
         if (appLabel != null && !appLabel.isEmpty()) builder.setSubText(appLabel);
+
+        // Écran éteint ou verrouillé : Android allume l'écran et ouvre l'écran verrouillé du centre.
+        if (wakeScreen && canFullScreen(context)) {
+            builder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
+        }
 
         if (original != null) {
             if (original.category != null) builder.setCategory(original.category);
@@ -141,7 +176,7 @@ final class StyledNotifier {
                 context, "centre-test".hashCode(), clear,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        Notification notification = new Notification.Builder(context, CHANNEL_ID)
+        Notification.Builder testBuilder = new Notification.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notif_small)
                 .setWhen(now)
                 .setShowWhen(true)
@@ -154,7 +189,11 @@ final class StyledNotifier {
                 .setColor(0xFF1B1E2B)
                 .addAction(new Notification.Action.Builder(
                         null, context.getString(R.string.notif_action_clear), clearIntent).build())
-                .build();
+                ;
+        if (LockScreenActivity.deviceIsLockedOrOff(context) && canFullScreen(context)) {
+            testBuilder.setFullScreenIntent(LockScreenActivity.launchIntent(context), true);
+        }
+        Notification notification = testBuilder.build();
 
         try {
             manager.notify("centre-test", 1, notification);
