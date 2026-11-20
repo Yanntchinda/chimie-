@@ -18,6 +18,10 @@
     <string name="setup_home_body">Le centre peut remplacer l\'écran d\'accueil Android : même procédé que les thèmes iPhone du Play Store, qui sont des lanceurs. Choisissez « Centre de notifications » dans la liste des applications d\'accueil.</string>
     <string name="setup_home_button">Choisir l\'application d\'accueil</string>
 
+    <string name="setup_wake_title">Allumage de l\'écran</string>
+    <string name="setup_wake_body">Écran éteint puis rallumé : le centre s\'affiche à la place de l\'écran verrouillé, avec la pile des messages, et reste jusqu\'au déverrouillage.</string>
+    <string name="setup_wake_switch">Afficher le centre à l\'allumage de l\'écran</string>
+
     <string name="setup_diag_title">Diagnostic</string>
     <string name="setup_test_button">Afficher une carte de test</string>
 

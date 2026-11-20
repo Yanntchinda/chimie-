@@ -2,6 +2,8 @@ package com.yanntchinda.centrenotifications;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -32,6 +34,7 @@ import java.util.List;
 public class LockScreenActivity extends Activity {
 
     private static final long VISIBLE_MS = 9000;
+    private static final String EXTRA_WAKE = "wake";
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable close = this::finish;
@@ -41,11 +44,21 @@ public class LockScreenActivity extends Activity {
 
     /** Allume l'écran et affiche la pile de messages. Peut être appelé depuis le service. */
     static boolean launch(Context context) {
+        return start(context, false);
+    }
+
+    /** Affiché à l'allumage de l'écran : reste en place jusqu'au déverrouillage. */
+    static boolean launchWake(Context context) {
+        return start(context, true);
+    }
+
+    private static boolean start(Context context, boolean wake) {
         try {
             Intent intent = new Intent(context, LockScreenActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_SINGLE_TOP
-                            | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                            | Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    .putExtra(EXTRA_WAKE, wake);
             context.startActivity(intent);
             return true;
         } catch (Exception err) {
@@ -53,6 +66,16 @@ public class LockScreenActivity extends Activity {
             return false;
         }
     }
+
+    /** Le téléphone est déverrouillé : l'écran du centre n'a plus de raison de rester. */
+    private final BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    };
+
+    private boolean waitingForUnlock = false;
 
     static PendingIntent launchIntent(Context context) {
         Intent intent = new Intent(context, LockScreenActivity.class)
@@ -80,8 +103,15 @@ public class LockScreenActivity extends Activity {
         list = findViewById(R.id.lockList);
         empty = findViewById(R.id.lockEmpty);
         findViewById(R.id.lockRoot).setOnClickListener(view -> finish());
+
+        if (getIntent() != null && getIntent().getBooleanExtra(EXTRA_WAKE, false)) {
+            // Allumage de l'écran : on reste affiché jusqu'au déverrouillage.
+            watchUnlock();
+        } else {
+            scheduleClose();
+        }
+
         render();
-        scheduleClose();
     }
 
     @Override
@@ -90,12 +120,41 @@ public class LockScreenActivity extends Activity {
         setIntent(intent);
         showOverLockScreen();
         render();
-        scheduleClose();
+        if (getIntent() != null && getIntent().getBooleanExtra(EXTRA_WAKE, false)) {
+            watchUnlock();
+        } else {
+            scheduleClose();
+        }
+    }
+
+    private void watchUnlock() {
+        handler.removeCallbacks(close);
+        if (waitingForUnlock) return;
+        try {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_USER_PRESENT);
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(unlockReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(unlockReceiver, filter);
+            }
+            waitingForUnlock = true;
+        } catch (Exception ignored) {
+            // Sans ce signal, l'écran se referme tout seul.
+            scheduleClose();
+        }
     }
 
     @Override
     protected void onDestroy() {
         handler.removeCallbacks(close);
+        if (waitingForUnlock) {
+            try {
+                unregisterReceiver(unlockReceiver);
+            } catch (Exception ignored) {
+                // Déjà retiré.
+            }
+            waitingForUnlock = false;
+        }
         super.onDestroy();
     }
 

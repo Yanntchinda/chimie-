@@ -13,12 +13,21 @@ final class CenterPrefs {
     private static final String KEY_POSTED = "posted-count";
     private static final String KEY_STATUS = "last-status";
     private static final String KEY_CONNECTED = "listener-connected";
+    private static final String KEY_WAKE = "show-on-wake";
 
     private CenterPrefs() {
     }
 
     private static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences(FILE, Context.MODE_PRIVATE);
+    }
+
+    static boolean showOnWake(Context context) {
+        return prefs(context).getBoolean(KEY_WAKE, true);
+    }
+
+    static void setShowOnWake(Context context, boolean value) {
+        prefs(context).edit().putBoolean(KEY_WAKE, value).apply();
     }
 
     static boolean replaceOriginals(Context context) {

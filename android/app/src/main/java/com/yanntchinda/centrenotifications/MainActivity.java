@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
     private TextView lockState;
     private TextView batteryState;
     private Switch replaceSwitch;
+    private Switch wakeSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +50,7 @@ public class MainActivity extends Activity {
         lockState = findViewById(R.id.lockState);
         batteryState = findViewById(R.id.batteryState);
         replaceSwitch = findViewById(R.id.replaceSwitch);
+        wakeSwitch = findViewById(R.id.wakeSwitch);
         Button accessButton = findViewById(R.id.accessButton);
         Button postButton = findViewById(R.id.postButton);
         Button islandButton = findViewById(R.id.islandButton);
@@ -87,6 +89,8 @@ public class MainActivity extends Activity {
         findViewById(R.id.batteryButton).setOnClickListener(view -> openBatterySettings());
         replaceSwitch.setOnCheckedChangeListener((button, checked) ->
                 CenterPrefs.setReplaceOriginals(this, checked));
+        wakeSwitch.setOnCheckedChangeListener((button, checked) ->
+                CenterPrefs.setShowOnWake(this, checked));
 
         StyledNotifier.ensureChannel(getApplicationContext());
 
@@ -219,6 +223,7 @@ public class MainActivity extends Activity {
         }
 
         replaceSwitch.setChecked(CenterPrefs.replaceOriginals(this));
+        wakeSwitch.setChecked(CenterPrefs.showOnWake(this));
     }
 
     private void openHomeSettings() {

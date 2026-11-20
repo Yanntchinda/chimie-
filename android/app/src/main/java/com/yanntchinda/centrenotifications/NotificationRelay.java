@@ -26,6 +26,18 @@ public class NotificationRelay extends NotificationListenerService {
 
     private static NotificationRelay instance;
 
+    /** Allumage de l'écran : le centre prend la place de l'écran verrouillé. */
+    private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !Intent.ACTION_SCREEN_ON.equals(intent.getAction())) return;
+            if (!CenterPrefs.showOnWake(context)) return;
+            if (!LockScreenActivity.deviceIsLockedOrOff(context)) return;
+            LockScreenActivity.launchWake(context);
+        }
+    };
+    private boolean receiverRegistered = false;
+
     private void rememberInstance() {
         instance = this;
     }
@@ -35,6 +47,35 @@ public class NotificationRelay extends NotificationListenerService {
         super.onCreate();
         rememberInstance();
         StyledNotifier.ensureChannel(getApplicationContext());
+        registerScreenReceiver();
+    }
+
+    private void registerScreenReceiver() {
+        if (receiverRegistered) return;
+        try {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(screenReceiver, filter);
+            }
+            receiverRegistered = true;
+        } catch (Exception ignored) {
+            // Enregistrement refusé : l'allumage ne déclenchera pas l'écran du centre.
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (receiverRegistered) {
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Exception ignored) {
+                // Déjà retiré.
+            }
+            receiverRegistered = false;
+        }
+        super.onDestroy();
     }
 
     @Override
