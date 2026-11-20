@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -993,6 +993,10 @@
     overscroll-behavior: none;
   }
 
+  body.is-app {
+    --kbd: 0px;
+  }
+
   body.is-app .iphone-frame {
     width: 100vw;
     height: 100vh;
@@ -1001,6 +1005,8 @@
     border-radius: 0;
     background: #000;
     box-shadow: none;
+    transform: translateY(calc(-1 * var(--kbd)));
+    transition: transform 0.18s ease-out;
   }
 
   body.is-app .screen {
@@ -1467,6 +1473,32 @@
       at: Number(event.at) || Date.now()
     });
   }
+
+  // Clavier : dans l'application, on remonte le cadre pour que le champ reste visible.
+  if (appMode && window.visualViewport) {
+    const applyKeyboard = () => {
+      const view = window.visualViewport;
+      const hidden = Math.max(0, window.innerHeight - (view.height + view.offsetTop));
+      document.documentElement.style.setProperty("--kbd", (hidden > 90 ? hidden : 0) + "px");
+    };
+    window.visualViewport.addEventListener("resize", applyKeyboard);
+    window.visualViewport.addEventListener("scroll", applyKeyboard);
+  }
+
+  // Champ de reponse : on le garde visible au-dessus du clavier.
+  document.addEventListener("focusin", (event) => {
+    if (!event.target || event.target.tagName !== "INPUT") return;
+    const field = event.target;
+    setTimeout(() => {
+      if (document.activeElement !== field) return;
+      try { field.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (err) { field.scrollIntoView(); }
+    }, 320);
+  });
+
+  document.addEventListener("focusout", (event) => {
+    if (!event.target || event.target.tagName !== "INPUT") return;
+    document.documentElement.style.setProperty("--kbd", "0px");
+  });
 
   function pullNative() {
     if (!nativeBridge || typeof nativeBridge.pull !== "function") return 0;
@@ -2283,7 +2315,7 @@
     const text = input ? input.value.trim() : "";
     if (!text) { if (input) input.focus(); return; }
 
-    if (thread.nativeKey && nativeBridge) {
+    if (thread.nativeKey && nativeBridge && !String(thread.nativeKey).startsWith("demo-")) {
       let result = "echec";
       try { result = String(nativeBridge.reply(thread.nativeKey, text)); } catch (err) { result = "echec"; }
       if (result !== "ok") {

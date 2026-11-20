@@ -53,6 +53,7 @@
         <activity
             android:name=".BoardActivity"
             android:exported="false"
+            android:windowSoftInputMode="adjustResize"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:showWhenLocked="true"
