@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Centre de notifications</string>
+
+    <string name="setup_intro">Les notifications de votre téléphone s\'affichent avec le style du centre. Aucun écran à ouvrir : tout se passe dans vos notifications.</string>
+    <string name="setup_fix_service_button">Réactiver le service d\'écoute</string>
+    <string name="setup_copy_diagnostic">Copier le diagnostic</string>
+    <string name="setup_unknown">État inconnu.</string>
+
+    <string name="setup_access_title">Accès aux notifications</string>
+    <string name="setup_access_button">Autoriser l\'accès aux notifications</string>
+
+    <string name="setup_appinfo_button">Ouvrir la fiche de l\'application (⋮)</string>
+    <string name="setup_restricted_hint">Android 13 et plus, application installée hors magasin : 1) toucher « Autoriser l\'accès aux notifications » et essayer d\'activer l\'interrupteur, même s\'il paraît grisé ; 2) revenir ici, toucher « Ouvrir la fiche de l\'application » ; 3) les trois points en haut à droite de cette fiche proposent alors « Autoriser les paramètres restreints ». Les trois points n\'apparaissent que tant que la restriction est à lever : une fois accordée, l\'entrée disparaît, c\'est normal. Autre chemin si la fiche n\'a pas de trois points : rechercher « paramètres restreints » dans la recherche de l\'application Paramètres du téléphone.</string>
+
+    <string name="setup_post_title">Affichage des notifications</string>
+    <string name="setup_post_button">Autoriser l\'affichage</string>
+
+    <string name="setup_island_title">Îlot par-dessus les applications</string>
+    <string name="setup_island_button">Autoriser l\'affichage par-dessus</string>
+
+    <string name="setup_home_title">Écran d\'accueil du centre</string>
+    <string name="setup_home_body">Le centre peut remplacer l\'écran d\'accueil Android : même procédé que les thèmes iPhone du Play Store, qui sont des lanceurs. Choisissez « Centre de notifications » dans la liste des applications d\'accueil.</string>
+    <string name="setup_home_button">Choisir l\'application d\'accueil</string>
+
+    <string name="setup_wake_title">Allumage de l\'écran</string>
+    <string name="setup_wake_body">Écran éteint puis rallumé : le centre s\'affiche à la place de l\'écran verrouillé, avec la pile des messages, et reste jusqu\'au déverrouillage.</string>
+    <string name="setup_wake_switch">Afficher le centre à l\'allumage de l\'écran</string>
+
+    <string name="setup_burst_button">Simuler 30 messages sur l\'écran verrouillé</string>
+
+    <string name="setup_diag_title">Diagnostic</string>
+    <string name="setup_test_button">Afficher une carte de test</string>
+
+    <string name="setup_replace_title">Remplacer les notifications d\'origine</string>
+    <string name="setup_replace_body">Une seule notification reste affichée pour chaque message : celle du centre. Si cette option est désactivée, le message apparaît deux fois, avec le style d\'origine et avec celui du centre.</string>
+    <string name="setup_replace_switch">Remplacer les notifications d\'origine</string>
+
+    <string name="setup_footer">Le centre ne demande aucun accès réseau : les notifications sont lues sur l\'appareil et rien n\'en sort.</string>
+
+    <string name="notif_channel_name">Messages</string>
+    <string name="notif_channel_description">Notifications réécrites dans le style du centre</string>
+    <string name="notif_action_clear">Effacer</string>
+    <string name="notif_group_summary">%1$s · %2$d nouveaux messages</string>
+</resources>

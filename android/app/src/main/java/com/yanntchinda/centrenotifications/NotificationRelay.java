@@ -1,0 +1,300 @@
+package com.yanntchinda.centrenotifications;
+
+import android.app.Notification;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.service.notification.NotificationListenerService;
+import android.service.notification.StatusBarNotification;
+import android.app.RemoteInput;
+import android.content.Intent;
+
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Écoute les notifications du téléphone et les réécrit dans le style du centre.
+ *
+ * Aucune permission réseau n'est demandée : les messages sont lus sur l'appareil,
+ * affichés à leur place dans les notifications, et rien n'en sort.
+ */
+public class NotificationRelay extends NotificationListenerService {
+
+    /** Dernier texte transmis pour une notification, pour éviter les doublons. */
+    private static final Map<String, String> LAST_TEXT = new HashMap<>();
+    private static final int LAST_TEXT_LIMIT = 200;
+
+    private static final Map<String, Notification> ORIGINALS = new HashMap<>();
+    private static NotificationRelay instance;
+
+    /** Allumage de l'écran : le centre prend la place de l'écran verrouillé. */
+    private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !Intent.ACTION_SCREEN_ON.equals(intent.getAction())) return;
+            if (!CenterPrefs.showOnWake(context)) return;
+            if (!DeviceState.lockedOrOff(context)) return;
+            BoardActivity.launchWake(context);
+        }
+    };
+    private boolean receiverRegistered = false;
+
+    private void rememberInstance() {
+        instance = this;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        rememberInstance();
+        CenterBridge.setContext(getApplicationContext());
+        StyledNotifier.ensureChannel(getApplicationContext());
+        registerScreenReceiver();
+    }
+
+    private void registerScreenReceiver() {
+        if (receiverRegistered) return;
+        try {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(screenReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(screenReceiver, filter);
+            }
+            receiverRegistered = true;
+        } catch (Exception ignored) {
+            // Enregistrement refusé : l'allumage ne déclenchera pas l'écran du centre.
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (receiverRegistered) {
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Exception ignored) {
+                // Déjà retiré.
+            }
+            receiverRegistered = false;
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+        rememberInstance();
+        CenterPrefs.noteConnected(getApplicationContext());
+        StatusBarNotification[] active = null;
+        try {
+            active = getActiveNotifications();
+        } catch (Exception ignored) {
+            // Accès retiré entre-temps : rien à rattraper.
+        }
+        if (active != null) {
+            for (StatusBarNotification sbn : active) {
+                forward(sbn);
+            }
+        }
+    }
+
+    @Override
+    public void onListenerDisconnected() {
+        instance = null;
+        super.onListenerDisconnected();
+        // Android ou le constructeur a coupé l'écoute : on demande tout de suite à être reconnecté.
+        try {
+            requestRebind(new ComponentName(this, NotificationRelay.class));
+        } catch (Exception ignored) {
+            // Accès retiré par l'utilisateur : rien à reconnecter.
+        }
+    }
+
+    static boolean isConnected() {
+        return instance != null;
+    }
+
+    @Override
+    public void onNotificationPosted(StatusBarNotification sbn) {
+        if (sbn == null) return;
+        rememberInstance();
+        forward(sbn);
+    }
+
+    private void forward(StatusBarNotification sbn) {
+        try {
+            Notification notification = sbn.getNotification();
+            if (notification == null) return;
+            if (getPackageName().equals(sbn.getPackageName())) return;
+            if ((notification.flags & Notification.FLAG_GROUP_SUMMARY) != 0) return;
+            if ((notification.flags & Notification.FLAG_ONGOING_EVENT) != 0) return;
+            if (isUntouchable(sbn.getPackageName(), notification)) return;
+
+            Bundle extras = notification.extras;
+            if (extras == null) return;
+
+            String sender = textOf(extras.getCharSequence(Notification.EXTRA_TITLE));
+            String message = textOf(extras.getCharSequence(Notification.EXTRA_BIG_TEXT));
+            if (message.isEmpty()) message = textOf(extras.getCharSequence(Notification.EXTRA_TEXT));
+            if (message.isEmpty()) message = textOf(extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT));
+            if (message.isEmpty()) return;
+            String appLabel = labelOf(sbn.getPackageName());
+            if (sender.isEmpty()) sender = appLabel;
+
+            String key = sbn.getKey();
+            if (key == null) return;
+            if (ORIGINALS.size() > 120) ORIGINALS.clear();
+            ORIGINALS.put(key, notification);
+            if (message.equals(LAST_TEXT.get(key))) return;
+            if (LAST_TEXT.size() > LAST_TEXT_LIMIT) LAST_TEXT.clear();
+            LAST_TEXT.put(key, message);
+
+            Context app = getApplicationContext();
+            CenterPrefs.noteReceived(app);
+
+            JSONObject event = new JSONObject();
+            event.put("key", key);
+            event.put("pkg", sbn.getPackageName());
+            event.put("app", appLabel);
+            event.put("title", sender);
+            event.put("text", message);
+            event.put("at", sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis());
+            event.put("canReply", notification.actions != null);
+            CenterBridge.publish(event);
+            boolean wake = DeviceState.lockedOrOff(app);
+            String status = StyledNotifier.post(app, sbn, sender, message, appLabel, wake);
+            CenterPrefs.notePosted(app, status);
+            if ("ok".equals(status)) {
+                long when = sbn.getPostTime() > 0 ? sbn.getPostTime() : System.currentTimeMillis();
+                present(app, new RecentStore.Item(key, sbn.getPackageName(), appLabel, sender, message, when,
+                        StyledNotifier.dotFor(sbn.getPackageName()), notification.contentIntent), wake);
+            }
+            if ("ok".equals(status) && CenterPrefs.replaceOriginals(this)) {
+                // Une seule carte reste dans les notifications : celle du centre.
+                try {
+                    cancelNotification(key);
+                } catch (Exception ignored) {
+                    // Notification déjà retirée par le système.
+                }
+            }
+        } catch (Exception ignored) {
+            // Une notification mal formée ne doit jamais interrompre l'écoute.
+        }
+    }
+
+    /**
+     * Écran verrouillé ou éteint : l'écran verrouillé du centre s'allume et se superpose.
+     * Écran allumé et déverrouillé : l'îlot descend du haut de l'écran.
+     */
+    static void present(Context context, RecentStore.Item item, boolean wake) {
+        RecentStore.put(item);
+        if (wake) {
+            BoardActivity.launchLock(context);
+        } else {
+            IslandOverlay.show(context, item.sender, item.message, item.dotRes, item.open);
+        }
+    }
+
+    /**
+     * Notifications qu'on ne doit jamais retirer ni réécrire : un appel entrant perdrait ses boutons
+     * Répondre/Refuser, une alarme ne sonnerait plus, un téléchargement ou un trajet GPS disparaîtrait.
+     */
+    private static boolean isUntouchable(String pkg, Notification notification) {
+        if ("android".equals(pkg) || "com.android.systemui".equals(pkg)) return true;
+        String category = notification.category;
+        if (category == null) return false;
+        switch (category) {
+            case Notification.CATEGORY_CALL:
+            case Notification.CATEGORY_ALARM:
+            case Notification.CATEGORY_NAVIGATION:
+            case Notification.CATEGORY_PROGRESS:
+            case Notification.CATEGORY_SERVICE:
+            case Notification.CATEGORY_STATUS:
+            case Notification.CATEGORY_SYSTEM:
+            case Notification.CATEGORY_TRANSPORT:
+            case Notification.CATEGORY_STOPWATCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static String textOf(CharSequence value) {
+        if (value == null) return "";
+        return value.toString().trim();
+    }
+
+    private String labelOf(String pkg) {
+        try {
+            PackageManager pm = getPackageManager();
+            ApplicationInfo info = pm.getApplicationInfo(pkg, 0);
+            CharSequence label = pm.getApplicationLabel(info);
+            if (label != null && label.length() > 0) return label.toString();
+        } catch (Exception ignored) {
+            // Application inconnue : on garde le nom technique.
+        }
+        return pkg;
+    }
+
+    /** Retire la notification d'origine, demande de la page. */
+    static void cancel(String key) {
+        cancelOriginal(key);
+    }
+
+    /** Répond dans l'application d'origine à partir du texte saisi dans la page. */
+    static String reply(String key, String text) {
+        if (key == null || text == null || text.trim().isEmpty()) return "indisponible";
+        Notification original = ORIGINALS.get(key);
+        if (original == null) return "indisponible";
+
+        Notification.Action action = null;
+        RemoteInput input = null;
+        Notification.Action[] actions = original.actions;
+        if (actions != null) {
+            for (Notification.Action candidate : actions) {
+                RemoteInput[] inputs = candidate.getRemoteInputs();
+                if (inputs == null) continue;
+                for (RemoteInput remote : inputs) {
+                    if (remote.getAllowFreeFormInput()) {
+                        action = candidate;
+                        input = remote;
+                        break;
+                    }
+                }
+                if (action != null) break;
+            }
+        }
+        if (action == null || input == null) return "indisponible";
+
+        Context context = CenterBridge.context();
+        if (context == null) return "echec";
+        try {
+            Intent fillIn = new Intent();
+            Bundle results = new Bundle();
+            results.putCharSequence(input.getResultKey(), text.trim());
+            RemoteInput.addResultsToIntent(new RemoteInput[]{ input }, fillIn, results);
+            action.actionIntent.send(context, 0, fillIn);
+            return "ok";
+        } catch (Exception err) {
+            return "echec";
+        }
+    }
+
+    /** Retire la notification d'origine, si le service est encore connecté. */
+    static void cancelOriginal(String key) {
+        NotificationRelay relay = instance;
+        if (relay == null || key == null) return;
+        try {
+            relay.cancelNotification(key);
+        } catch (Exception ignored) {
+            // Déjà retirée.
+        }
+    }
+}

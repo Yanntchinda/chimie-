@@ -1,0 +1,53 @@
+plugins {
+    id "com.android.application"
+}
+
+// La page du depot est l'interface du centre : elle est copiee dans les assets a chaque
+// build, pour que la maquette web et l'application ne puissent pas diverger.
+def webSource = rootProject.file("../gemini-code-1795117363618.html")
+def assetsDir = file("$projectDir/src/main/assets")
+
+tasks.register("syncWebAssets", Copy) {
+    from(webSource)
+    into(assetsDir)
+    rename { "index.html" }
+}
+
+afterEvaluate {
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn "syncWebAssets"
+    }
+}
+
+android {
+    namespace "com.yanntchinda.centrenotifications"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.yanntchinda.centrenotifications"
+        minSdk 26
+        targetSdk 34
+        versionCode 18
+        versionName "4.3.0"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ""
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+    }
+}

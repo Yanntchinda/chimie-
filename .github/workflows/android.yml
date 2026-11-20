@@ -1,0 +1,195 @@
+name: Android APK
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+    paths:
+      - "android/**"
+      - "README.md"
+      - "installation/**"
+      - ".github/workflows/android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Compilation de l'APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v5
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Préparer la page du centre dans les assets
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp gemini-code-1795117363618.html android/app/src/main/assets/index.html
+          test -s android/app/src/main/assets/index.html
+          ls -l android/app/src/main/assets
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: |
+          set +e
+          code=1
+          for attempt in 1 2 3; do
+            echo "== Tentative $attempt sur 3"
+            gradle assembleDebug assembleRelease --no-daemon --stacktrace \
+              -Dorg.gradle.internal.http.connectionTimeout=120000 \
+              -Dorg.gradle.internal.http.socketTimeout=120000 > /tmp/build.log 2>&1
+            code=$?
+            tail -40 /tmp/build.log
+            if [ $code -eq 0 ]; then break; fi
+            echo "Échec réseau ou de résolution, nouvelle tentative dans 30 s."
+            sleep 30
+          done
+          echo "status=$code" >> "$GITHUB_ENV"
+
+      - name: Publier le detail d'une compilation en echec
+        if: env.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -c 55000 /tmp/build.log > /tmp/err.log
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" -F body=@/tmp/err.log || true
+          exit 1
+
+      - name: Vérifier l'APK
+        if: env.status == '0'
+        working-directory: android
+        run: |
+          set -euo pipefail
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          echo "aapt2 : $AAPT2"
+          echo "apksigner : $APKSIGNER"
+          : > /tmp/verification.txt
+          for f in app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk; do
+            test -f "$f"
+            if ! unzip -l "$f" | grep -q "assets/index.html"; then
+              echo "La page du centre est absente de $f" >&2
+              exit 1
+            fi
+            PERMS=$("$AAPT2" dump permissions "$f" || true)
+            if echo "$PERMS" | grep -q "android.permission.INTERNET"; then
+              echo "Permission réseau détectée dans $f" >&2
+              exit 1
+            fi
+            if ! echo "$PERMS" | grep -q "android.permission.POST_NOTIFICATIONS"; then
+              echo "Affichage des notifications non déclaré dans $f" >&2
+              exit 1
+            fi
+            if ! echo "$PERMS" | grep -q "android.permission.SYSTEM_ALERT_WINDOW"; then
+              echo "Superposition non déclarée dans $f" >&2
+              exit 1
+            fi
+            if ! "$AAPT2" dump badging "$f" | grep -q "launchable-activity: name='com.yanntchinda.centrenotifications.MainActivity'"; then
+              echo "Activité de lancement absente de $f" >&2
+              exit 1
+            fi
+            if ! "$AAPT2" dump xmltree --file AndroidManifest.xml "$f" | grep -q "NotificationRelay"; then
+              echo "Service d'écoute des notifications absent de $f" >&2
+              exit 1
+            fi
+            if ! "$APKSIGNER" verify --print-certs "$f" > /tmp/sign.txt 2>&1; then
+              echo "Signature absente ou invalide dans $f" >&2
+              cat /tmp/sign.txt >&2
+              exit 1
+            fi
+            echo "== $(basename "$f") ==" >> /tmp/verification.txt
+            ls -l "$f" | awk '{print "taille : " $5 " octets"}' >> /tmp/verification.txt
+            sha256sum "$f" | awk '{print "sha256 : " $1}' >> /tmp/verification.txt
+            unzip -l "$f" | grep -E "classes.dex|resources.arsc|assets/index.html" | awk '{print $1 " octets  " $4}' >> /tmp/verification.txt
+            echo "permissions déclarées :" >> /tmp/verification.txt
+            if echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | grep -q .; then
+              echo "$PERMS" | sed -n 's/^uses-permission: name=//p' | sed 's/^/  - /' >> /tmp/verification.txt
+            else
+              echo "  aucune" >> /tmp/verification.txt
+            fi
+            SIGNER=$(grep -m1 -i "Signer #1 certificate DN:" /tmp/sign.txt | sed 's/^[[:space:]]*.*DN:[[:space:]]*//' || true)
+            echo "signature : vérifiée${SIGNER:+ ($SIGNER)}" >> /tmp/verification.txt
+            echo "activité de lancement : présente" >> /tmp/verification.txt
+            echo "service d'écoute des notifications : présent" >> /tmp/verification.txt
+            if "$AAPT2" dump xmltree --file AndroidManifest.xml "$f" | grep -q "ActionReceiver"; then
+              echo "action d'effacement : présente" >> /tmp/verification.txt
+            fi
+            echo >> /tmp/verification.txt
+          done
+          cat /tmp/verification.txt
+          cat /tmp/verification.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publier le detail d'une verification en echec
+        if: failure() && env.status == '0'
+        working-directory: android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "La verification de l'APK a echoue."
+            ls -l app/build/outputs/apk/debug app/build/outputs/apk/release || true
+            echo
+            unzip -l app/build/outputs/apk/release/app-release.apk | head -40 || true
+          } > /tmp/verif.log 2>&1
+          cat /tmp/verif.log
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" -F body=@/tmp/verif.log || true
+
+      - name: Publier l'APK en artefact
+        if: env.status == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: centre-notifications-apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      - name: Joindre l'APK à la release (tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          APK_DIR=android/app/build/outputs/apk
+          cd "$APK_DIR"
+          sha256sum debug/app-debug.apk release/app-release.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          cd "$GITHUB_WORKSPACE"
+          {
+            echo "Application Android du centre de notifications : les messages reçus sont réécrits dans le style du centre, dans le volet du téléphone, avec l'îlot par-dessus les applications."
+            echo
+            echo "Installation : télécharger \`app-release.apk\`, l'ouvrir, autoriser l'installation depuis cette source."
+            echo
+            echo "Après l'installation, une seule fois, dans l'application :"
+            echo "1. **Autoriser l'accès aux notifications** → activer **Centre de notifications** (si Android affiche « paramètre restreint » : Paramètres → Applications → Centre de notifications → ⋮ → Autoriser les paramètres restreints)."
+            echo "2. **Autoriser l'affichage** → accepter la permission de notifications."
+            echo "3. **Autoriser l'affichage par-dessus** → pour l'îlot."
+            echo
+            echo "Le bloc **Diagnostic** indique combien de messages sont lus et combien de cartes sont publiées."
+            echo
+            echo "Aucune permission réseau : rien ne peut sortir de l'appareil."
+            echo
+            echo '```'
+            cat /tmp/verification.txt
+            echo '```'
+          } > /tmp/notes.md
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Centre de notifications $GITHUB_REF_NAME" --notes-file /tmp/notes.md
+          gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/notes.md
+          gh release upload "$GITHUB_REF_NAME" \
+            "$APK_DIR/debug/app-debug.apk" \
+            "$APK_DIR/release/app-release.apk" \
+            "$APK_DIR/SHA256SUMS.txt" \
+            --clobber
