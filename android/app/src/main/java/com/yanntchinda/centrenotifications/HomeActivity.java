@@ -85,24 +85,38 @@ public class HomeActivity extends Activity {
 
     /** Toucher ouvre le message ; glisser vers la gauche ou la droite l'efface. */
     private void attach(View card, RecentStore.Item item) {
-        final float[] downX = new float[1];
+        final float[] start = new float[2];
         final boolean[] moved = new boolean[1];
+        final boolean[] horizontal = new boolean[1];
         card.setOnTouchListener((view, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    downX[0] = event.getRawX();
+                    start[0] = event.getRawX();
+                    start[1] = event.getRawY();
                     moved[0] = false;
+                    horizontal[0] = false;
                     return true;
                 case MotionEvent.ACTION_MOVE: {
-                    float dx = event.getRawX() - downX[0];
-                    if (Math.abs(dx) > 12) moved[0] = true;
-                    view.setTranslationX(dx);
-                    view.setAlpha(1f - Math.min(1f, Math.abs(dx) / (view.getWidth() * 0.8f)));
+                    float dx = event.getRawX() - start[0];
+                    float dy = event.getRawY() - start[1];
+                    if (!horizontal[0]) {
+                        if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
+                            view.setTranslationX(0f);
+                            view.setAlpha(1f);
+                            return true;
+                        }
+                        if (Math.abs(dx) > 14) horizontal[0] = true;
+                    }
+                    if (horizontal[0]) {
+                        moved[0] = true;
+                        view.setTranslationX(dx);
+                        view.setAlpha(1f - Math.min(1f, Math.abs(dx) / (view.getWidth() * 0.8f)));
+                    }
                     return true;
                 }
                 case MotionEvent.ACTION_UP: {
-                    float dx = event.getRawX() - downX[0];
-                    if (Math.abs(dx) > view.getWidth() * 0.35f) {
+                    float dx = event.getRawX() - start[0];
+                    if (horizontal[0] && Math.abs(dx) > view.getWidth() * 0.35f) {
                         dismiss(view, item, dx > 0 ? view.getWidth() : -view.getWidth());
                     } else if (!moved[0]) {
                         open(item);

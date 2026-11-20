@@ -36,7 +36,7 @@ final class RecentStore {
         }
     }
 
-    private static final int LIMIT = 12;
+    private static final int LIMIT = 40;
     private static final List<Item> ITEMS = new ArrayList<>();
 
     private RecentStore() {

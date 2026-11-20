@@ -183,6 +183,17 @@
                 android:textColor="#FFFFFFFF" />
 
             <Button
+                android:id="@+id/burstTestButton"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/setup_button_bg"
+                android:text="@string/setup_burst_button"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                android:textColor="#FFFFFFFF" />
+
+            <Button
                 android:id="@+id/lockTestButton"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"

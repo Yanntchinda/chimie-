@@ -14,6 +14,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.Switch;
+import android.widget.Toast;
 import android.widget.TextView;
 
 /**
@@ -71,6 +72,7 @@ public class MainActivity extends Activity {
             refresh();
         });
 
+        findViewById(R.id.burstTestButton).setOnClickListener(view -> simulateBurst());
         findViewById(R.id.lockButton).setOnClickListener(view -> openFullScreenSettings());
         findViewById(R.id.lockTestButton).setOnClickListener(view -> {
             // Laisse le temps d'éteindre l'écran, puis simule un message écran éteint.
@@ -106,6 +108,47 @@ public class MainActivity extends Activity {
         // Accès accordé mais service non connecté (arrêté par le téléphone) : on force la reconnexion.
         if (isAccessGranted() && !NotificationRelay.isConnected()) rebindListener();
         refresh();
+    }
+
+    /** Remplit l'écran verrouillé de 30 messages pour vérifier le défilement de la pile. */
+    private void simulateBurst() {
+        String[] apps = {"WhatsApp", "Messages", "Telegram", "Mail", "Instagram", "Signal"};
+        String[] senders = {"Équipe Logistique", "Sarah Martin", "Banque", "Karim", "Herlo Global",
+                "Bot Trading XAU", "Maman", "Client Travex", "Nadia", "Chef de chantier"};
+        int[] dots = {R.drawable.dot_green, R.drawable.dot_green, R.drawable.dot_blue,
+                R.drawable.dot_amber, R.drawable.dot_purple, R.drawable.dot_blue};
+        String[] texts = {
+                "Le colis vient d'arriver au port, on confirme la livraison ?",
+                "Le dossier d'expédition a été mis à jour.",
+                "Virement entrant de 450 000 FCFA crédité sur votre compte.",
+                "Alerte structure H1 : cassure haussière confirmée sur l'or.",
+                "Tu passes cet après-midi ?",
+                "Nouvelle commande validée sur la boutique.",
+                "Réunion déplacée à 16h, salle 3.",
+                "Le bordereau est prêt, livraison confirmée.",
+                "Confirme la présence du chef d'équipe sur le site.",
+                "Dernier point avant le départ du camion."
+        };
+
+        RecentStore.clear();
+        long now = System.currentTimeMillis();
+        for (int index = 0; index < 30; index++) {
+            int app = index % apps.length;
+            String sender = senders[index % senders.length];
+            String message = texts[index % texts.length];
+            RecentStore.put(new RecentStore.Item(
+                    "simulation-" + index,
+                    "simulation",
+                    apps[app],
+                    sender,
+                    message,
+                    now - index * 60000L,
+                    dots[app],
+                    null));
+        }
+
+        Toast.makeText(this, "30 messages simulés : écran verrouillé ouvert.", Toast.LENGTH_SHORT).show();
+        LockScreenActivity.launchWake(this);
     }
 
     private RecentStore.Item testItem() {
