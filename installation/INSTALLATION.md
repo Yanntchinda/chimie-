@@ -135,6 +135,14 @@ Activée par défaut : seule la carte du centre reste dans le volet. Désactivé
 notification d'origine reste visible à côté. Le réglage se trouve dans l'écran de
 l'application.
 
+## Remplacer l'écran d'accueil (mode lanceur)
+
+Même principe que les thèmes iPhone du Play Store : ce sont des lanceurs. Dans
+l'application, bloc **Écran d'accueil du centre** → **Choisir l'application
+d'accueil** → **Centre de notifications**. La touche Accueil affiche alors l'heure,
+la pile des messages et un accès aux réglages. Pour revenir à l'accueil d'origine,
+rouvrir la même liste et choisir l'ancien lanceur.
+
 ## Prendre la main sur le système de notifications
 
 **Ne désactivez pas les notifications des applications** (WhatsApp, Messages,

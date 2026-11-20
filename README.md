@@ -42,6 +42,19 @@ Guide détaillé, avec code à scanner et dépannage Play Protect :
 L'écran de réglage reste accessible depuis l'icône, uniquement pour vérifier l'état
 des accès et l'option de remplacement.
 
+## Mode lanceur (écran d'accueil)
+
+Comme les thèmes iPhone du Play Store, qui sont des **lanceurs** : le centre peut
+devenir l'écran d'accueil du téléphone. Dans l'application, **Choisir l'application
+d'accueil** → sélectionner **Centre de notifications**. L'appui sur la touche Accueil
+affiche alors l'heure et la pile des messages, avec les réglages en bas. Pour revenir
+en arrière, choisir un autre lanceur dans la même liste.
+
+Ce que ce mode ne remplace pas : le volet de notifications système et l'écran
+verrouillé d'Android. Aucune application du Play Store ne les remplace non plus —
+les thèmes iPhone les imitent avec des activités par-dessus le verrouillage et des
+fenêtres superposées, exactement ce que fait le centre.
+
 ## Réglages
 
 - **Remplacer les notifications d'origine** (activé par défaut) : une seule carte
@@ -87,6 +100,7 @@ android/.../StyledNotifier.java            carte du centre dans le volet Android
 android/.../IslandOverlay.java             pastille au-dessus des applications
 android/.../LockScreenActivity.java        écran verrouillé du centre
 android/.../RecentStore.java               derniers messages affichés sur l'écran verrouillé
+android/.../HomeActivity.java              écran d'accueil (mode lanceur)
 android/.../ActionReceiver.java            action « Effacer »
 android/.../CenterPrefs.java               option de remplacement
 android/.../MainActivity.java              écran de réglage (aucun écran de consultation)
