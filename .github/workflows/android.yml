@@ -34,6 +34,13 @@ jobs:
         with:
           gradle-version: "8.7"
 
+      - name: Préparer la page du centre dans les assets
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp gemini-code-1795117363618.html android/app/src/main/assets/index.html
+          test -s android/app/src/main/assets/index.html
+          ls -l android/app/src/main/assets
+
       - name: Compiler l'APK
         working-directory: android
         run: |
@@ -124,6 +131,21 @@ jobs:
           done
           cat /tmp/verification.txt
           cat /tmp/verification.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publier le detail d'une verification en echec
+        if: failure() && env.status == '0'
+        working-directory: android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "La verification de l'APK a echoue."
+            ls -l app/build/outputs/apk/debug app/build/outputs/apk/release || true
+            echo
+            unzip -l app/build/outputs/apk/release/app-release.apk | head -40 || true
+          } > /tmp/verif.log 2>&1
+          cat /tmp/verif.log
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" -F body=@/tmp/verif.log || true
 
       - name: Publier l'APK en artefact
         if: env.status == '0'

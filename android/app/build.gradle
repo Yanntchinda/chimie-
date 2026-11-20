@@ -13,9 +13,9 @@ tasks.register("syncWebAssets", Copy) {
     rename { "index.html" }
 }
 
-tasks.whenTaskAdded { task ->
-    if (task.name == "preBuild") {
-        task.dependsOn "syncWebAssets"
+afterEvaluate {
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn "syncWebAssets"
     }
 }
 
