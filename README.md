@@ -12,10 +12,13 @@ apparaît dans le volet de notifications du téléphone avec ce style.
    centre : pastille de l'application, expéditeur, texte, heure.
 3. Une pastille noire descend du haut de l'écran par-dessus l'application en cours,
    puis se referme (autorisation « Afficher par-dessus » facultative).
-4. Elle conserve l'action de réponse de l'application d'origine : répondre depuis
+4. Téléphone verrouillé ou écran éteint : l'écran s'allume sur l'écran verrouillé du
+   centre, avec la pile des derniers messages. Glisser une carte l'efface ; la
+   toucher demande le déverrouillage avant d'ouvrir l'application d'origine.
+5. Elle conserve l'action de réponse de l'application d'origine : répondre depuis
    la carte écrit directement dans WhatsApp, Messages, Telegram, Gmail…
-5. Toucher la carte ouvre l'application qui a envoyé le message.
-6. Le bouton **Effacer** retire la carte et la notification d'origine.
+6. Toucher la carte ouvre l'application qui a envoyé le message.
+7. Le bouton **Effacer** retire la carte et la notification d'origine.
 
 Rien ne quitte l'appareil : aucune permission `INTERNET` n'est déclarée, donc
 l'application ne peut joindre aucun serveur.
@@ -32,7 +35,8 @@ Guide détaillé, avec code à scanner et dépannage Play Protect :
    - **Autoriser l'accès aux notifications** → activer **Centre de notifications**
      dans la liste Android.
    - **Autoriser l'affichage** → accepter les notifications (Android 13 et plus).
-   - **Autoriser l'affichage par-dessus** → activer la superposition (îlot).
+   - **Autoriser l'affichage par-dessus** → activer la superposition (îlot et écran verrouillé).
+   - **Ignorer l'optimisation de la batterie** → garde l'écoute active écran éteint.
 4. Refermer l'application : elle n'a plus besoin d'être ouverte.
 
 L'écran de réglage reste accessible depuis l'icône, uniquement pour vérifier l'état
@@ -81,6 +85,8 @@ android/app/src/main/AndroidManifest.xml   aucune permission réseau
 android/.../NotificationRelay.java         écoute et réécriture des notifications
 android/.../StyledNotifier.java            carte du centre dans le volet Android
 android/.../IslandOverlay.java             pastille au-dessus des applications
+android/.../LockScreenActivity.java        écran verrouillé du centre
+android/.../RecentStore.java               derniers messages affichés sur l'écran verrouillé
 android/.../ActionReceiver.java            action « Effacer »
 android/.../CenterPrefs.java               option de remplacement
 android/.../MainActivity.java              écran de réglage (aucun écran de consultation)

@@ -41,8 +41,11 @@ c'est le volet de notifications du téléphone qui devient le centre.
    puis activer **Centre de notifications** dans la liste. C'est ce qui permet à la
    pastille de descendre du haut de l'écran pendant que vous utilisez une autre
    application. Facultatif : sans lui, les cartes restent dans les notifications.
-4. Les trois blocs affichent alors leur état accordé. L'application peut être
-   refermée définitivement.
+4. Bloc **Batterie** → **Ignorer l'optimisation de la batterie** : sans cela, les
+   surcouches Xiaomi, Tecno, Infinix et Oppo coupent l'écoute dès que l'écran
+   s'éteint.
+5. Les blocs affichent alors leur état accordé. L'application peut être refermée
+   définitivement.
 
 Sous les blocs, une ligne indique combien de messages ont été reçus et à quelle
 heure : c'est le moyen le plus rapide de savoir si l'écoute fonctionne réellement.
@@ -94,12 +97,17 @@ Dernier recours, avec un ordinateur et le câble USB : installer l'APK par ADB
 4. Une pastille noire descend du haut de l'écran, par-dessus l'application en cours :
    pastille de couleur, expéditeur, texte. Elle se referme au bout de quelques
    secondes ; la toucher la referme tout de suite.
-5. La notification d'origine est retirée et remplacée par la carte du centre :
+5. Écran éteint ou téléphone verrouillé : l'écran s'allume sur **l'écran verrouillé
+   du centre**, fond sombre, avec la pile des derniers messages. Glisser une carte
+   l'efface, la toucher demande le code puis ouvre l'application d'origine. Il se
+   referme seul après quelques secondes, et un bouton de test y affiche une carte
+   de démonstration.
+6. La notification d'origine est retirée et remplacée par la carte du centre :
    pastille, expéditeur, texte, heure. Elle apparaît en bannière en haut de l'écran
    et sur l'écran verrouillé.
-6. Un nouveau message dans la même conversation **met à jour la même carte** au lieu
+7. Un nouveau message dans la même conversation **met à jour la même carte** au lieu
    d'en empiler une deuxième.
-7. Les notifications sans contenu (lecteur de musique, téléchargement en cours,
+8. Les notifications sans contenu (lecteur de musique, téléchargement en cours,
    appels en cours) ne sont pas touchées.
 
 ### Dans la carte

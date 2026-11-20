@@ -147,9 +147,9 @@ jobs:
             echo
             echo "Aucune permission réseau : rien ne peut sortir de l'appareil."
             echo
-            echo '\`\`\`'
+            echo '```'
             cat /tmp/verification.txt
-            echo '\`\`\`'
+            echo '```'
           } > /tmp/notes.md
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Centre de notifications $GITHUB_REF_NAME" --notes-file /tmp/notes.md
           gh release edit "$GITHUB_REF_NAME" --notes-file /tmp/notes.md
